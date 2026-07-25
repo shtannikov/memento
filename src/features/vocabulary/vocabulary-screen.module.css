@@ -121,7 +121,9 @@
 .tabs button[data-state="active"] {
   color: #0f0f23;
   background: #ffffff;
-  box-shadow: 0 1px 2px rgb(15 23 42 / 5%);
+  box-shadow:
+    0 1px 3px 0 rgb(0 0 0 / 10%),
+    0 1px 2px -1px rgb(0 0 0 / 10%);
 }
 
 .tabs button:focus-visible,
@@ -296,6 +298,12 @@
 
 .floatingButton:active {
   transform: scale(0.98);
+}
+
+@media (hover: none) and (pointer: coarse) {
+  .tabs button:focus-visible {
+    outline: none;
+  }
 }
 
 @media (max-width: 360px) {
