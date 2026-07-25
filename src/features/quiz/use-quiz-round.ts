@@ -3,7 +3,7 @@ import { useCallback, useState } from "react";
 import { quizCards } from "./quiz-cards";
 import type { QuizFeedback } from "./quiz.types";
 
-export type QuizPhase = "preparing" | "active" | "complete" | "failed";
+type QuizPhase = "preparing" | "active" | "complete" | "failed";
 
 export function useQuizRound() {
   const [phase, setPhase] = useState<QuizPhase>("preparing");

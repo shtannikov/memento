@@ -1,6 +1,5 @@
 .primary,
-.secondary,
-.danger {
+.secondary {
   min-height: 52px;
   border-radius: 15px;
   border: 0;
@@ -33,19 +32,12 @@
   border: 1px solid var(--line);
 }
 
-.danger {
-  color: white;
-  background: var(--rose);
-}
-
 .primary:hover,
-.secondary:hover,
-.danger:hover {
+.secondary:hover {
   transform: translateY(-1px);
 }
 
 .primary:active,
-.secondary:active,
-.danger:active {
+.secondary:active {
   transform: translateY(1px);
 }

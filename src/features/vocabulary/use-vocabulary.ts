@@ -43,5 +43,5 @@ export function useVocabulary() {
     );
   }
 
-  return { items, learning, learned, add, remove, changeStatus };
+  return { learning, learned, add, remove, changeStatus };
 }

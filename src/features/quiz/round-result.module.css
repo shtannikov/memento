@@ -98,18 +98,3 @@
   display: grid;
   gap: 10px;
 }
-
-.savedNote {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  margin-top: 20px;
-  color: var(--emerald);
-  font-size: 0.7rem;
-  font-weight: 700;
-}
-
-.savedNote svg {
-  width: 16px;
-  height: 16px;
-}

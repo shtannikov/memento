@@ -1,5 +1,4 @@
 import {
-  CircleCheck,
   RotateCcw,
   Sparkles,
   Trophy,
@@ -75,11 +74,6 @@ export function RoundResult({
           Back to Vocabulary
         </button>
       </div>
-      {success && (
-        <div className={styles.savedNote}>
-          <CircleCheck aria-hidden="true" /> Quiz result ready to save
-        </div>
-      )}
     </div>
   );
 }
