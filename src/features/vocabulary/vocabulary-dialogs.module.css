@@ -1,0 +1,162 @@
+.overlay {
+  position: fixed;
+  z-index: 30;
+  inset: 0;
+  background: rgb(17 20 34 / 45%);
+  backdrop-filter: blur(4px);
+  animation: fade-in 160ms ease both;
+}
+
+.sheet,
+.confirmDialog {
+  position: fixed;
+  z-index: 31;
+  left: 50%;
+  width: min(calc(100% - 24px), 390px);
+  background: white;
+  box-shadow: 0 26px 80px rgb(20 16 32 / 28%);
+}
+
+.sheet {
+  bottom: 12px;
+  padding: 22px 18px max(18px, env(safe-area-inset-bottom));
+  border-radius: 24px;
+  transform: translateX(-50%);
+  animation: sheet-in 220ms ease both;
+}
+
+.heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.heading [data-radix-dialog-title],
+.confirmDialog [data-radix-dialog-title] {
+  font-size: 1.3rem;
+  font-weight: 780;
+  letter-spacing: -0.03em;
+}
+
+.heading [data-radix-dialog-description],
+.confirmDialog [data-radix-dialog-description] {
+  margin: 6px 0 0;
+  color: var(--muted);
+  font-size: 0.78rem;
+  line-height: 1.45;
+}
+
+.iconButton {
+  display: inline-grid;
+  width: 40px;
+  height: 40px;
+  flex: 0 0 auto;
+  place-items: center;
+  color: #666c80;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  cursor: pointer;
+}
+
+.iconButton:hover {
+  background: #f0eff3;
+}
+
+.iconButton svg {
+  width: 20px;
+  height: 20px;
+}
+
+.form {
+  display: grid;
+  gap: 16px;
+  margin-top: 22px;
+}
+
+.form label {
+  display: grid;
+  gap: 7px;
+  color: #3d4256;
+  font-size: 0.74rem;
+  font-weight: 720;
+}
+
+.form input,
+.form textarea {
+  width: 100%;
+  color: var(--ink);
+  border: 1px solid #dcdde4;
+  border-radius: 13px;
+  background: #fbfbfc;
+  font-size: 0.9rem;
+}
+
+.form input {
+  min-height: 50px;
+  padding: 0 13px;
+}
+
+.form textarea {
+  min-height: 108px;
+  padding: 13px;
+  resize: vertical;
+}
+
+.form input::placeholder,
+.form textarea::placeholder {
+  color: #a3a7b5;
+}
+
+.confirmDialog {
+  top: 50%;
+  padding: 24px;
+  border-radius: 24px;
+  text-align: center;
+  transform: translate(-50%, -50%);
+  animation: dialog-in 180ms ease both;
+}
+
+.dangerIcon {
+  display: grid;
+  width: 52px;
+  height: 52px;
+  place-items: center;
+  margin: 0 auto 16px;
+  color: var(--rose);
+  border-radius: 16px;
+  background: var(--rose-soft);
+}
+
+.dangerIcon svg {
+  width: 23px;
+  height: 23px;
+}
+
+.confirmActions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 22px;
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes sheet-in {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 24px);
+  }
+}
+
+@keyframes dialog-in {
+  from {
+    opacity: 0;
+    transform: translate(-50%, calc(-50% + 12px)) scale(0.98);
+  }
+}

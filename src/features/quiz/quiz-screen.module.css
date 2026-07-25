@@ -1,0 +1,226 @@
+.screen {
+  height: 100%;
+  min-height: 100%;
+  overflow-y: auto;
+  background: var(--surface);
+}
+
+.header {
+  display: grid;
+  grid-template-columns: 40px 1fr auto;
+  align-items: center;
+  gap: 12px;
+  padding: 20px 16px 14px;
+}
+
+.iconButton {
+  display: inline-grid;
+  width: 40px;
+  height: 40px;
+  place-items: center;
+  color: #666c80;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  cursor: pointer;
+}
+
+.iconButton:hover {
+  background: #f0eff3;
+}
+
+.iconButton svg {
+  width: 20px;
+  height: 20px;
+}
+
+.progress {
+  display: grid;
+  gap: 7px;
+}
+
+.progressCopy {
+  display: flex;
+  justify-content: space-between;
+  color: #7e8498;
+  font-size: 0.65rem;
+  font-weight: 700;
+}
+
+.progressTrack {
+  height: 7px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #e4e1e9;
+}
+
+.progressTrack span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--violet-deep), #a125ff);
+  transition: width 240ms ease;
+}
+
+.lives {
+  display: flex;
+  gap: 2px;
+}
+
+.lives svg {
+  width: 16px;
+  height: 16px;
+  color: #d1d2d9;
+  fill: transparent;
+}
+
+.lives svg.fullHeart {
+  color: var(--rose);
+  fill: var(--rose);
+}
+
+.content {
+  display: flex;
+  min-height: calc(100% - 82px);
+  flex-direction: column;
+  padding: 48px 16px 24px;
+}
+
+.eyebrow {
+  margin: 0;
+  color: #8b91a4;
+  font-size: 0.68rem;
+  line-height: 1;
+  font-weight: 750;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.content h1 {
+  margin: 15px 0 34px;
+  font-size: 1.65rem;
+  line-height: 1.35;
+  letter-spacing: -0.035em;
+}
+
+.options {
+  display: grid;
+  gap: 10px;
+}
+
+.option {
+  display: grid;
+  grid-template-columns: 34px 1fr 22px;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 62px;
+  padding: 10px 14px 10px 10px;
+  color: var(--ink);
+  text-align: left;
+  border: 1px solid var(--line);
+  border-radius: 17px;
+  background: white;
+  box-shadow: 0 2px 4px rgb(20 24 40 / 4%);
+  cursor: pointer;
+  transition:
+    border-color 150ms ease,
+    background 150ms ease,
+    transform 150ms ease;
+}
+
+.option:not(:disabled):hover {
+  border-color: #c9aafa;
+  transform: translateY(-1px);
+}
+
+.option:disabled {
+  cursor: default;
+}
+
+.optionIndex {
+  display: grid;
+  width: 34px;
+  height: 34px;
+  place-items: center;
+  color: #767c90;
+  border-radius: 11px;
+  background: #f2f1f5;
+  font-size: 0.72rem;
+  font-weight: 780;
+}
+
+.option > span:nth-child(2) {
+  min-width: 0;
+  font-size: 0.86rem;
+  font-weight: 670;
+  overflow-wrap: anywhere;
+}
+
+.option > svg {
+  width: 20px;
+  height: 20px;
+}
+
+.option.correct {
+  color: #087c58;
+  border-color: #7ed7b9;
+  background: var(--emerald-soft);
+}
+
+.option.correct .optionIndex {
+  color: white;
+  background: var(--emerald);
+}
+
+.option.incorrect {
+  color: #ae304c;
+  border-color: #f1a6b6;
+  background: var(--rose-soft);
+}
+
+.option.incorrect .optionIndex {
+  color: white;
+  background: var(--rose);
+}
+
+.feedbackLabel {
+  min-height: 40px;
+  margin: auto 0 0;
+  padding-top: 24px;
+  color: var(--muted);
+  text-align: center;
+  font-size: 0.74rem;
+  font-weight: 650;
+}
+
+.feedbackLabel.correct {
+  color: var(--emerald);
+}
+
+.feedbackLabel.incorrect {
+  color: var(--rose);
+}
+
+.shake {
+  animation: shake 280ms ease both;
+}
+
+@keyframes shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+
+  25% {
+    transform: translateX(-7px);
+  }
+
+  50% {
+    transform: translateX(6px);
+  }
+
+  75% {
+    transform: translateX(-3px);
+  }
+}

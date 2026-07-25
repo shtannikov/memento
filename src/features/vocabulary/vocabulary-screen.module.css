@@ -1,0 +1,204 @@
+.screen {
+  height: 100%;
+  min-height: 100%;
+  padding-bottom: 78px;
+  overflow-y: auto;
+}
+
+.header {
+  position: sticky;
+  z-index: 4;
+  top: 0;
+  padding: 28px 14px 14px;
+  background: rgb(255 255 255 / 94%);
+  backdrop-filter: blur(18px);
+  border-bottom: 1px solid rgb(20 24 40 / 4%);
+}
+
+.eyebrow {
+  margin: 0;
+  color: #8b91a4;
+  font-size: 0.68rem;
+  line-height: 1;
+  font-weight: 750;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.header h1 {
+  margin: 7px 0 16px;
+  font-size: 1.55rem;
+  letter-spacing: -0.03em;
+}
+
+.tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+  padding: 4px;
+  border-radius: 13px;
+  background: #f0eff5;
+}
+
+.tabs button {
+  min-height: 40px;
+  color: #777d91;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  font-size: 0.78rem;
+  font-weight: 720;
+  cursor: pointer;
+}
+
+.tabs button[data-state="active"] {
+  color: var(--ink);
+  background: white;
+  box-shadow: 0 2px 5px rgb(23 26 44 / 10%);
+}
+
+.tabs span {
+  display: inline-grid;
+  min-width: 20px;
+  height: 20px;
+  place-items: center;
+  margin-left: 4px;
+  color: var(--violet);
+  border-radius: 999px;
+  background: var(--violet-soft);
+  font-size: 0.67rem;
+}
+
+.list {
+  display: grid;
+  gap: 8px;
+  padding: 12px 12px 104px;
+}
+
+.wordCard {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 14px 12px 14px 14px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--card);
+  box-shadow: 0 2px 4px rgb(20 24 40 / 5%);
+}
+
+.learnedWord {
+  border-color: #cfebdf;
+}
+
+.wordCopy {
+  min-width: 0;
+}
+
+.wordTitle {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.wordTitle h2 {
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+  overflow-wrap: anywhere;
+}
+
+.wordCopy > p {
+  margin: 7px 0 0;
+  color: var(--muted);
+  font-size: 0.7rem;
+  line-height: 1.45;
+}
+
+.statusPill {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 3px 7px;
+  border-radius: 999px;
+  font-size: 0.56rem;
+  line-height: 1;
+  font-weight: 780;
+}
+
+.due {
+  color: var(--violet);
+  background: var(--violet-soft);
+}
+
+.later {
+  color: #8c91a4;
+  background: #f0f1f4;
+}
+
+.learned {
+  color: var(--emerald);
+  background: var(--emerald-soft);
+}
+
+.statusPill svg {
+  width: 11px;
+  height: 11px;
+  stroke-width: 2.5;
+}
+
+.removeButton {
+  flex: 0 0 auto;
+  display: grid;
+  width: 34px;
+  height: 34px;
+  place-items: center;
+  color: #afb3c0;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  cursor: pointer;
+}
+
+.removeButton:hover {
+  color: var(--rose);
+  background: var(--rose-soft);
+}
+
+.removeButton svg {
+  width: 17px;
+  height: 17px;
+}
+
+.addButton {
+  position: absolute;
+  z-index: 6;
+  right: 18px;
+  bottom: 88px;
+  display: grid;
+  width: 58px;
+  height: 58px;
+  place-items: center;
+  color: white;
+  border: 0;
+  border-radius: 999px;
+  background: linear-gradient(135deg, var(--violet), #8f25ff);
+  box-shadow: 0 12px 26px rgb(101 31 225 / 30%);
+  cursor: pointer;
+  transition: transform 160ms ease;
+}
+
+.addButton:hover {
+  transform: translateY(-1px);
+}
+
+.addButton:active {
+  transform: translateY(1px);
+}
+
+.addButton svg {
+  width: 26px;
+  height: 26px;
+}

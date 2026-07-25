@@ -1,0 +1,51 @@
+.primary,
+.secondary,
+.danger {
+  min-height: 52px;
+  border-radius: 15px;
+  border: 0;
+  font-weight: 720;
+  cursor: pointer;
+  transition:
+    transform 160ms ease,
+    box-shadow 160ms ease,
+    background 160ms ease;
+}
+
+.primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  color: white;
+  background: linear-gradient(135deg, var(--violet), #8d20ff);
+  box-shadow: 0 9px 20px rgb(116 32 241 / 20%);
+}
+
+.primary svg {
+  width: 18px;
+  height: 18px;
+}
+
+.secondary {
+  color: #42475d;
+  background: white;
+  border: 1px solid var(--line);
+}
+
+.danger {
+  color: white;
+  background: var(--rose);
+}
+
+.primary:hover,
+.secondary:hover,
+.danger:hover {
+  transform: translateY(-1px);
+}
+
+.primary:active,
+.secondary:active,
+.danger:active {
+  transform: translateY(1px);
+}
