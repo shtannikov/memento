@@ -30,6 +30,14 @@ export function VocabularyDialogs({
   const [term, setTerm] = useState("");
   const [definition, setDefinition] = useState("");
 
+  function changeAddOpen(open: boolean) {
+    if (!open) {
+      setTerm("");
+      setDefinition("");
+    }
+    onAddOpenChange(open);
+  }
+
   function submitVocabulary(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
@@ -45,24 +53,14 @@ export function VocabularyDialogs({
 
   return (
     <>
-      <Dialog.Root open={addOpen} onOpenChange={onAddOpenChange}>
+      <Dialog.Root open={addOpen} onOpenChange={changeAddOpen}>
         <Dialog.Portal>
           <Dialog.Overlay className={styles.overlay} />
           <Dialog.Content
-            className={styles.sheet}
-            aria-describedby="add-vocabulary-description"
+            className={styles.addDialog}
+            aria-describedby={undefined}
           >
-            <div className={styles.heading}>
-              <div>
-                <Dialog.Title>Add vocabulary</Dialog.Title>
-                <Dialog.Description id="add-vocabulary-description">
-                  Add a word or phrase to your next learning rounds.
-                </Dialog.Description>
-              </div>
-              <Dialog.Close className={styles.iconButton} aria-label="Close">
-                <X aria-hidden="true" />
-              </Dialog.Close>
-            </div>
+            <Dialog.Title>Add new word</Dialog.Title>
             <form className={styles.form} onSubmit={submitVocabulary}>
               <label>
                 <span>Word or phrase</span>
@@ -70,23 +68,35 @@ export function VocabularyDialogs({
                   autoFocus
                   value={term}
                   onChange={(event) => setTerm(event.target.value)}
-                  placeholder="e.g. take into account"
+                  placeholder="e.g. to be in charge of sth"
+                  maxLength={200}
                   required
                 />
               </label>
               <label>
                 <span>Definition</span>
-                <textarea
+                <input
                   value={definition}
                   onChange={(event) => setDefinition(event.target.value)}
-                  placeholder="e.g. to consider something when making a decision"
+                  placeholder="e.g. to have responsibility for sth"
+                  maxLength={500}
                   required
                 />
               </label>
-              <button className={buttonStyles.primary} type="submit">
+              <button
+                className={styles.submitButton}
+                type="submit"
+                disabled={!term.trim() || !definition.trim()}
+              >
                 Add to vocabulary
               </button>
             </form>
+            <Dialog.Close
+              className={styles.iconButton}
+              aria-label="Close add word dialog"
+            >
+              <X aria-hidden="true" />
+            </Dialog.Close>
           </Dialog.Content>
         </Dialog.Portal>
       </Dialog.Root>

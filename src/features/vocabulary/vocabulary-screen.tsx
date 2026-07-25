@@ -108,7 +108,7 @@ export function VocabularyScreen({
             onClick={() => setAddOpen(true)}
           >
             <Plus aria-hidden="true" />
-            Add vocabulary
+            Add phrase
           </button>
           <button
             className={`${styles.floatingButton} ${styles.quizAction}`}
