@@ -2,11 +2,11 @@
 
 import { useState } from "react";
 
-import { BottomNavigation } from "@/components/navigation/bottom-navigation";
 import { HomeScreen } from "@/features/home/home-screen";
 import { QuizRound } from "@/features/quiz/quiz-round";
 import { useVocabulary } from "@/features/vocabulary/use-vocabulary";
 import { VocabularyScreen } from "@/features/vocabulary/vocabulary-screen";
+import type { VocabularyStatus } from "@/features/vocabulary/vocabulary.types";
 
 import styles from "./page.module.css";
 
@@ -14,8 +14,14 @@ type Destination = "home" | "vocabulary" | "quiz";
 
 export default function Page() {
   const [destination, setDestination] = useState<Destination>("home");
+  const [vocabularyTab, setVocabularyTab] =
+    useState<VocabularyStatus>("learning");
   const vocabulary = useVocabulary();
-  const showNavigation = destination !== "quiz";
+
+  function openVocabulary(tab: VocabularyStatus) {
+    setVocabularyTab(tab);
+    setDestination("vocabulary");
+  }
 
   return (
     <main className={styles.canvas}>
@@ -25,28 +31,23 @@ export default function Page() {
             learningCount={vocabulary.learning.length}
             learnedCount={vocabulary.learned.length}
             onStartRound={() => setDestination("quiz")}
-            onOpenVocabulary={() => setDestination("vocabulary")}
+            onOpenVocabulary={openVocabulary}
           />
         )}
 
         {destination === "vocabulary" && (
           <VocabularyScreen
+            initialTab={vocabularyTab}
             learning={vocabulary.learning}
             learned={vocabulary.learned}
             onAdd={vocabulary.add}
             onRemove={vocabulary.remove}
+            onBack={() => setDestination("home")}
           />
         )}
 
         {destination === "quiz" && (
           <QuizRound onExit={() => setDestination("home")} />
-        )}
-
-        {showNavigation && (
-          <BottomNavigation
-            activeDestination={destination}
-            onNavigate={setDestination}
-          />
         )}
       </section>
     </main>

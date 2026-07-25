@@ -8,7 +8,7 @@ type HomeScreenProps = {
   learningCount: number;
   learnedCount: number;
   onStartRound: () => void;
-  onOpenVocabulary: () => void;
+  onOpenVocabulary: (tab: "learning" | "learned") => void;
 };
 
 export function HomeScreen({
@@ -29,16 +29,22 @@ export function HomeScreen({
 
       <div className={styles.content}>
         <div className={styles.statGrid}>
-          <article className={styles.statCard}>
+          <button
+            className={styles.statCard}
+            onClick={() => onOpenVocabulary("learning")}
+          >
             <p className={styles.cardLabel}>Learning</p>
             <strong>{learningCount}</strong>
             <span>active words</span>
-          </article>
-          <article className={`${styles.statCard} ${styles.learnedCard}`}>
+          </button>
+          <button
+            className={`${styles.statCard} ${styles.learnedCard}`}
+            onClick={() => onOpenVocabulary("learned")}
+          >
             <p className={styles.cardLabel}>Learned</p>
             <strong>{learnedCount}</strong>
             <span>permanently done</span>
-          </article>
+          </button>
         </div>
 
         <article className={styles.roundCard}>
@@ -46,18 +52,10 @@ export function HomeScreen({
           <p>No rounds yet — start your first one below.</p>
         </article>
 
-        <div className={styles.actions}>
-          <button className={buttonStyles.primary} onClick={onStartRound}>
-            <Sparkles aria-hidden="true" />
-            Start round
-          </button>
-          <button
-            className={buttonStyles.secondary}
-            onClick={onOpenVocabulary}
-          >
-            Manage vocabulary
-          </button>
-        </div>
+        <button className={buttonStyles.primary} onClick={onStartRound}>
+          <Sparkles aria-hidden="true" />
+          Start round
+        </button>
       </div>
     </div>
   );

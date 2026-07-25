@@ -1,5 +1,5 @@
 import * as Tabs from "@radix-ui/react-tabs";
-import { Check, Plus, X } from "lucide-react";
+import { ArrowLeft, Check, Plus, X } from "lucide-react";
 import { useState } from "react";
 
 import { VocabularyDialogs } from "./vocabulary-dialogs";
@@ -11,20 +11,24 @@ import type {
 } from "./vocabulary.types";
 
 type VocabularyScreenProps = {
+  initialTab: VocabularyStatus;
   learning: VocabularyItem[];
   learned: VocabularyItem[];
   onAdd: (item: NewVocabularyItem) => void;
   onRemove: (item: VocabularyItem) => void;
+  onBack: () => void;
 };
 
 export function VocabularyScreen({
+  initialTab,
   learning,
   learned,
   onAdd,
   onRemove,
+  onBack,
 }: VocabularyScreenProps) {
   const [activeTab, setActiveTab] =
-    useState<VocabularyStatus>("learning");
+    useState<VocabularyStatus>(initialTab);
   const [addOpen, setAddOpen] = useState(false);
   const [pendingRemoval, setPendingRemoval] =
     useState<VocabularyItem | null>(null);
@@ -34,8 +38,19 @@ export function VocabularyScreen({
     <>
       <div className={styles.screen}>
         <header className={styles.header}>
-          <p className={styles.eyebrow}>Your collection</p>
-          <h1>Vocabulary</h1>
+          <div className={styles.titleRow}>
+            <button
+              className={styles.backButton}
+              onClick={onBack}
+              aria-label="Back to Home"
+            >
+              <ArrowLeft aria-hidden="true" />
+            </button>
+            <div>
+              <p className={styles.eyebrow}>Your collection</p>
+              <h1>Vocabulary</h1>
+            </div>
+          </div>
           <Tabs.Root
             value={activeTab}
             onValueChange={(value) =>
