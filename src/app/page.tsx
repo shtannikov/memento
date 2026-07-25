@@ -24,6 +24,7 @@ export default function Page() {
             learned={vocabulary.learned}
             onAdd={vocabulary.add}
             onRemove={vocabulary.remove}
+            onChangeStatus={vocabulary.changeStatus}
             onStartQuiz={() => setDestination("quiz")}
           />
         )}

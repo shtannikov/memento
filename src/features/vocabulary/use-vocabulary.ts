@@ -19,7 +19,6 @@ export function useVocabulary() {
         term: item.term,
         definition: item.definition,
         status: "learning",
-        due: "Later",
       },
       ...currentItems,
     ]);
@@ -31,5 +30,18 @@ export function useVocabulary() {
     );
   }
 
-  return { items, learning, learned, add, remove };
+  function changeStatus(
+    item: VocabularyItem,
+    status: VocabularyItem["status"],
+  ) {
+    setItems((currentItems) =>
+      currentItems.map((currentItem) =>
+        currentItem.id === item.id
+          ? { ...currentItem, status }
+          : currentItem,
+      ),
+    );
+  }
+
+  return { items, learning, learned, add, remove, changeStatus };
 }

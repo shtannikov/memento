@@ -10,40 +10,30 @@
   animation: fade-in 160ms ease both;
 }
 
-.addDialog,
-.confirmDialog {
+.addDialog {
   position: fixed;
   z-index: 31;
   left: 50%;
-  width: min(calc(100% - 24px), 390px);
-  background: white;
-  box-shadow: 0 26px 80px rgb(20 16 32 / 28%);
-}
-
-.addDialog {
   top: 50%;
   width: min(calc(100% - 40px), 384px);
   padding: 24px;
   border-radius: 24px;
+  background: white;
   overflow-y: auto;
+  box-shadow: 0 26px 80px rgb(20 16 32 / 28%);
+  font-family:
+    Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
   transform: translate(-50%, -50%);
   animation: dialog-in 180ms ease both;
 }
 
-.addTitle,
-.confirmDialog [data-radix-dialog-title] {
+.addTitle {
   margin: 0;
   color: #0f0f23;
   font-size: 1rem;
   font-weight: 700;
   line-height: 1.5;
-}
-
-.confirmDialog [data-radix-dialog-description] {
-  margin: 6px 0 0;
-  color: var(--muted);
-  font-size: 0.78rem;
-  line-height: 1.45;
 }
 
 .iconButton {
@@ -145,38 +135,6 @@
   .form input {
     font-size: 1rem;
   }
-}
-
-.confirmDialog {
-  top: 50%;
-  padding: 24px;
-  border-radius: 24px;
-  text-align: center;
-  transform: translate(-50%, -50%);
-  animation: dialog-in 180ms ease both;
-}
-
-.dangerIcon {
-  display: grid;
-  width: 52px;
-  height: 52px;
-  place-items: center;
-  margin: 0 auto 16px;
-  color: var(--rose);
-  border-radius: 16px;
-  background: var(--rose-soft);
-}
-
-.dangerIcon svg {
-  width: 23px;
-  height: 23px;
-}
-
-.confirmActions {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-  margin-top: 22px;
 }
 
 @keyframes fade-in {

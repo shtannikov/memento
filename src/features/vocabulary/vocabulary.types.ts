@@ -5,7 +5,6 @@ export type VocabularyItem = {
   term: string;
   definition: string;
   status: VocabularyStatus;
-  due?: "Due" | "Later";
 };
 
 export type NewVocabularyItem = Pick<VocabularyItem, "term" | "definition">;

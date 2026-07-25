@@ -6,21 +6,18 @@ export const starterVocabulary: VocabularyItem[] = [
     term: "reluctant",
     definition: "Unwilling and hesitant; disinclined to do something",
     status: "learning",
-    due: "Due",
   },
   {
     id: 2,
     term: "meticulous",
     definition: "Showing great attention to detail or correctness",
     status: "learning",
-    due: "Due",
   },
   {
     id: 3,
     term: "adamant",
     definition: "Refusing to be persuaded or to change one’s mind",
     status: "learning",
-    due: "Later",
   },
   {
     id: 4,
@@ -33,14 +30,12 @@ export const starterVocabulary: VocabularyItem[] = [
     term: "ubiquitous",
     definition: "Present, appearing, or found everywhere",
     status: "learning",
-    due: "Due",
   },
   {
     id: 6,
     term: "candid",
     definition: "Truthful and straightforward; frank",
     status: "learning",
-    due: "Later",
   },
   {
     id: 7,
@@ -53,14 +48,12 @@ export const starterVocabulary: VocabularyItem[] = [
     term: "astute",
     definition: "Having a sharp ability to assess situations; shrewd",
     status: "learning",
-    due: "Due",
   },
   {
     id: 9,
     term: "concise",
     definition: "Giving much information clearly in a few words",
     status: "learning",
-    due: "Later",
   },
   {
     id: 10,
@@ -74,7 +67,6 @@ export const starterVocabulary: VocabularyItem[] = [
     definition:
       "Widespread in a particular area or at a particular time",
     status: "learning",
-    due: "Due",
   },
   {
     id: 12,
@@ -88,7 +80,6 @@ export const starterVocabulary: VocabularyItem[] = [
     term: "pragmatic",
     definition: "Dealing with things sensibly and realistically",
     status: "learning",
-    due: "Later",
   },
   {
     id: 14,
@@ -101,7 +92,6 @@ export const starterVocabulary: VocabularyItem[] = [
     term: "nuanced",
     definition: "Characterized by subtle distinctions or differences",
     status: "learning",
-    due: "Due",
   },
   {
     id: 16,
