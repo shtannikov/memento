@@ -29,10 +29,7 @@ export function VocabularyHeader({
   return (
     <header className={styles.header}>
       <div className={styles.headerRow}>
-        <div>
-          <p className={styles.eyebrow}>Your</p>
-          <h1>Vocabulary</h1>
-        </div>
+        <h1>Vocabulary</h1>
         <div className={styles.totals} aria-label="Vocabulary totals">
           <VocabularyTotal count={learningCount} label="learning" />
           <div className={styles.totalDivider} />
