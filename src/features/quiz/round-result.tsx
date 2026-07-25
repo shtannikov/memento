@@ -16,7 +16,7 @@ type RoundResultProps = {
   completed: number;
   total: number;
   onRestart: () => void;
-  onHome: () => void;
+  onVocabulary: () => void;
 };
 
 export function RoundResult({
@@ -26,7 +26,7 @@ export function RoundResult({
   completed,
   total,
   onRestart,
-  onHome,
+  onVocabulary,
 }: RoundResultProps) {
   return (
     <div
@@ -44,7 +44,7 @@ export function RoundResult({
       <p className={styles.eyebrow}>
         {success ? "Nicely done" : "That one was tough"}
       </p>
-      <h1>{success ? "Round complete" : "Round failed"}</h1>
+      <h1>{success ? "Quiz complete" : "Quiz failed"}</h1>
       <p className={styles.supportingCopy}>
         {success
           ? "Every word made it through the round."
@@ -69,15 +69,15 @@ export function RoundResult({
           ) : (
             <RotateCcw aria-hidden="true" />
           )}
-          {success ? "Start another round" : "Start again"}
+          {success ? "Start another quiz" : "Start again"}
         </button>
-        <button className={buttonStyles.secondary} onClick={onHome}>
-          Back to Home
+        <button className={buttonStyles.secondary} onClick={onVocabulary}>
+          Back to Vocabulary
         </button>
       </div>
       {success && (
         <div className={styles.savedNote}>
-          <CircleCheck aria-hidden="true" /> Round result ready to save
+          <CircleCheck aria-hidden="true" /> Quiz result ready to save
         </div>
       )}
     </div>

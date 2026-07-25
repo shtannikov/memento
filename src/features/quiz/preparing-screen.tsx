@@ -11,14 +11,14 @@ export function PreparingScreen({ onCancel }: PreparingScreenProps) {
     <div className={styles.centerScreen}>
       <button className={styles.backButton} onClick={onCancel}>
         <ArrowLeft aria-hidden="true" />
-        Home
+        Vocabulary
       </button>
       <div className={styles.preparingMark}>
         <Sparkles aria-hidden="true" />
       </div>
       <p className={styles.eyebrow}>Fresh questions</p>
       <h1>
-        Preparing your round
+        Preparing your quiz
         <span className={styles.animatedDots}>…</span>
       </h1>
       <p className={styles.supportingCopy}>

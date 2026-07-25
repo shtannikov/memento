@@ -1,5 +1,5 @@
 import * as Tabs from "@radix-ui/react-tabs";
-import { ArrowLeft, Check, Plus, X } from "lucide-react";
+import { Check, Plus, Sparkles, X } from "lucide-react";
 import { useState } from "react";
 
 import { VocabularyDialogs } from "./vocabulary-dialogs";
@@ -11,24 +11,22 @@ import type {
 } from "./vocabulary.types";
 
 type VocabularyScreenProps = {
-  initialTab: VocabularyStatus;
   learning: VocabularyItem[];
   learned: VocabularyItem[];
   onAdd: (item: NewVocabularyItem) => void;
   onRemove: (item: VocabularyItem) => void;
-  onBack: () => void;
+  onStartQuiz: () => void;
 };
 
 export function VocabularyScreen({
-  initialTab,
   learning,
   learned,
   onAdd,
   onRemove,
-  onBack,
+  onStartQuiz,
 }: VocabularyScreenProps) {
   const [activeTab, setActiveTab] =
-    useState<VocabularyStatus>(initialTab);
+    useState<VocabularyStatus>("learning");
   const [addOpen, setAddOpen] = useState(false);
   const [pendingRemoval, setPendingRemoval] =
     useState<VocabularyItem | null>(null);
@@ -38,19 +36,8 @@ export function VocabularyScreen({
     <>
       <div className={styles.screen}>
         <header className={styles.header}>
-          <div className={styles.titleRow}>
-            <button
-              className={styles.backButton}
-              onClick={onBack}
-              aria-label="Back to Home"
-            >
-              <ArrowLeft aria-hidden="true" />
-            </button>
-            <div>
-              <p className={styles.eyebrow}>Your collection</p>
-              <h1>Vocabulary</h1>
-            </div>
-          </div>
+          <p className={styles.eyebrow}>Your collection</p>
+          <h1>Vocabulary</h1>
           <Tabs.Root
             value={activeTab}
             onValueChange={(value) =>
@@ -115,13 +102,22 @@ export function VocabularyScreen({
           ))}
         </div>
 
-        <button
-          className={styles.addButton}
-          onClick={() => setAddOpen(true)}
-          aria-label="Add vocabulary"
-        >
-          <Plus aria-hidden="true" />
-        </button>
+        <div className={styles.floatingActions}>
+          <button
+            className={`${styles.floatingButton} ${styles.addAction}`}
+            onClick={() => setAddOpen(true)}
+          >
+            <Plus aria-hidden="true" />
+            Add vocabulary
+          </button>
+          <button
+            className={`${styles.floatingButton} ${styles.quizAction}`}
+            onClick={onStartQuiz}
+          >
+            <Sparkles aria-hidden="true" />
+            Start quiz
+          </button>
+        </div>
       </div>
 
       <VocabularyDialogs

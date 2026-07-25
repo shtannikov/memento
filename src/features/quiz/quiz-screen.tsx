@@ -30,7 +30,7 @@ export function QuizScreen({
         <button
           className={styles.iconButton}
           onClick={onExit}
-          aria-label="Leave round"
+          aria-label="Leave quiz"
         >
           <X aria-hidden="true" />
         </button>

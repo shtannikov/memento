@@ -14,36 +14,6 @@
   border-bottom: 1px solid rgb(20 24 40 / 4%);
 }
 
-.titleRow {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.backButton {
-  flex: 0 0 auto;
-  display: grid;
-  width: 40px;
-  height: 40px;
-  place-items: center;
-  color: var(--ink);
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  background: var(--card);
-  box-shadow: 0 2px 4px rgb(20 24 40 / 5%);
-  cursor: pointer;
-}
-
-.backButton:hover {
-  color: var(--violet);
-  border-color: color-mix(in srgb, var(--violet) 30%, var(--line));
-}
-
-.backButton svg {
-  width: 20px;
-  height: 20px;
-}
-
 .eyebrow {
   margin: 0;
   color: #8b91a4;
@@ -201,33 +171,58 @@
   height: 17px;
 }
 
-.addButton {
+.floatingActions {
   position: absolute;
   z-index: 6;
-  right: 18px;
-  bottom: 18px;
+  right: 14px;
+  bottom: calc(14px + env(safe-area-inset-bottom));
+  left: 14px;
   display: grid;
-  width: 58px;
-  height: 58px;
-  place-items: center;
-  color: white;
-  border: 0;
-  border-radius: 999px;
-  background: linear-gradient(135deg, var(--violet), #8f25ff);
-  box-shadow: 0 12px 26px rgb(101 31 225 / 30%);
-  cursor: pointer;
-  transition: transform 160ms ease;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
 }
 
-.addButton:hover {
+.floatingButton {
+  min-height: 54px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 0 14px;
+  border-radius: 17px;
+  font-size: 0.76rem;
+  font-weight: 760;
+  cursor: pointer;
+  transition:
+    box-shadow 160ms ease,
+    transform 160ms ease;
+}
+
+.floatingButton:hover {
   transform: translateY(-1px);
 }
 
-.addButton:active {
+.floatingButton:active {
   transform: translateY(1px);
 }
 
-.addButton svg {
-  width: 26px;
-  height: 26px;
+.floatingButton svg {
+  width: 19px;
+  height: 19px;
+  stroke-width: 2.2;
+}
+
+.addAction {
+  color: var(--violet);
+  border: 1px solid color-mix(in srgb, var(--violet) 22%, var(--line));
+  background: rgb(255 255 255 / 96%);
+  box-shadow: 0 9px 22px rgb(45 35 70 / 14%);
+  backdrop-filter: blur(18px);
+}
+
+.quizAction {
+  color: white;
+  border: 1px solid transparent;
+  background: linear-gradient(135deg, var(--violet), #8f25ff);
+  box-shadow: 0 10px 24px rgb(101 31 225 / 28%);
 }

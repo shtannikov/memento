@@ -32,7 +32,7 @@ export function QuizRound({ onExit }: QuizRoundProps) {
         completed={round.totalCount}
         total={round.totalCount}
         onRestart={round.restart}
-        onHome={onExit}
+        onVocabulary={onExit}
       />
     );
   }
@@ -46,7 +46,7 @@ export function QuizRound({ onExit }: QuizRoundProps) {
         completed={round.completedCount}
         total={round.totalCount}
         onRestart={round.restart}
-        onHome={onExit}
+        onVocabulary={onExit}
       />
     );
   }
