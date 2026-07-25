@@ -40,22 +40,6 @@ export function PlusIcon() {
   return <SvgIcon path="M12 5v14M5 12h14" size={20} />;
 }
 
-export function SparklesIcon() {
-  return (
-    <svg
-      aria-hidden="true"
-      viewBox="0 0 24 24"
-      width="20"
-      height="20"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="m12 3-1.4 3.6L7 8l3.6 1.4L12 13l1.4-3.6L17 8l-3.6-1.4L12 3Z" />
-      <path d="m19 14-.8 2.2L16 17l2.2.8L19 20l.8-2.2L22 17l-2.2-.8L19 14Z" />
-      <path d="m5 13-1 2.5L1.5 16.5 4 17.5 5 20l1-2.5 2.5-1L6 15.5 5 13Z" />
-    </svg>
-  );
+export function PlayIcon() {
+  return <SvgIcon path="m8 5 11 7-11 7V5Z" size={20} />;
 }

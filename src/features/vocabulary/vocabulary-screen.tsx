@@ -4,7 +4,7 @@ import { AddPhraseDialog } from "./add-phrase-dialog";
 import { VocabularyCard } from "./vocabulary-card";
 import { VocabularyEmptyState } from "./vocabulary-empty-state";
 import { VocabularyHeader } from "./vocabulary-header";
-import { PlusIcon, SparklesIcon } from "./vocabulary-icons";
+import { PlayIcon, PlusIcon } from "./vocabulary-icons";
 import styles from "./vocabulary-screen.module.css";
 import { VocabularyTabs } from "./vocabulary-tabs";
 import type {
@@ -110,7 +110,7 @@ export function VocabularyScreen({
             className={styles.floatingButton}
             onClick={onStartQuiz}
           >
-            <SparklesIcon />
+            <PlayIcon />
             Start quiz
           </button>
         </div>
