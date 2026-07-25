@@ -56,7 +56,13 @@ export function VocabularyScreen({
           learnedCount={learned.length}
         />
 
-        <div className={styles.content}>
+        <div
+          className={
+            activeTab === "learning"
+              ? `${styles.content} ${styles.contentWithActions}`
+              : styles.content
+          }
+        >
           <VocabularyTabs
             activeTab={activeTab}
             onChange={setActiveTab}
@@ -98,22 +104,24 @@ export function VocabularyScreen({
           </section>
         </div>
 
-        <div className={styles.floatingActions}>
-          <button
-            className={styles.floatingButton}
-            onClick={() => setAddOpen(true)}
-          >
-            <PlusIcon />
-            Add phrase
-          </button>
-          <button
-            className={styles.floatingButton}
-            onClick={onStartQuiz}
-          >
-            <PlayIcon />
-            Start quiz
-          </button>
-        </div>
+        {activeTab === "learning" && (
+          <div className={styles.floatingActions}>
+            <button
+              className={styles.floatingButton}
+              onClick={() => setAddOpen(true)}
+            >
+              <PlusIcon />
+              Add phrase
+            </button>
+            <button
+              className={styles.floatingButton}
+              onClick={onStartQuiz}
+            >
+              <PlayIcon />
+              Start quiz
+            </button>
+          </div>
+        )}
       </div>
 
       <AddPhraseDialog
