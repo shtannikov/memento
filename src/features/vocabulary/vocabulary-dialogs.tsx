@@ -1,6 +1,6 @@
 import * as Dialog from "@radix-ui/react-dialog";
 import { Trash2, X } from "lucide-react";
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useRef, useState } from "react";
 
 import buttonStyles from "@/components/ui/buttons.module.css";
 
@@ -29,6 +29,52 @@ export function VocabularyDialogs({
 }: VocabularyDialogsProps) {
   const [term, setTerm] = useState("");
   const [definition, setDefinition] = useState("");
+  const addOverlayRef = useRef<HTMLDivElement>(null);
+  const addDialogRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!addOpen) return;
+
+    const viewport = globalThis.visualViewport;
+    let animationFrame = 0;
+
+    function syncVisualViewport() {
+      cancelAnimationFrame(animationFrame);
+      animationFrame = requestAnimationFrame(() => {
+        const offsetTop = viewport?.offsetTop ?? 0;
+        const offsetLeft = viewport?.offsetLeft ?? 0;
+        const width = viewport?.width ?? globalThis.innerWidth;
+        const height = viewport?.height ?? globalThis.innerHeight;
+        const overlay = addOverlayRef.current;
+        const dialog = addDialogRef.current;
+
+        if (overlay) {
+          overlay.style.top = `${offsetTop}px`;
+          overlay.style.left = `${offsetLeft}px`;
+          overlay.style.width = `${width}px`;
+          overlay.style.height = `${height}px`;
+        }
+
+        if (dialog) {
+          dialog.style.top = `${offsetTop + height / 2}px`;
+          dialog.style.left = `${offsetLeft + width / 2}px`;
+          dialog.style.maxHeight = `${Math.max(0, height - 40)}px`;
+        }
+      });
+    }
+
+    syncVisualViewport();
+    viewport?.addEventListener("resize", syncVisualViewport);
+    viewport?.addEventListener("scroll", syncVisualViewport);
+    globalThis.addEventListener("resize", syncVisualViewport);
+
+    return () => {
+      cancelAnimationFrame(animationFrame);
+      viewport?.removeEventListener("resize", syncVisualViewport);
+      viewport?.removeEventListener("scroll", syncVisualViewport);
+      globalThis.removeEventListener("resize", syncVisualViewport);
+    };
+  }, [addOpen]);
 
   function changeAddOpen(open: boolean) {
     if (!open) {
@@ -55,12 +101,15 @@ export function VocabularyDialogs({
     <>
       <Dialog.Root open={addOpen} onOpenChange={changeAddOpen}>
         <Dialog.Portal>
-          <Dialog.Overlay className={styles.overlay} />
+          <Dialog.Overlay ref={addOverlayRef} className={styles.overlay} />
           <Dialog.Content
+            ref={addDialogRef}
             className={styles.addDialog}
             aria-describedby={undefined}
           >
-            <Dialog.Title>Add new word</Dialog.Title>
+            <Dialog.Title className={styles.addTitle}>
+              Add new word
+            </Dialog.Title>
             <form className={styles.form} onSubmit={submitVocabulary}>
               <label>
                 <span>Word or phrase</span>
