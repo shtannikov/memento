@@ -1,4 +1,4 @@
-import { ArrowLeft, Sparkles } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 
 import styles from "./quiz-shared.module.css";
 
@@ -13,16 +13,12 @@ export function PreparingScreen({ onCancel }: PreparingScreenProps) {
         <ArrowLeft aria-hidden="true" />
         Vocabulary
       </button>
-      <div className={styles.preparingMark}>
-        <Sparkles aria-hidden="true" />
-      </div>
-      <p className={styles.eyebrow}>Fresh questions</p>
       <h1>
         Preparing your quiz
         <span className={styles.animatedDots}>…</span>
       </h1>
       <p className={styles.supportingCopy}>
-        We’re turning your words into a focused three-card warm-up.
+        Turning your words into questions.
       </p>
     </div>
   );

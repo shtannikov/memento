@@ -35,37 +35,9 @@
   height: 17px;
 }
 
-.preparingMark {
-  display: grid;
-  width: 84px;
-  height: 84px;
-  place-items: center;
-  margin-bottom: 28px;
-  color: white;
-  border-radius: 28px;
-  background: linear-gradient(135deg, var(--violet), #a42bff);
-  box-shadow: 0 18px 45px rgb(103 30 224 / 24%);
-  animation: float 1.6s ease-in-out infinite;
-}
-
-.preparingMark svg {
-  width: 36px;
-  height: 36px;
-}
-
-.eyebrow {
-  margin: 0;
-  color: #8b91a4;
-  font-size: 0.68rem;
-  line-height: 1;
-  font-weight: 750;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-}
-
 .centerScreen h1 {
   max-width: 310px;
-  margin: 10px 0;
+  margin: 0 0 10px;
   font-size: 2rem;
   line-height: 1.08;
   letter-spacing: -0.045em;
@@ -85,12 +57,6 @@
   overflow: hidden;
   vertical-align: bottom;
   animation: dots 1.2s steps(4, end) infinite;
-}
-
-@keyframes float {
-  50% {
-    transform: translateY(-8px) rotate(3deg);
-  }
 }
 
 @keyframes dots {
