@@ -22,5 +22,6 @@ This version has breaking changes — APIs, conventions, and file structure may 
 - Evals must exercise production client methods, use realistic English and multilingual fixtures, and include Russian-definition coverage. Do not call the OpenAI SDK directly from eval cases.
 - Do not weaken assertions, coverage thresholds, or eval graders to make CI pass. Fix the implementation or add a justified case-specific expectation.
 - Stage and Production use separate Telegram bots. They share the existing Monolog Supabase Stage and Production projects, with all Memento objects isolated in the `memento` schema. Preview credentials must point at the Stage project and never at Production.
+- Supabase migration history is shared with Monolog. Whenever Monolog adds a migration, add a matching comment-only baseline file under `supabase/migrations/` so Memento's migration history remains aligned without rerunning Monolog SQL.
 - Required server-only Vercel variables are `TELEGRAM_BOT_TOKEN`, `SUPABASE_URL`, `SUPABASE_SECRET_KEY`, `OPENAI_API_KEY`, and `OPENAI_CHAT_MODEL`.
 - GitHub Stage and Production environments require `OPENAI_API_KEY`, `SUPABASE_ACCESS_TOKEN`, and `SUPABASE_PROJECT_REF`. Set `OPENAI_CHAT_MODEL` to `gpt-5.6-luna`.
