@@ -80,10 +80,7 @@ export function VocabularyScreen({
                 key={item.id}
                 item={item}
                 onLearn={() => onChangeStatus(item, "learned")}
-                onRestore={() => {
-                  onChangeStatus(item, "learning");
-                  setActiveTab("learning");
-                }}
+                onRestore={() => onChangeStatus(item, "learning")}
                 onDelete={() => removeItem(item)}
               />
             ))}
