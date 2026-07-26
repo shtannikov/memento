@@ -149,7 +149,7 @@ export function AddPhraseDialog({
                 value={term}
                 onChange={(event) => setTerm(event.target.value)}
                 placeholder="e.g. to be in charge of sth"
-                maxLength={200}
+                maxLength={35}
                 required
               />
             </label>
@@ -159,7 +159,7 @@ export function AddPhraseDialog({
                 value={definition}
                 onChange={(event) => setDefinition(event.target.value)}
                 placeholder="e.g. to have responsibility for sth"
-                maxLength={500}
+                maxLength={45}
                 required
               />
             </label>

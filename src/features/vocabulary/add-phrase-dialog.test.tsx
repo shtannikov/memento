@@ -97,6 +97,36 @@ describe("AddPhraseDialog", () => {
     expect(onOpenChange).toHaveBeenLastCalledWith(false);
   });
 
+  it("limits phrases to 35 characters and definitions to 45", async () => {
+    const user = userEvent.setup();
+    const onAdd = vi.fn();
+    render(
+      <AddPhraseDialog
+        open
+        onOpenChange={vi.fn()}
+        onAdd={onAdd}
+      />,
+    );
+    const term = screen.getByLabelText("Word or phrase");
+    const definition = screen.getByLabelText("Definition");
+    const longTerm = "p".repeat(36);
+    const longDefinition = "d".repeat(46);
+
+    expect(term).toHaveAttribute("maxlength", "35");
+    expect(definition).toHaveAttribute("maxlength", "45");
+
+    await user.type(term, longTerm);
+    await user.type(definition, longDefinition);
+    await user.click(
+      screen.getByRole("button", { name: "Add to vocabulary" }),
+    );
+
+    expect(onAdd).toHaveBeenCalledWith({
+      term: longTerm.slice(0, 35),
+      definition: longDefinition.slice(0, 45),
+    });
+  });
+
   it("uses the Monolog backdrop tint that composites to Telegram chrome", () => {
     const globals = readFileSync(
       join(process.cwd(), "src/app/globals.css"),
