@@ -12,12 +12,12 @@ const LIST_MARKER =
   /^(?:(?:[-*+•◦‣⁃∙·▪▫●○■□◆◇▶▷►▸➤➜–—]|[☐☑☒]|\[(?: |x|X)\])[ \t]?|(?:\d{1,3}[.)]|\(\d{1,3}\))[ \t])/u;
 const ITEM_SEPARATOR = / (?:-|—) /u;
 const IMPORT_FORMAT_ERROR =
-  "⚠️ I couldn’t import that list. Nothing was imported.\n\n" +
+  "⚠️ I couldn’t import that list.\n\n" +
   "Please use this format:\n" +
   "/import\n" +
   "• phrase - description\n" +
   "• phrase — description\n\n" +
-  "✨ A few rules:\n" +
+  "☝️A few rules:\n" +
   `• A phrase can’t be longer than ${TERM_MAX_LENGTH} characters\n` +
   `• A description can’t be longer than ${DEFINITION_MAX_LENGTH} characters\n` +
   `• You can import up to ${IMPORT_MAX_ITEMS} phrases at a time\n\n` +
@@ -99,8 +99,7 @@ export function parseImportCommand(text: string): ImportParseResult {
     const normalizedTerm = term.toLowerCase();
     if (normalizedTerms.has(normalizedTerm)) {
       return invalidImport(
-        `⚠️ The phrase on line ${lineNumber} appears more than once. ` +
-          "Nothing was imported.",
+        `⚠️ The phrase “${term}” appears more than once. Nothing was imported.`,
       );
     }
     normalizedTerms.add(normalizedTerm);

@@ -109,7 +109,9 @@ describe("Telegram webhook workflow", () => {
       importItems,
       resetItems,
     });
-    expect(validationReply?.text).toContain("Nothing was imported");
+    expect(validationReply?.text).toContain(
+      "⚠️ I couldn’t import that list.",
+    );
     expect(importItems).not.toHaveBeenCalled();
 
     importItems.mockRejectedValue(
@@ -164,13 +166,13 @@ describe("Telegram webhook workflow", () => {
       replyToMessageId: 7,
     });
     expect(helpReply?.text).toBe(
-      "👋 Unknown command. Here’s what I can help with:\n\n" +
+      "👋 Hey there. Here’s what I can help with:\n\n" +
         "📥 /import\n" +
         "Add phrases to your vocabulary.\n" +
         "Put /import on the first line, then add one phrase per line:\n" +
         "• phrase - description\n" +
         "• phrase — description\n\n" +
-        "✨ A few rules:\n" +
+        "☝️A few rules:\n" +
         "• A phrase can’t be longer than 35 characters\n" +
         "• A description can’t be longer than 45 characters\n" +
         "• You can import up to 50 phrases at a time\n\n" +

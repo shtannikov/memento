@@ -77,12 +77,12 @@ describe("vocabulary import commands", () => {
     const formatError = {
       ok: false,
       message:
-        "⚠️ I couldn’t import that list. Nothing was imported.\n\n" +
+        "⚠️ I couldn’t import that list.\n\n" +
         "Please use this format:\n" +
         "/import\n" +
         "• phrase - description\n" +
         "• phrase — description\n\n" +
-        "✨ A few rules:\n" +
+        "☝️A few rules:\n" +
         "• A phrase can’t be longer than 35 characters\n" +
         "• A description can’t be longer than 45 characters\n" +
         "• You can import up to 50 phrases at a time\n\n" +
@@ -146,8 +146,7 @@ describe("vocabulary import commands", () => {
     expect(duplicate).toMatchObject({
       ok: false,
       message:
-        "⚠️ The phrase on line 3 appears more than once. " +
-        "Nothing was imported.",
+        "⚠️ The phrase “leisurely” appears more than once. Nothing was imported.",
     });
     if (duplicate.ok) throw new Error("Expected validation error");
     expect(duplicate.message).not.toContain("Please use this format");
