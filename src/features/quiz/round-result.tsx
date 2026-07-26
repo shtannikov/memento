@@ -45,7 +45,7 @@ export function RoundResult({
       <h1>{success ? "Quiz complete" : "Quiz failed"}</h1>
       <p className={styles.supportingCopy}>
         {success
-          ? "Great work — you completed the whole quiz."
+          ? "Your vocabulary is getting stronger."
           : "All three lives are gone."}
       </p>
       <div className={styles.stats}>

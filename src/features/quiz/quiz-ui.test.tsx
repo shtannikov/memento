@@ -40,7 +40,7 @@ describe("quiz UI", () => {
       "m8 5 11 7-11 7V5Z",
     );
     expect(
-      screen.getByText("Great work — you completed the whole quiz."),
+      screen.getByText("Your vocabulary is getting stronger."),
     ).toBeVisible();
   });
 
