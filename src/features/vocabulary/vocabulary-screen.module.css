@@ -1,0 +1,309 @@
+.screen {
+  height: 100%;
+  min-height: 100%;
+  overflow-y: auto;
+  color: #0f0f23;
+  background: #ffffff;
+  font-family:
+    Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
+}
+
+.header {
+  padding: max(56px, calc(env(safe-area-inset-top) + 24px)) 20px
+    24px;
+}
+
+.headerRow {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+}
+
+.header h1 {
+  margin: 0;
+  font-size: 30px;
+  line-height: 36px;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+}
+
+.totals {
+  display: flex;
+  align-items: stretch;
+  gap: 12px;
+  margin-bottom: 4px;
+}
+
+.total {
+  text-align: right;
+}
+
+.total p {
+  margin: 0;
+  color: #0f0f23;
+  font-size: 24px;
+  line-height: 32px;
+  font-weight: 700;
+}
+
+.total p.learnedTotal {
+  color: #10b981;
+}
+
+.total span {
+  display: block;
+  color: #94a3b8;
+  font-size: 10px;
+  line-height: 12px;
+  font-weight: 500;
+  letter-spacing: 0.025em;
+  text-transform: uppercase;
+}
+
+.totalDivider {
+  width: 1px;
+  background: #f1f5f9;
+}
+
+.content {
+  display: flex;
+  min-height: calc(100% - 140px);
+  flex-direction: column;
+  padding: 0 16px calc(32px + env(safe-area-inset-bottom));
+}
+
+.contentWithActions {
+  padding-bottom: calc(104px + env(safe-area-inset-bottom));
+}
+
+.tabs {
+  display: inline-flex;
+  width: 100%;
+  align-items: center;
+  padding: 4px;
+  margin-bottom: 20px;
+  border-radius: 16px;
+  background: #f1f5f9;
+}
+
+.tabs button {
+  display: inline-flex;
+  min-height: 40px;
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 12px;
+  color: #94a3b8;
+  border: 0;
+  border-radius: 12px;
+  background: transparent;
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    color 160ms ease,
+    background 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.tabs button[data-state="active"] {
+  color: #0f0f23;
+  background: #ffffff;
+  box-shadow:
+    0 1px 3px 0 rgb(0 0 0 / 10%),
+    0 1px 2px -1px rgb(0 0 0 / 10%);
+}
+
+.tabs button:focus-visible,
+.iconButton:focus-visible,
+.floatingButton:focus-visible {
+  outline: 2px solid #8b5cf6;
+  outline-offset: 2px;
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-bottom: 32px;
+}
+
+.wordCard {
+  display: flex;
+  min-height: 68px;
+  align-items: stretch;
+  overflow: hidden;
+  border: 1px solid #f1f5f9;
+  border-radius: 16px;
+  background: #ffffff;
+  box-shadow: 0 1px 2px rgb(15 23 42 / 5%);
+}
+
+.learnedAccent {
+  width: 6px;
+  flex-shrink: 0;
+  background: #10b981;
+}
+
+.wordCopy {
+  min-width: 0;
+  flex: 1;
+  align-self: center;
+  padding: 12px 8px 12px 16px;
+}
+
+.wordCopy h2 {
+  overflow: hidden;
+  margin: 0;
+  color: #0f0f23;
+  font-size: 15px;
+  line-height: 20px;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.wordCopy p {
+  overflow: hidden;
+  margin: 2px 0 0;
+  color: #94a3b8;
+  font-size: 12px;
+  line-height: 16px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.wordActions {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 4px;
+  padding-right: 12px;
+}
+
+.iconButton {
+  display: grid;
+  padding: 8px;
+  place-items: center;
+  border: 0;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: background 160ms ease;
+}
+
+.success {
+  color: #10b981;
+  background: #ecfdf5;
+}
+
+.success:hover,
+.success:active {
+  background: #d1fae5;
+}
+
+.danger {
+  color: #fb7185;
+  background: #fff1f2;
+}
+
+.danger:hover,
+.danger:active {
+  background: #ffe4e6;
+}
+
+.restore {
+  color: #8b5cf6;
+  background: #f5f3ff;
+}
+
+.restore:hover,
+.restore:active {
+  background: #ede9fe;
+}
+
+.emptyState {
+  padding: 40px 24px;
+  border: 1px dashed #e2e8f0;
+  border-radius: 16px;
+  text-align: center;
+}
+
+.emptyState p {
+  margin: 0;
+  color: #475569;
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 600;
+}
+
+.emptyState span {
+  display: block;
+  margin-top: 4px;
+  color: #94a3b8;
+  font-size: 12px;
+  line-height: 16px;
+}
+
+.floatingActions {
+  position: absolute;
+  z-index: 6;
+  right: 16px;
+  bottom: max(16px, env(safe-area-inset-bottom));
+  left: 16px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  pointer-events: none;
+}
+
+.floatingButton {
+  display: inline-flex;
+  height: 56px;
+  min-width: 0;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 0 18px;
+  color: #ffffff;
+  border: 0;
+  border-radius: 999px;
+  background: #7c3aed;
+  box-shadow: 0 20px 25px -5px rgb(196 181 253 / 72%);
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+  pointer-events: auto;
+  transition:
+    background 160ms ease,
+    transform 160ms ease;
+}
+
+.floatingButton:hover {
+  background: #6d28d9;
+}
+
+.floatingButton:active {
+  transform: scale(0.98);
+}
+
+@media (hover: none) and (pointer: coarse) {
+  .tabs button:focus-visible {
+    outline: none;
+  }
+}
+
+@media (max-width: 360px) {
+  .header {
+    padding-right: 16px;
+    padding-left: 16px;
+  }
+
+  .floatingButton {
+    padding: 0 12px;
+    font-size: 13px;
+  }
+}

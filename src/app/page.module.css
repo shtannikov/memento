@@ -1,0 +1,41 @@
+.canvas {
+  min-height: 100dvh;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background:
+    radial-gradient(circle at 10% 10%, rgb(124 36 248 / 8%), transparent 28rem),
+    radial-gradient(circle at 90% 90%, rgb(18 168 120 / 7%), transparent 24rem),
+    var(--background);
+}
+
+.mobileShell {
+  position: relative;
+  width: min(100%, 390px);
+  height: min(844px, calc(100dvh - 48px));
+  min-height: 680px;
+  overflow: hidden;
+  border: 1px solid rgb(24 27 45 / 8%);
+  border-radius: 34px;
+  background: var(--surface);
+  box-shadow:
+    0 32px 80px rgb(30 23 44 / 16%),
+    0 2px 8px rgb(30 23 44 / 8%);
+}
+
+@media (max-width: 520px) {
+  .canvas {
+    display: block;
+    padding: 0;
+    background: var(--surface);
+  }
+
+  .mobileShell {
+    width: 100%;
+    height: 100dvh;
+    min-height: 600px;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+  }
+}
