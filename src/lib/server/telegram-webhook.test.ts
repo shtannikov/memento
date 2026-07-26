@@ -146,17 +146,19 @@ describe("Telegram webhook workflow", () => {
       chatId: 42,
       replyToMessageId: 7,
     });
-    expect(helpReply?.text).toContain("Available commands:");
-    expect(helpReply?.text).toContain(
-      "/import\nAdd phrases to your vocabulary",
-    );
-    expect(helpReply?.text).toContain("• phrase - description");
-    expect(helpReply?.text).toContain("• phrase — description");
-    expect(helpReply?.text).toContain("35 symbols");
-    expect(helpReply?.text).toContain("45 symbols");
-    expect(helpReply?.text).toContain("50 phrases at a time");
-    expect(helpReply?.text).toContain(
-      "/reset\nDelete all phrases from your vocabulary",
+    expect(helpReply?.text).toBe(
+      "Unknown command. Available commands:\n\n" +
+        "/import\n" +
+        "Add phrases to your vocabulary.\n" +
+        "Put /import on the first line, then add one phrase per line:\n" +
+        "• phrase - description\n" +
+        "• phrase — description\n\n" +
+        "A few rules:\n" +
+        "• a phrase can’t be greater than 35 symbols\n" +
+        "• a description can’t be greater than 45 symbols\n" +
+        "• you can import only 50 phrases at a time\n\n" +
+        "/reset\n" +
+        "Delete all phrases from your vocabulary.",
     );
     await expect(
       processTelegramUpdate(explicitHelp, dependencies),

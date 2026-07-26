@@ -60,20 +60,18 @@ const defaultDependencies: TelegramCommandDependencies = {
 };
 
 const HELP_MESSAGE =
-  "Available commands:\n\n" +
+  "Unknown command. Available commands:\n\n" +
   "/import\n" +
-  "Add phrases to your vocabulary. Put /import on its own first line, " +
-  "then add one phrase per line:\n" +
+  "Add phrases to your vocabulary.\n" +
+  "Put /import on the first line, then add one phrase per line:\n" +
   "• phrase - description\n" +
   "• phrase — description\n\n" +
-  "List markers are optional.\n" +
+  "A few rules:\n" +
   `• a phrase can’t be greater than ${TERM_MAX_LENGTH} symbols\n` +
   `• a description can’t be greater than ${DEFINITION_MAX_LENGTH} symbols\n` +
-  `• you can import only ${IMPORT_MAX_ITEMS} phrases at a time\n` +
-  `• your vocabulary can contain up to ${VOCABULARY_MAX_ITEMS} phrases, including Learned\n\n` +
+  `• you can import only ${IMPORT_MAX_ITEMS} phrases at a time\n\n` +
   "/reset\n" +
-  "Delete all phrases from your vocabulary, including Learned:\n" +
-  "/reset";
+  "Delete all phrases from your vocabulary.";
 
 export function parseTelegramUpdate(value: unknown): TelegramUpdate | null {
   const parsed = TelegramUpdateSchema.safeParse(value);
