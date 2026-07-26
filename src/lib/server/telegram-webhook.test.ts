@@ -125,24 +125,45 @@ describe("Telegram webhook workflow", () => {
     );
   });
 
-  it("ignores groups, unrelated text, and unsupported update kinds", async () => {
+  it("treats unsupported private text as help and ignores other updates", async () => {
     const dependencies = {
       importItems: vi.fn(),
       resetItems: vi.fn(),
     };
     const group = parseTelegramUpdate(update("/reset", "group"));
     const unrelated = parseTelegramUpdate(update("hello"));
+    const explicitHelp = parseTelegramUpdate(update("/help"));
     const unsupported = parseTelegramUpdate({ update_id: 101 });
-    if (!group || !unrelated || !unsupported) {
+    if (!group || !unrelated || !explicitHelp || !unsupported) {
       throw new Error("Expected updates to parse");
     }
 
     await expect(
       processTelegramUpdate(group, dependencies),
     ).resolves.toBeNull();
+    const helpReply = await processTelegramUpdate(unrelated, dependencies);
+    expect(helpReply).toMatchObject({
+      chatId: 42,
+      replyToMessageId: 7,
+    });
+    expect(helpReply?.text).toContain("Available commands:");
+    expect(helpReply?.text).toContain(
+      "/import\nAdd phrases to your vocabulary",
+    );
+    expect(helpReply?.text).toContain("• phrase - description");
+    expect(helpReply?.text).toContain("• phrase — description");
+    expect(helpReply?.text).toContain("35 symbols");
+    expect(helpReply?.text).toContain("45 symbols");
+    expect(helpReply?.text).toContain("50 phrases at a time");
+    expect(helpReply?.text).toContain(
+      "/reset\nDelete all phrases from your vocabulary",
+    );
     await expect(
-      processTelegramUpdate(unrelated, dependencies),
-    ).resolves.toBeNull();
+      processTelegramUpdate(explicitHelp, dependencies),
+    ).resolves.toEqual(helpReply);
+    expect(dependencies.importItems).not.toHaveBeenCalled();
+    expect(dependencies.resetItems).not.toHaveBeenCalled();
+
     await expect(
       processTelegramUpdate(unsupported, dependencies),
     ).resolves.toBeNull();

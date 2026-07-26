@@ -6,7 +6,12 @@ import {
   parseImportCommand,
   readVocabularyCommand,
 } from "@/lib/domain/vocabulary-import";
-import { VOCABULARY_MAX_ITEMS } from "@/lib/domain/vocabulary";
+import {
+  DEFINITION_MAX_LENGTH,
+  IMPORT_MAX_ITEMS,
+  TERM_MAX_LENGTH,
+  VOCABULARY_MAX_ITEMS,
+} from "@/lib/domain/vocabulary";
 import { AppError } from "./api";
 import type { TelegramUser } from "./telegram-auth";
 import {
@@ -54,6 +59,22 @@ const defaultDependencies: TelegramCommandDependencies = {
   resetItems: resetVocabulary,
 };
 
+const HELP_MESSAGE =
+  "Available commands:\n\n" +
+  "/import\n" +
+  "Add phrases to your vocabulary. Put /import on its own first line, " +
+  "then add one phrase per line:\n" +
+  "• phrase - description\n" +
+  "• phrase — description\n\n" +
+  "List markers are optional.\n" +
+  `• a phrase can’t be greater than ${TERM_MAX_LENGTH} symbols\n` +
+  `• a description can’t be greater than ${DEFINITION_MAX_LENGTH} symbols\n` +
+  `• you can import only ${IMPORT_MAX_ITEMS} phrases at a time\n` +
+  `• your vocabulary can contain up to ${VOCABULARY_MAX_ITEMS} phrases, including Learned\n\n` +
+  "/reset\n" +
+  "Delete all phrases from your vocabulary, including Learned:\n" +
+  "/reset";
+
 export function parseTelegramUpdate(value: unknown): TelegramUpdate | null {
   const parsed = TelegramUpdateSchema.safeParse(value);
   return parsed.success ? parsed.data : null;
@@ -73,14 +94,14 @@ export async function processTelegramUpdate(
     return null;
   }
 
-  const command = readVocabularyCommand(message.text);
-  if (!command) return null;
-
   const reply = (text: string): TelegramReply => ({
     chatId: message.chat.id,
     replyToMessageId: message.message_id,
     text,
   });
+  const command = readVocabularyCommand(message.text);
+  if (!command) return reply(HELP_MESSAGE);
+
   const user: TelegramUser = {
     id: message.from.id,
     first_name: message.from.first_name,
