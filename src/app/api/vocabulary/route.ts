@@ -6,16 +6,19 @@ import {
   authenticateRequest,
   parseJson,
 } from "@/lib/server/api";
-import { getMementoDb } from "@/lib/server/supabase";
 import {
   ensureUserAndSeed,
+  importVocabularyItems,
   loadVocabulary,
-  resetSchedule,
 } from "@/lib/server/vocabulary";
+import {
+  DEFINITION_MAX_LENGTH,
+  TERM_MAX_LENGTH,
+} from "@/lib/domain/vocabulary";
 
 const NewVocabularySchema = z.object({
-  term: z.string().trim().min(1).max(200),
-  definition: z.string().trim().min(1).max(500),
+  term: z.string().trim().min(1).max(TERM_MAX_LENGTH),
+  definition: z.string().trim().min(1).max(DEFINITION_MAX_LENGTH),
 });
 
 export async function GET(request: Request) {
@@ -33,49 +36,8 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   try {
     const user = authenticateRequest(request);
-    await ensureUserAndSeed(user);
     const body = await parseJson(request, NewVocabularySchema);
-    const supabase = getMementoDb();
-
-    const { data: existing, error: lookupError } = await supabase
-      .from("vocabulary_items")
-      .select("id")
-      .eq("user_id", user.id)
-      .eq("normalized_term", body.term.toLowerCase())
-      .maybeSingle();
-    if (lookupError) throw lookupError;
-
-    let vocabularyId: string;
-    if (existing) {
-      vocabularyId = String(existing.id);
-      const { error } = await supabase
-        .from("vocabulary_items")
-        .update({
-          term: body.term,
-          definition: body.definition,
-          status: "learning",
-          is_removed: false,
-          updated_at: new Date().toISOString(),
-        })
-        .eq("id", existing.id)
-        .eq("user_id", user.id);
-      if (error) throw error;
-    } else {
-      const { data: created, error } = await supabase
-        .from("vocabulary_items")
-        .insert({
-          user_id: user.id,
-          term: body.term,
-          definition: body.definition,
-          status: "learning",
-        })
-        .select("id")
-        .single();
-      if (error) throw error;
-      vocabularyId = String(created.id);
-    }
-
-    await resetSchedule(vocabularyId);
+    await importVocabularyItems(user, [body]);
     return NextResponse.json(
       { vocabulary: await loadVocabulary(user.id) },
       { status: 201 },
