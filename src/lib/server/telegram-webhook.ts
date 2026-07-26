@@ -60,17 +60,17 @@ const defaultDependencies: TelegramCommandDependencies = {
 };
 
 const HELP_MESSAGE =
-  "Unknown command. Available commands:\n\n" +
-  "/import\n" +
+  "👋 Unknown command. Here’s what I can help with:\n\n" +
+  "📥 /import\n" +
   "Add phrases to your vocabulary.\n" +
   "Put /import on the first line, then add one phrase per line:\n" +
   "• phrase - description\n" +
   "• phrase — description\n\n" +
-  "A few rules:\n" +
-  `• a phrase can’t be greater than ${TERM_MAX_LENGTH} symbols\n` +
-  `• a description can’t be greater than ${DEFINITION_MAX_LENGTH} symbols\n` +
-  `• you can import only ${IMPORT_MAX_ITEMS} phrases at a time\n\n` +
-  "/reset\n" +
+  "✨ A few rules:\n" +
+  `• A phrase can’t be longer than ${TERM_MAX_LENGTH} characters\n` +
+  `• A description can’t be longer than ${DEFINITION_MAX_LENGTH} characters\n` +
+  `• You can import up to ${IMPORT_MAX_ITEMS} phrases at a time\n\n` +
+  "🧹 /reset\n" +
   "Delete all phrases from your vocabulary.";
 
 export function parseTelegramUpdate(value: unknown): TelegramUpdate | null {
@@ -109,7 +109,7 @@ export async function processTelegramUpdate(
 
   if (command === "reset") {
     await dependencies.resetItems(user);
-    return reply("Vocabulary reset.");
+    return reply("🧹 Done! Your vocabulary has been reset.");
   }
 
   const parsedImport = parseImportCommand(message.text);
@@ -120,14 +120,15 @@ export async function processTelegramUpdate(
       user,
       parsedImport.items,
     );
-    return reply(`Imported ${imported} phrases.`);
+    const noun = imported === 1 ? "phrase" : "phrases";
+    return reply(`✅ Imported ${imported} ${noun}!`);
   } catch (error) {
     if (
       error instanceof AppError &&
       error.code === "VOCABULARY_LIMIT_EXCEEDED"
     ) {
       return reply(
-        "Import failed: your vocabulary can contain up to " +
+        "📚 Your vocabulary is full. It can hold up to " +
           `${VOCABULARY_MAX_ITEMS} phrases, including Learned. ` +
           "Nothing was imported.",
       );

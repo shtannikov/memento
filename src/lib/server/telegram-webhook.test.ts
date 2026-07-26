@@ -43,7 +43,7 @@ describe("Telegram webhook workflow", () => {
     ).resolves.toEqual({
       chatId: 42,
       replyToMessageId: 7,
-      text: "Imported 3 phrases.",
+      text: "✅ Imported 3 phrases!",
     });
     expect(importItems).toHaveBeenCalledWith(
       {
@@ -58,6 +58,20 @@ describe("Telegram webhook workflow", () => {
         { term: "figure out", definition: "understand" },
       ],
     );
+  });
+
+  it("uses the singular noun when one phrase is imported", async () => {
+    const parsed = parseTelegramUpdate(
+      update("/import\nleisurely - relaxed"),
+    );
+    if (!parsed) throw new Error("Expected update to parse");
+
+    await expect(
+      processTelegramUpdate(parsed, {
+        importItems: vi.fn().mockResolvedValue(1),
+        resetItems: vi.fn(),
+      }),
+    ).resolves.toMatchObject({ text: "✅ Imported 1 phrase!" });
   });
 
   it("returns validation and capacity errors without partial work", async () => {
@@ -76,16 +90,16 @@ describe("Telegram webhook workflow", () => {
       resetItems,
     });
     expect(malformedReply?.text).toContain(
-      "Use this format:\n/import\n• phrase - description",
+      "Please use this format:\n/import\n• phrase - description",
     );
     expect(malformedReply?.text).toContain(
-      "• a phrase can’t be greater than 35 symbols",
+      "• A phrase can’t be longer than 35 characters",
     );
     expect(malformedReply?.text).toContain(
-      "• a description can’t be greater than 45 symbols",
+      "• A description can’t be longer than 45 characters",
     );
     expect(malformedReply?.text).toContain(
-      "• you can import only 50 phrases at a time",
+      "• You can import up to 50 phrases at a time",
     );
     expect(malformedReply?.text).toContain(
       "ask ChatGPT to convert your vocabulary",
@@ -109,6 +123,7 @@ describe("Telegram webhook workflow", () => {
     });
     expect(capacityReply?.text).toContain("up to 500 phrases");
     expect(capacityReply?.text).toContain("including Learned");
+    expect(capacityReply?.text).toContain("📚 Your vocabulary is full");
   });
 
   it("hard-resets through the reset workflow", async () => {
@@ -119,7 +134,9 @@ describe("Telegram webhook workflow", () => {
 
     await expect(
       processTelegramUpdate(parsed, { importItems, resetItems }),
-    ).resolves.toMatchObject({ text: "Vocabulary reset." });
+    ).resolves.toMatchObject({
+      text: "🧹 Done! Your vocabulary has been reset.",
+    });
     expect(resetItems).toHaveBeenCalledWith(
       expect.objectContaining({ id: 42 }),
     );
@@ -147,17 +164,17 @@ describe("Telegram webhook workflow", () => {
       replyToMessageId: 7,
     });
     expect(helpReply?.text).toBe(
-      "Unknown command. Available commands:\n\n" +
-        "/import\n" +
+      "👋 Unknown command. Here’s what I can help with:\n\n" +
+        "📥 /import\n" +
         "Add phrases to your vocabulary.\n" +
         "Put /import on the first line, then add one phrase per line:\n" +
         "• phrase - description\n" +
         "• phrase — description\n\n" +
-        "A few rules:\n" +
-        "• a phrase can’t be greater than 35 symbols\n" +
-        "• a description can’t be greater than 45 symbols\n" +
-        "• you can import only 50 phrases at a time\n\n" +
-        "/reset\n" +
+        "✨ A few rules:\n" +
+        "• A phrase can’t be longer than 35 characters\n" +
+        "• A description can’t be longer than 45 characters\n" +
+        "• You can import up to 50 phrases at a time\n\n" +
+        "🧹 /reset\n" +
         "Delete all phrases from your vocabulary.",
     );
     await expect(

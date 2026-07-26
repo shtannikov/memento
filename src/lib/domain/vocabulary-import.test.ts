@@ -77,16 +77,16 @@ describe("vocabulary import commands", () => {
     const formatError = {
       ok: false,
       message:
-        "Import failed: incorrect format. Nothing was imported.\n\n" +
-        "Use this format:\n" +
+        "⚠️ I couldn’t import that list. Nothing was imported.\n\n" +
+        "Please use this format:\n" +
         "/import\n" +
         "• phrase - description\n" +
-        "• phrase - description\n\n" +
-        "Also keep in mind the following:\n" +
-        "• a phrase can’t be greater than 35 symbols\n" +
-        "• a description can’t be greater than 45 symbols\n" +
-        "• you can import only 50 phrases at a time\n\n" +
-        "Tip: ask ChatGPT to convert your vocabulary to this format before importing it.",
+        "• phrase — description\n\n" +
+        "✨ A few rules:\n" +
+        "• A phrase can’t be longer than 35 characters\n" +
+        "• A description can’t be longer than 45 characters\n" +
+        "• You can import up to 50 phrases at a time\n\n" +
+        "💡 Tip: ask ChatGPT to convert your vocabulary to this format before importing it.",
     };
 
     expect(parseImportCommand("phrase - description")).toEqual(formatError);
@@ -100,11 +100,11 @@ describe("vocabulary import commands", () => {
   it("rejects empty and overlong values with the source line number", () => {
     expect(parseImportCommand("/import\n•  - definition")).toMatchObject({
       ok: false,
-      message: expect.stringContaining("incorrect format"),
+      message: expect.stringContaining("couldn’t import that list"),
     });
     expect(parseImportCommand("/import\nphrase - ")).toMatchObject({
       ok: false,
-      message: expect.stringContaining("incorrect format"),
+      message: expect.stringContaining("couldn’t import that list"),
     });
 
     const longPhrase = parseImportCommand(
@@ -112,20 +112,24 @@ describe("vocabulary import commands", () => {
     );
     expect(longPhrase).toMatchObject({
       ok: false,
-      message: expect.stringContaining("35 characters"),
+      message:
+        "⚠️ Phrase on line 2 is too long. Keep it to 35 characters or fewer. " +
+        "Nothing was imported.",
     });
     if (longPhrase.ok) throw new Error("Expected validation error");
-    expect(longPhrase.message).not.toContain("Use this format");
+    expect(longPhrase.message).not.toContain("Please use this format");
 
     const longDescription = parseImportCommand(
       `/import\nphrase - ${"d".repeat(46)}`,
     );
     expect(longDescription).toMatchObject({
       ok: false,
-      message: expect.stringContaining("45 characters"),
+      message:
+        "⚠️ Description on line 2 is too long. Keep it to 45 characters or fewer. " +
+        "Nothing was imported.",
     });
     if (longDescription.ok) throw new Error("Expected validation error");
-    expect(longDescription.message).not.toContain("Use this format");
+    expect(longDescription.message).not.toContain("Please use this format");
   });
 
   it("accepts the exact length boundaries", () => {
@@ -141,10 +145,12 @@ describe("vocabulary import commands", () => {
     );
     expect(duplicate).toMatchObject({
       ok: false,
-      message: expect.stringContaining("duplicated"),
+      message:
+        "⚠️ The phrase on line 3 appears more than once. " +
+        "Nothing was imported.",
     });
     if (duplicate.ok) throw new Error("Expected validation error");
-    expect(duplicate.message).not.toContain("Use this format");
+    expect(duplicate.message).not.toContain("Please use this format");
 
     const tooMany = Array.from(
       { length: 51 },
@@ -153,8 +159,8 @@ describe("vocabulary import commands", () => {
     expect(parseImportCommand(["/import", ...tooMany].join("\n"))).toEqual({
       ok: false,
       message:
-        "Import failed: you can import up to 50 phrases at a time. " +
-        "Nothing was imported.",
+        "⚠️ That list has more than 50 phrases. " +
+        "Send up to 50 at a time. Nothing was imported.",
     });
   });
 });

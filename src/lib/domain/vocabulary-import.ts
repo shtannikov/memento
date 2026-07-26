@@ -12,16 +12,16 @@ const LIST_MARKER =
   /^(?:(?:[-*+•◦‣⁃∙·▪▫●○■□◆◇▶▷►▸➤➜–—]|[☐☑☒]|\[(?: |x|X)\])[ \t]?|(?:\d{1,3}[.)]|\(\d{1,3}\))[ \t])/u;
 const ITEM_SEPARATOR = / (?:-|—) /u;
 const IMPORT_FORMAT_ERROR =
-  "Import failed: incorrect format. Nothing was imported.\n\n" +
-  "Use this format:\n" +
+  "⚠️ I couldn’t import that list. Nothing was imported.\n\n" +
+  "Please use this format:\n" +
   "/import\n" +
   "• phrase - description\n" +
-  "• phrase - description\n\n" +
-  "Also keep in mind the following:\n" +
-  `• a phrase can’t be greater than ${TERM_MAX_LENGTH} symbols\n` +
-  `• a description can’t be greater than ${DEFINITION_MAX_LENGTH} symbols\n` +
-  `• you can import only ${IMPORT_MAX_ITEMS} phrases at a time\n\n` +
-  "Tip: ask ChatGPT to convert your vocabulary to this format before importing it.";
+  "• phrase — description\n\n" +
+  "✨ A few rules:\n" +
+  `• A phrase can’t be longer than ${TERM_MAX_LENGTH} characters\n` +
+  `• A description can’t be longer than ${DEFINITION_MAX_LENGTH} characters\n` +
+  `• You can import up to ${IMPORT_MAX_ITEMS} phrases at a time\n\n` +
+  "💡 Tip: ask ChatGPT to convert your vocabulary to this format before importing it.";
 
 export type ImportParseResult =
   | { ok: true; items: VocabularyInput[] }
@@ -57,8 +57,8 @@ export function parseImportCommand(text: string): ImportParseResult {
     return {
       ok: false,
       message:
-        `Import failed: you can import up to ${IMPORT_MAX_ITEMS} phrases ` +
-        "at a time. Nothing was imported.",
+        `⚠️ That list has more than ${IMPORT_MAX_ITEMS} phrases. ` +
+        `Send up to ${IMPORT_MAX_ITEMS} at a time. Nothing was imported.`,
     };
   }
 
@@ -83,20 +83,25 @@ export function parseImportCommand(text: string): ImportParseResult {
     }
     if (term.length > TERM_MAX_LENGTH) {
       return invalidImport(
-        `phrase must be ${TERM_MAX_LENGTH} characters or fewer`,
-        lineNumber,
+        `⚠️ Phrase on line ${lineNumber} is too long. ` +
+          `Keep it to ${TERM_MAX_LENGTH} characters or fewer. ` +
+          "Nothing was imported.",
       );
     }
     if (definition.length > DEFINITION_MAX_LENGTH) {
       return invalidImport(
-        `description must be ${DEFINITION_MAX_LENGTH} characters or fewer`,
-        lineNumber,
+        `⚠️ Description on line ${lineNumber} is too long. ` +
+          `Keep it to ${DEFINITION_MAX_LENGTH} characters or fewer. ` +
+          "Nothing was imported.",
       );
     }
 
     const normalizedTerm = term.toLowerCase();
     if (normalizedTerms.has(normalizedTerm)) {
-      return invalidImport("phrase is duplicated in this import", lineNumber);
+      return invalidImport(
+        `⚠️ The phrase on line ${lineNumber} appears more than once. ` +
+          "Nothing was imported.",
+      );
     }
     normalizedTerms.add(normalizedTerm);
     items.push({ term, definition });
@@ -113,10 +118,6 @@ function invalidFormat(): ImportParseResult {
   return { ok: false, message: IMPORT_FORMAT_ERROR };
 }
 
-function invalidImport(reason: string, lineNumber?: number): ImportParseResult {
-  const location = lineNumber ? ` on line ${lineNumber}` : "";
-  return {
-    ok: false,
-    message: `Import failed${location}: ${reason}. Nothing was imported.`,
-  };
+function invalidImport(message: string): ImportParseResult {
+  return { ok: false, message };
 }
