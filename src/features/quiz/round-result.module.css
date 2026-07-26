@@ -98,3 +98,47 @@
   display: grid;
   gap: 10px;
 }
+
+.primaryButton,
+.secondaryButton {
+  min-height: 52px;
+  border-radius: 15px;
+  border: 0;
+  font-weight: 720;
+  cursor: pointer;
+  transition:
+    transform 160ms ease,
+    box-shadow 160ms ease,
+    background 160ms ease;
+}
+
+.primaryButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  color: white;
+  background: linear-gradient(135deg, var(--violet), #8d20ff);
+  box-shadow: 0 9px 20px rgb(116 32 241 / 20%);
+}
+
+.primaryButton svg {
+  width: 18px;
+  height: 18px;
+}
+
+.secondaryButton {
+  color: #42475d;
+  background: white;
+  border: 1px solid var(--line);
+}
+
+.primaryButton:hover,
+.secondaryButton:hover {
+  transform: translateY(-1px);
+}
+
+.primaryButton:active,
+.secondaryButton:active {
+  transform: translateY(1px);
+}

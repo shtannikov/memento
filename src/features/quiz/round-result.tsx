@@ -4,8 +4,6 @@ import {
   Trophy,
 } from "lucide-react";
 
-import buttonStyles from "@/components/ui/buttons.module.css";
-
 import styles from "./round-result.module.css";
 
 type RoundResultProps = {
@@ -62,7 +60,7 @@ export function RoundResult({
         </article>
       </div>
       <div className={styles.actions}>
-        <button className={buttonStyles.primary} onClick={onRestart}>
+        <button className={styles.primaryButton} onClick={onRestart}>
           {success ? (
             <Sparkles aria-hidden="true" />
           ) : (
@@ -70,7 +68,10 @@ export function RoundResult({
           )}
           {success ? "Start another quiz" : "Start again"}
         </button>
-        <button className={buttonStyles.secondary} onClick={onVocabulary}>
+        <button
+          className={styles.secondaryButton}
+          onClick={onVocabulary}
+        >
           Back to Vocabulary
         </button>
       </div>
