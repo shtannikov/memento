@@ -33,7 +33,7 @@ describe("Telegram webhook workflow", () => {
     const resetItems = vi.fn();
     const parsed = parseTelegramUpdate(
       update(
-        "/import\n- leisurely - relaxed\n• urge - desire\n* figure out - understand",
+        "/import\n- leisurely - relaxed\n• urge — desire\n* figure out - understand",
       ),
     );
     if (!parsed) throw new Error("Expected update to parse");

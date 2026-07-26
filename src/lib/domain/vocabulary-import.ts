@@ -10,6 +10,7 @@ const IMPORT_COMMAND_PREFIX = /^\/import(?:@[a-z0-9_]+)?(?=$|\s)/i;
 const RESET_COMMAND = /^\/reset(?:@[a-z0-9_]+)?$/i;
 const LIST_MARKER =
   /^(?:(?:[-*+•◦‣⁃∙·▪▫●○■□◆◇▶▷►▸➤➜–—]|[☐☑☒]|\[(?: |x|X)\])[ \t]?|(?:\d{1,3}[.)]|\(\d{1,3}\))[ \t])/u;
+const ITEM_SEPARATOR = / (?:-|—) /u;
 const IMPORT_FORMAT_ERROR =
   "Import failed: incorrect format. Nothing was imported.\n\n" +
   "Use this format:\n" +
@@ -66,14 +67,14 @@ export function parseImportCommand(text: string): ImportParseResult {
 
   for (const { value, lineNumber } of itemLines) {
     const withoutBullet = value.trimStart().replace(LIST_MARKER, "");
-    const separatorIndex = withoutBullet.indexOf(" - ");
-    if (separatorIndex < 0) {
+    const separator = ITEM_SEPARATOR.exec(withoutBullet);
+    if (!separator) {
       return invalidFormat();
     }
 
-    const term = withoutBullet.slice(0, separatorIndex).trim();
+    const term = withoutBullet.slice(0, separator.index).trim();
     const definition = withoutBullet
-      .slice(separatorIndex + 3)
+      .slice(separator.index + separator[0].length)
       .trim();
 
     if (!term) return invalidFormat();
