@@ -39,15 +39,27 @@ export default function Page() {
 
   useEffect(() => {
     const viewport = globalThis.visualViewport;
+    const root = document.documentElement;
+    let baselineHeight = Math.max(
+      globalThis.innerHeight,
+      (viewport?.offsetTop ?? 0) + (viewport?.height ?? 0),
+    );
+
     function syncViewport() {
       const height = viewport?.height ?? globalThis.innerHeight;
-      document.documentElement.style.setProperty(
+      const visibleBottom = (viewport?.offsetTop ?? 0) + height;
+      baselineHeight = Math.max(baselineHeight, visibleBottom);
+      root.style.setProperty(
         "--visual-viewport-height",
         `${height}px`,
       );
-      document.documentElement.classList.toggle(
+      root.style.setProperty(
+        "--visual-viewport-bottom",
+        `${visibleBottom}px`,
+      );
+      root.classList.toggle(
         "keyboard-open",
-        height < globalThis.innerHeight * 0.78,
+        baselineHeight - visibleBottom >= 80,
       );
     }
     syncViewport();
@@ -56,7 +68,9 @@ export default function Page() {
     return () => {
       viewport?.removeEventListener("resize", syncViewport);
       viewport?.removeEventListener("scroll", syncViewport);
-      document.documentElement.classList.remove("keyboard-open");
+      root.classList.remove("keyboard-open");
+      root.style.removeProperty("--visual-viewport-height");
+      root.style.removeProperty("--visual-viewport-bottom");
     };
   }, []);
 

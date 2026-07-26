@@ -14,7 +14,15 @@
 }
 
 :global(html.keyboard-open) .mobileShell {
+  height: var(--visual-viewport-bottom, var(--visual-viewport-height, 100dvh));
   min-height: 0;
+  overflow: hidden;
+}
+
+:global(html.keyboard-open) .canvas {
+  height: var(--visual-viewport-bottom, var(--visual-viewport-height, 100dvh));
+  min-height: 0;
+  overflow: hidden;
 }
 
 .stateScreen {

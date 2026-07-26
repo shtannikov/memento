@@ -1,8 +1,9 @@
 import {
   RotateCcw,
-  Sparkles,
   Trophy,
 } from "lucide-react";
+
+import { PlayIcon } from "@/features/vocabulary/vocabulary-icons";
 
 import styles from "./round-result.module.css";
 
@@ -62,7 +63,7 @@ export function RoundResult({
       <div className={styles.actions}>
         <button className={styles.primaryButton} onClick={onRestart}>
           {success ? (
-            <Sparkles aria-hidden="true" />
+            <PlayIcon />
           ) : (
             <RotateCcw aria-hidden="true" />
           )}

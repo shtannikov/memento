@@ -13,6 +13,9 @@ declare global {
   var Telegram: { WebApp?: TelegramWebApp } | undefined;
 }
 
+export const APP_BACKGROUND = "#ffffff";
+export const DIALOG_BACKDROP_SOLID = "#ababb2";
+
 export class ClientError extends Error {
   constructor(
     public readonly code: string,
@@ -27,7 +30,7 @@ export class ClientError extends Error {
 
 export function initializeTelegram(): string {
   const webApp = globalThis.Telegram?.WebApp;
-  setTelegramColor("#ffffff");
+  setTelegramColor(APP_BACKGROUND);
   webApp?.ready();
   webApp?.expand();
   if (supports(webApp, "8.0")) {
@@ -48,6 +51,11 @@ export function initializeTelegram(): string {
 }
 
 export function setTelegramColor(color: string): void {
+  const themeColor = globalThis.document?.querySelector<HTMLMetaElement>(
+    'meta[name="theme-color"]',
+  );
+  themeColor?.setAttribute("content", color);
+
   const webApp = globalThis.Telegram?.WebApp;
   for (const [minimumVersion, setter] of [
     ["6.1", webApp?.setBackgroundColor],

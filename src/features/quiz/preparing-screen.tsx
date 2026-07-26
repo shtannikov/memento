@@ -5,13 +5,15 @@ import styles from "./quiz-shared.module.css";
 type PreparingScreenProps = {
   onCancel: () => void;
   title?: string;
+  animatedEllipsis?: boolean;
   error?: string;
   onRetry?: () => void;
 };
 
 export function PreparingScreen({
   onCancel,
-  title = "Preparing your quiz…",
+  title = "Preparing your quiz",
+  animatedEllipsis = true,
   error,
   onRetry,
 }: PreparingScreenProps) {
@@ -21,7 +23,14 @@ export function PreparingScreen({
         <ArrowLeft aria-hidden="true" />
         Vocabulary
       </button>
-      <h1>{title}</h1>
+      <h1 aria-label={animatedEllipsis ? `${title}...` : undefined}>
+        {title}
+        {animatedEllipsis && (
+          <span className={styles.animatedDots} aria-hidden="true">
+            ...
+          </span>
+        )}
+      </h1>
       <p className={styles.supportingCopy}>
         {error ?? "Turning your words into questions."}
       </p>

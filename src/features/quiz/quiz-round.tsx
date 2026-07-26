@@ -26,8 +26,8 @@ export function QuizRound({
         onCancel={leaveRound}
         title={
           round.phase === "saving"
-            ? "Saving your progress…"
-            : "Preparing your quiz…"
+            ? "Saving your progress"
+            : "Preparing your quiz"
         }
       />
     );
@@ -38,6 +38,7 @@ export function QuizRound({
       <PreparingScreen
         onCancel={leaveRound}
         title="Quiz unavailable"
+        animatedEllipsis={false}
         error={round.error ?? "Please try again."}
         onRetry={round.restart}
       />

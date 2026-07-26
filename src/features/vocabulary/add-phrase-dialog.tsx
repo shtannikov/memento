@@ -3,7 +3,11 @@ import { X } from "lucide-react";
 import { FormEvent, useEffect, useRef, useState } from "react";
 
 import styles from "./add-phrase-dialog.module.css";
-import { setTelegramColor } from "@/lib/client/telegram";
+import {
+  APP_BACKGROUND,
+  DIALOG_BACKDROP_SOLID,
+  setTelegramColor,
+} from "@/lib/client/telegram";
 import type { NewVocabularyItem } from "./vocabulary.types";
 
 type AddPhraseDialogProps = {
@@ -25,11 +29,23 @@ export function AddPhraseDialog({
   useEffect(() => {
     if (!open) return;
 
-    document.documentElement.classList.add("dialog-open");
-    setTelegramColor("#ababb2");
+    const root = document.documentElement;
+    const previousBodyOverflow = document.body.style.overflow;
+    const previousViewportBottom = root.style.getPropertyValue(
+      "--visual-viewport-bottom",
+    );
+    const wasKeyboardOpen = root.classList.contains("keyboard-open");
+    const wasDialogOpen = root.classList.contains("dialog-open");
+    document.body.style.overflow = "hidden";
+    root.classList.add("dialog-open");
+    setTelegramColor(DIALOG_BACKDROP_SOLID);
 
     const viewport = globalThis.visualViewport;
     let animationFrame = 0;
+    let baselineHeight = Math.max(
+      globalThis.innerHeight,
+      (viewport?.offsetTop ?? 0) + (viewport?.height ?? 0),
+    );
 
     function syncVisualViewport() {
       cancelAnimationFrame(animationFrame);
@@ -38,6 +54,8 @@ export function AddPhraseDialog({
         const offsetLeft = viewport?.offsetLeft ?? 0;
         const width = viewport?.width ?? globalThis.innerWidth;
         const height = viewport?.height ?? globalThis.innerHeight;
+        const visibleBottom = offsetTop + height;
+        baselineHeight = Math.max(baselineHeight, visibleBottom);
         const overlay = addOverlayRef.current;
         const dialog = addDialogRef.current;
 
@@ -53,6 +71,15 @@ export function AddPhraseDialog({
           dialog.style.left = `${offsetLeft + width / 2}px`;
           dialog.style.maxHeight = `${Math.max(0, height - 40)}px`;
         }
+
+        root.style.setProperty(
+          "--visual-viewport-bottom",
+          `${visibleBottom}px`,
+        );
+        root.classList.toggle(
+          "keyboard-open",
+          baselineHeight - visibleBottom >= 80,
+        );
       });
     }
 
@@ -66,8 +93,18 @@ export function AddPhraseDialog({
       viewport?.removeEventListener("resize", syncVisualViewport);
       viewport?.removeEventListener("scroll", syncVisualViewport);
       globalThis.removeEventListener("resize", syncVisualViewport);
-      document.documentElement.classList.remove("dialog-open");
-      setTelegramColor("#ffffff");
+      document.body.style.overflow = previousBodyOverflow;
+      if (previousViewportBottom) {
+        root.style.setProperty(
+          "--visual-viewport-bottom",
+          previousViewportBottom,
+        );
+      } else {
+        root.style.removeProperty("--visual-viewport-bottom");
+      }
+      root.classList.toggle("keyboard-open", wasKeyboardOpen);
+      root.classList.toggle("dialog-open", wasDialogOpen);
+      setTelegramColor(APP_BACKGROUND);
     };
   }, [open]);
 
