@@ -19,7 +19,7 @@ describe("vocabulary import commands", () => {
     expect(readVocabularyCommand("/unknown")).toBeNull();
   });
 
-  it("parses plain, dashed, and bulleted lines while preserving descriptions", () => {
+  it("parses plain and marked list lines while preserving descriptions", () => {
     expect(
       parseImportCommand(
         [
@@ -27,6 +27,17 @@ describe("vocabulary import commands", () => {
           "take sth into account - consider something",
           "- in charge - responsible - accountable",
           "• leisurely - relaxed",
+          "* figure out - understand",
+          "+ carry on - continue",
+          "◦ put off - postpone",
+          "▪ come across - encounter",
+          "— point out - indicate",
+          "1. look after - take care of",
+          "2) bring up - mention",
+          "(3) turn down - reject",
+          "[ ] set up - arrange",
+          "[x] work out - solve",
+          "☑ give up - stop trying",
           "",
         ].join("\r\n"),
       ),
@@ -42,6 +53,17 @@ describe("vocabulary import commands", () => {
           definition: "responsible - accountable",
         },
         { term: "leisurely", definition: "relaxed" },
+        { term: "figure out", definition: "understand" },
+        { term: "carry on", definition: "continue" },
+        { term: "put off", definition: "postpone" },
+        { term: "come across", definition: "encounter" },
+        { term: "point out", definition: "indicate" },
+        { term: "look after", definition: "take care of" },
+        { term: "bring up", definition: "mention" },
+        { term: "turn down", definition: "reject" },
+        { term: "set up", definition: "arrange" },
+        { term: "work out", definition: "solve" },
+        { term: "give up", definition: "stop trying" },
       ],
     });
   });

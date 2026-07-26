@@ -29,10 +29,12 @@ describe("Telegram webhook workflow", () => {
   });
 
   it("imports a validated list and returns a reply target", async () => {
-    const importItems = vi.fn().mockResolvedValue(2);
+    const importItems = vi.fn().mockResolvedValue(3);
     const resetItems = vi.fn();
     const parsed = parseTelegramUpdate(
-      update("/import\n- leisurely - relaxed\n• urge - desire"),
+      update(
+        "/import\n- leisurely - relaxed\n• urge - desire\n* figure out - understand",
+      ),
     );
     if (!parsed) throw new Error("Expected update to parse");
 
@@ -41,7 +43,7 @@ describe("Telegram webhook workflow", () => {
     ).resolves.toEqual({
       chatId: 42,
       replyToMessageId: 7,
-      text: "Imported 2 phrases.",
+      text: "Imported 3 phrases.",
     });
     expect(importItems).toHaveBeenCalledWith(
       {
@@ -53,6 +55,7 @@ describe("Telegram webhook workflow", () => {
       [
         { term: "leisurely", definition: "relaxed" },
         { term: "urge", definition: "desire" },
+        { term: "figure out", definition: "understand" },
       ],
     );
   });

@@ -7,6 +7,8 @@ import {
 
 const IMPORT_COMMAND = /^\/import(?:@[a-z0-9_]+)?$/i;
 const RESET_COMMAND = /^\/reset(?:@[a-z0-9_]+)?$/i;
+const LIST_MARKER =
+  /^(?:(?:[-*+•◦‣⁃∙·▪▫●○■□◆◇▶▷►▸➤➜–—]|[☐☑☒]|\[(?: |x|X)\])[ \t]?|(?:\d{1,3}[.)]|\(\d{1,3}\))[ \t])/u;
 
 export type ImportParseResult =
   | { ok: true; items: VocabularyInput[] }
@@ -50,9 +52,7 @@ export function parseImportCommand(text: string): ImportParseResult {
   const normalizedTerms = new Set<string>();
 
   for (const { value, lineNumber } of itemLines) {
-    const withoutBullet = value
-      .trimStart()
-      .replace(/^[-•][ \t]?/u, "");
+    const withoutBullet = value.trimStart().replace(LIST_MARKER, "");
     const separatorIndex = withoutBullet.indexOf(" - ");
     if (separatorIndex < 0) {
       return invalidImport(
