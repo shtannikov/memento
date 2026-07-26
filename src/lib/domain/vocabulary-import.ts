@@ -10,11 +10,16 @@ const IMPORT_COMMAND_PREFIX = /^\/import(?:@[a-z0-9_]+)?(?=$|\s)/i;
 const RESET_COMMAND = /^\/reset(?:@[a-z0-9_]+)?$/i;
 const LIST_MARKER =
   /^(?:(?:[-*+•◦‣⁃∙·▪▫●○■□◆◇▶▷►▸➤➜–—]|[☐☑☒]|\[(?: |x|X)\])[ \t]?|(?:\d{1,3}[.)]|\(\d{1,3}\))[ \t])/u;
-const IMPORT_FORMAT_HELP =
-  "\n\nUse this format:\n" +
+const IMPORT_FORMAT_ERROR =
+  "Import failed: incorrect format. Nothing was imported.\n\n" +
+  "Use this format:\n" +
   "/import\n" +
-  "phrase - description\n" +
-  "phrase - description\n\n" +
+  "• phrase - description\n" +
+  "• phrase - description\n\n" +
+  "Also keep in mind the following:\n" +
+  `• a phrase can’t be greater than ${TERM_MAX_LENGTH} symbols\n` +
+  `• a description can’t be greater than ${DEFINITION_MAX_LENGTH} symbols\n` +
+  `• you can import only ${IMPORT_MAX_ITEMS} phrases at a time\n\n` +
   "Tip: ask ChatGPT to convert your vocabulary to this format before importing it.";
 
 export type ImportParseResult =
@@ -36,11 +41,7 @@ export function parseImportCommand(text: string): ImportParseResult {
   const lines = normalizeLines(text);
   const firstLine = lines[0]?.trim() ?? "";
   if (!IMPORT_COMMAND.test(firstLine)) {
-    return invalidImport(
-      IMPORT_COMMAND_PREFIX.test(firstLine)
-        ? "put /import on its own first line"
-        : "use /import on the first line",
-    );
+    return invalidFormat();
   }
 
   const itemLines = lines
@@ -49,7 +50,7 @@ export function parseImportCommand(text: string): ImportParseResult {
     .filter(({ value }) => value.trim().length > 0);
 
   if (itemLines.length === 0) {
-    return invalidImport("add at least one phrase");
+    return invalidFormat();
   }
   if (itemLines.length > IMPORT_MAX_ITEMS) {
     return {
@@ -67,10 +68,7 @@ export function parseImportCommand(text: string): ImportParseResult {
     const withoutBullet = value.trimStart().replace(LIST_MARKER, "");
     const separatorIndex = withoutBullet.indexOf(" - ");
     if (separatorIndex < 0) {
-      return invalidImport(
-        'use the format "phrase - description"',
-        lineNumber,
-      );
+      return invalidFormat();
     }
 
     const term = withoutBullet.slice(0, separatorIndex).trim();
@@ -78,9 +76,9 @@ export function parseImportCommand(text: string): ImportParseResult {
       .slice(separatorIndex + 3)
       .trim();
 
-    if (!term) return invalidImport("phrase cannot be empty", lineNumber);
+    if (!term) return invalidFormat();
     if (!definition) {
-      return invalidImport("description cannot be empty", lineNumber);
+      return invalidFormat();
     }
     if (term.length > TERM_MAX_LENGTH) {
       return invalidImport(
@@ -110,12 +108,14 @@ function normalizeLines(text: string): string[] {
   return text.replace(/\r\n?/g, "\n").split("\n");
 }
 
+function invalidFormat(): ImportParseResult {
+  return { ok: false, message: IMPORT_FORMAT_ERROR };
+}
+
 function invalidImport(reason: string, lineNumber?: number): ImportParseResult {
   const location = lineNumber ? ` on line ${lineNumber}` : "";
   return {
     ok: false,
-    message:
-      `Import failed${location}: ${reason}. Nothing was imported.` +
-      IMPORT_FORMAT_HELP,
+    message: `Import failed${location}: ${reason}. Nothing was imported.`,
   };
 }

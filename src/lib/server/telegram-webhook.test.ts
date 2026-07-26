@@ -76,7 +76,16 @@ describe("Telegram webhook workflow", () => {
       resetItems,
     });
     expect(malformedReply?.text).toContain(
-      "Use this format:\n/import\nphrase - description",
+      "Use this format:\n/import\n• phrase - description",
+    );
+    expect(malformedReply?.text).toContain(
+      "• a phrase can’t be greater than 35 symbols",
+    );
+    expect(malformedReply?.text).toContain(
+      "• a description can’t be greater than 45 symbols",
+    );
+    expect(malformedReply?.text).toContain(
+      "• you can import only 50 phrases at a time",
     );
     expect(malformedReply?.text).toContain(
       "ask ChatGPT to convert your vocabulary",

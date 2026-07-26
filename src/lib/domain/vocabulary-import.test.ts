@@ -72,52 +72,58 @@ describe("vocabulary import commands", () => {
   });
 
   it("requires the command, at least one item, and the exact separator", () => {
-    expect(parseImportCommand("phrase - description")).toMatchObject({
-      ok: false,
-      message: expect.stringContaining("use /import"),
-    });
-    expect(parseImportCommand("/import\n\n")).toMatchObject({
-      ok: false,
-      message: expect.stringContaining("at least one"),
-    });
-    expect(parseImportCommand("/import\nphrase-description")).toEqual({
+    const formatError = {
       ok: false,
       message:
-        'Import failed on line 2: use the format "phrase - description". ' +
-        "Nothing was imported.\n\n" +
+        "Import failed: incorrect format. Nothing was imported.\n\n" +
         "Use this format:\n" +
         "/import\n" +
-        "phrase - description\n" +
-        "phrase - description\n\n" +
+        "• phrase - description\n" +
+        "• phrase - description\n\n" +
+        "Also keep in mind the following:\n" +
+        "• a phrase can’t be greater than 35 symbols\n" +
+        "• a description can’t be greater than 45 symbols\n" +
+        "• you can import only 50 phrases at a time\n\n" +
         "Tip: ask ChatGPT to convert your vocabulary to this format before importing it.",
-    });
-    expect(parseImportCommand("/import x")).toMatchObject({
-      ok: false,
-      message: expect.stringContaining("put /import on its own first line"),
-    });
+    };
+
+    expect(parseImportCommand("phrase - description")).toEqual(formatError);
+    expect(parseImportCommand("/import\n\n")).toEqual(formatError);
+    expect(parseImportCommand("/import\nphrase-description")).toEqual(
+      formatError,
+    );
+    expect(parseImportCommand("/import x")).toEqual(formatError);
   });
 
   it("rejects empty and overlong values with the source line number", () => {
     expect(parseImportCommand("/import\n•  - definition")).toMatchObject({
       ok: false,
-      message: expect.stringContaining("phrase cannot be empty"),
+      message: expect.stringContaining("incorrect format"),
     });
     expect(parseImportCommand("/import\nphrase - ")).toMatchObject({
       ok: false,
-      message: expect.stringContaining("description cannot be empty"),
+      message: expect.stringContaining("incorrect format"),
     });
-    expect(
-      parseImportCommand(`/import\n${"p".repeat(36)} - definition`),
-    ).toMatchObject({
+
+    const longPhrase = parseImportCommand(
+      `/import\n${"p".repeat(36)} - definition`,
+    );
+    expect(longPhrase).toMatchObject({
       ok: false,
       message: expect.stringContaining("35 characters"),
     });
-    expect(
-      parseImportCommand(`/import\nphrase - ${"d".repeat(46)}`),
-    ).toMatchObject({
+    if (longPhrase.ok) throw new Error("Expected validation error");
+    expect(longPhrase.message).not.toContain("Use this format");
+
+    const longDescription = parseImportCommand(
+      `/import\nphrase - ${"d".repeat(46)}`,
+    );
+    expect(longDescription).toMatchObject({
       ok: false,
       message: expect.stringContaining("45 characters"),
     });
+    if (longDescription.ok) throw new Error("Expected validation error");
+    expect(longDescription.message).not.toContain("Use this format");
   });
 
   it("accepts the exact length boundaries", () => {
@@ -128,12 +134,15 @@ describe("vocabulary import commands", () => {
   });
 
   it("rejects case-insensitive duplicates and more than 50 items", () => {
-    expect(
-      parseImportCommand("/import\nLeisurely - relaxed\nleisurely - slowly"),
-    ).toMatchObject({
+    const duplicate = parseImportCommand(
+      "/import\nLeisurely - relaxed\nleisurely - slowly",
+    );
+    expect(duplicate).toMatchObject({
       ok: false,
       message: expect.stringContaining("duplicated"),
     });
+    if (duplicate.ok) throw new Error("Expected validation error");
+    expect(duplicate.message).not.toContain("Use this format");
 
     const tooMany = Array.from(
       { length: 51 },
