@@ -1,11 +1,6 @@
 import type { Metadata, Viewport } from "next";
-import { Figtree } from "next/font/google";
+import Script from "next/script";
 import "./globals.css";
-
-const figtree = Figtree({
-  variable: "--font-figtree",
-  subsets: ["latin"],
-});
 
 export const metadata: Metadata = {
   title: "Memento",
@@ -17,7 +12,7 @@ export const viewport: Viewport = {
   initialScale: 1,
   viewportFit: "cover",
   interactiveWidget: "resizes-content",
-  themeColor: "#f5f4f2",
+  themeColor: "#ffffff",
 };
 
 export default function RootLayout({
@@ -26,8 +21,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={figtree.variable}>
-      <body>{children}</body>
+    <html lang="en" suppressHydrationWarning>
+      <body>
+        <Script
+          src="https://telegram.org/js/telegram-web-app.js"
+          strategy="beforeInteractive"
+        />
+        {children}
+      </body>
     </html>
   );
 }

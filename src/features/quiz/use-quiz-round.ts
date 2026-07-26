@@ -1,19 +1,98 @@
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
-import { quizCards } from "./quiz-cards";
-import type { QuizFeedback } from "./quiz.types";
+import {
+  completeRound,
+  failRound,
+  prepareRound,
+} from "@/lib/client/api";
+import { ClientError } from "@/lib/client/telegram";
+import { ROUND_LIVES } from "@/lib/domain/round";
+import type { QuizCard, QuizFeedback } from "./quiz.types";
 
-type QuizPhase = "preparing" | "active" | "complete" | "failed";
+type QuizPhase =
+  | "preparing"
+  | "active"
+  | "saving"
+  | "complete"
+  | "failed"
+  | "error";
 
-export function useQuizRound() {
+export function useQuizRound(
+  initData: string,
+  onVocabularyChanged: () => Promise<void>,
+) {
   const [phase, setPhase] = useState<QuizPhase>("preparing");
-  const [queue, setQueue] = useState(quizCards);
-  const [completedIds, setCompletedIds] = useState<number[]>([]);
-  const [firstAttemptedIds, setFirstAttemptedIds] = useState<number[]>([]);
-  const [firstAttemptCorrect, setFirstAttemptCorrect] = useState(0);
+  const [roundId, setRoundId] = useState<string | null>(null);
+  const [retryRoundId, setRetryRoundId] = useState<string | null>(null);
+  const [cards, setCards] = useState<QuizCard[]>([]);
+  const [queue, setQueue] = useState<QuizCard[]>([]);
+  const [completedIds, setCompletedIds] = useState<string[]>([]);
+  const [firstAttempts, setFirstAttempts] = useState<
+    Record<string, boolean>
+  >({});
   const [mistakes, setMistakes] = useState(0);
-  const [lives, setLives] = useState(3);
-  const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
+  const [lives, setLives] = useState(ROUND_LIVES);
+  const [selectedAnswer, setSelectedAnswer] = useState<string | null>(
+    null,
+  );
+  const [error, setError] = useState<string | null>(null);
+  const [errorCode, setErrorCode] = useState<string | null>(null);
+  const started = useRef(false);
+  const feedbackTimer = useRef<number | null>(null);
+
+  const start = useCallback(
+    async (retryId?: string) => {
+      if (feedbackTimer.current !== null) {
+        window.clearTimeout(feedbackTimer.current);
+        feedbackTimer.current = null;
+      }
+      setPhase("preparing");
+      setError(null);
+      setErrorCode(null);
+      setSelectedAnswer(null);
+      setCompletedIds([]);
+      setFirstAttempts({});
+      setMistakes(0);
+      setLives(ROUND_LIVES);
+      try {
+        const round = await prepareRound(initData, retryId);
+        setRoundId(round.id);
+        setRetryRoundId(null);
+        setCards(round.cards);
+        setQueue(round.cards);
+        setPhase("active");
+      } catch (caught) {
+        setErrorCode(
+          caught instanceof ClientError ? caught.code : null,
+        );
+        setError(
+          caught instanceof Error
+            ? caught.message
+            : "Couldn’t prepare this quiz.",
+        );
+        if (caught instanceof ClientError && caught.retryRoundId) {
+          setRetryRoundId(caught.retryRoundId);
+        }
+        setPhase("error");
+      }
+    },
+    [initData],
+  );
+
+  useEffect(() => {
+    if (started.current) return;
+    started.current = true;
+    void start();
+  }, [start]);
+
+  useEffect(
+    () => () => {
+      if (feedbackTimer.current !== null) {
+        window.clearTimeout(feedbackTimer.current);
+      }
+    },
+    [],
+  );
 
   const activeCard = queue[0];
   const feedback: QuizFeedback = selectedAnswer
@@ -22,70 +101,94 @@ export function useQuizRound() {
       : "incorrect"
     : null;
 
-  const begin = useCallback(() => {
-    setPhase("active");
-  }, []);
-
   function restart() {
-    setQueue(quizCards);
-    setCompletedIds([]);
-    setFirstAttemptedIds([]);
-    setFirstAttemptCorrect(0);
-    setMistakes(0);
-    setLives(3);
-    setSelectedAnswer(null);
-    setPhase("preparing");
+    const retryId =
+      phase === "complete" ? undefined : retryRoundId ?? roundId ?? undefined;
+    void start(retryId);
   }
 
   function chooseAnswer(answer: string) {
-    if (selectedAnswer || !activeCard) return;
+    if (selectedAnswer || !activeCard || !roundId) return;
 
     const isCorrect = answer === activeCard.answer;
-    const isFirstAttempt = !firstAttemptedIds.includes(activeCard.id);
+    const isFirstAttempt = !(activeCard.id in firstAttempts);
+    const nextFirstAttempts = isFirstAttempt
+      ? { ...firstAttempts, [activeCard.id]: isCorrect }
+      : firstAttempts;
+    setFirstAttempts(nextFirstAttempts);
     setSelectedAnswer(answer);
 
-    if (isFirstAttempt) {
-      setFirstAttemptedIds((ids) => [...ids, activeCard.id]);
-      if (isCorrect) setFirstAttemptCorrect((count) => count + 1);
-    }
-
-    window.setTimeout(() => {
+    feedbackTimer.current = window.setTimeout(() => {
+      feedbackTimer.current = null;
       if (isCorrect) {
         const nextCompleted = [...completedIds, activeCard.id];
+        const remaining = queue.slice(1);
         setCompletedIds(nextCompleted);
-        setQueue((cards) => cards.slice(1));
+        setQueue(remaining);
         setSelectedAnswer(null);
-        if (nextCompleted.length === quizCards.length) setPhase("complete");
+        if (remaining.length === 0) {
+          setPhase("saving");
+          const results = cards.map((card) => ({
+            vocabularyId: card.vocabularyId,
+            correct: nextFirstAttempts[card.id],
+          }));
+          void completeRound(initData, roundId, results, mistakes)
+            .then(onVocabularyChanged)
+            .then(() => setPhase("complete"))
+            .catch((caught) => {
+              setError(
+                caught instanceof Error
+                  ? caught.message
+                  : "Couldn’t save your quiz.",
+              );
+              setPhase("error");
+            });
+        }
         return;
       }
 
       const nextLives = lives - 1;
-      setMistakes((count) => count + 1);
+      const nextMistakes = mistakes + 1;
+      setMistakes(nextMistakes);
       setLives(nextLives);
       setSelectedAnswer(null);
 
       if (nextLives === 0) {
+        void failRound(initData, roundId);
+        setRetryRoundId(roundId);
         setPhase("failed");
       } else {
-        setQueue((cards) => [...cards.slice(1), cards[0]]);
+        setQueue((current) => [...current.slice(1), current[0]]);
       }
     }, 820);
   }
+
+  async function abandon(): Promise<void> {
+    if (roundId && ["preparing", "active", "saving"].includes(phase)) {
+      await failRound(initData, roundId).catch(() => undefined);
+    }
+  }
+
+  const firstAttemptCorrect = Object.values(firstAttempts).filter(
+    Boolean,
+  ).length;
 
   return {
     phase,
     activeCard,
     completedCount: completedIds.length,
-    totalCount: quizCards.length,
+    totalCount: cards.length,
     lives,
     mistakes,
-    firstAttemptAccuracy: Math.round(
-      (firstAttemptCorrect / quizCards.length) * 100,
-    ),
+    firstAttemptAccuracy: cards.length
+      ? Math.round((firstAttemptCorrect / cards.length) * 100)
+      : 0,
     selectedAnswer,
     feedback,
-    begin,
+    error,
+    errorCode,
     restart,
     chooseAnswer,
+    abandon,
   };
 }

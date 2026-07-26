@@ -1,8 +1,9 @@
 import {
   RotateCcw,
-  Sparkles,
   Trophy,
 } from "lucide-react";
+
+import { PlayIcon } from "@/features/vocabulary/vocabulary-icons";
 
 import styles from "./round-result.module.css";
 
@@ -44,8 +45,8 @@ export function RoundResult({
       <h1>{success ? "Quiz complete" : "Quiz failed"}</h1>
       <p className={styles.supportingCopy}>
         {success
-          ? "Every word made it through the round."
-          : "All three lives are gone. Your learning progress is unchanged."}
+          ? "Your vocabulary is getting stronger."
+          : "All three lives are gone."}
       </p>
       <div className={styles.stats}>
         <article>
@@ -62,7 +63,7 @@ export function RoundResult({
       <div className={styles.actions}>
         <button className={styles.primaryButton} onClick={onRestart}>
           {success ? (
-            <Sparkles aria-hidden="true" />
+            <PlayIcon />
           ) : (
             <RotateCcw aria-hidden="true" />
           )}
