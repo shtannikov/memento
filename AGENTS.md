@@ -6,9 +6,21 @@ This version has breaking changes — APIs, conventions, and file structure may 
 
 ## Deployment workflow
 
-- The app is deployed by the Vercel project `monologxbot/memento`.
+- The app is deployed by the Vercel project `shtannikov/memento`.
 - Treat each pull request's Vercel Preview deployment as that pull request's Stage environment. Use its dynamic Preview URL; there is intentionally no shared `staging` branch or permanent Stage URL.
 - Every push to a pull request must produce a fresh Vercel Preview. Before handing off app work, confirm the latest Vercel check passes and share the current Preview URL.
-- `main` is the Vercel Production Branch. Merging a pull request into `main` creates the Production deployment and updates the stable production aliases.
+- `main` is the Vercel Production Branch. Vercel Git integration automatically deploys every push to `main` and updates the stable production aliases; do not add a duplicate CLI deployment to GitHub Actions.
 - Keep `package-lock.json` committed. Never commit `.env*`, `.vercel/`, `node_modules/`, or `.next/`.
 - Run `npm run lint` and `npm run build` before committing app changes.
+
+## Main logic, tests, and evals
+
+- Run `npm run ci` before committing changes to application logic. It includes lint, type-checking, coverage-gated unit tests, and the production build.
+- Every workflow function and pure helper must have colocated `*.test.ts` coverage. New branches and failure modes require matching tests.
+- OpenAI prompts, schemas, model configuration, starter vocabulary, and generation validation live on the production client path in `src/lib/server/openai.ts`.
+- Any change to that OpenAI path or to starter vocabulary must update `evals/` and run `npm run eval` with the Stage OpenAI configuration.
+- Evals must exercise production client methods, use realistic English and multilingual fixtures, and include Russian-definition coverage. Do not call the OpenAI SDK directly from eval cases.
+- Do not weaken assertions, coverage thresholds, or eval graders to make CI pass. Fix the implementation or add a justified case-specific expectation.
+- Stage and Production use separate Telegram bots. They share the existing Monolog Supabase Stage and Production projects, with all Memento objects isolated in the `memento` schema. Preview credentials must point at the Stage project and never at Production.
+- Required server-only Vercel variables are `TELEGRAM_BOT_TOKEN`, `SUPABASE_URL`, `SUPABASE_SECRET_KEY`, `OPENAI_API_KEY`, and `OPENAI_CHAT_MODEL`.
+- GitHub Stage and Production environments require `OPENAI_API_KEY`, `SUPABASE_ACCESS_TOKEN`, and `SUPABASE_PROJECT_REF`. Set `OPENAI_CHAT_MODEL` to `gpt-5.6-luna`.

@@ -3,6 +3,7 @@ import { X } from "lucide-react";
 import { FormEvent, useEffect, useRef, useState } from "react";
 
 import styles from "./add-phrase-dialog.module.css";
+import { setTelegramColor } from "@/lib/client/telegram";
 import type { NewVocabularyItem } from "./vocabulary.types";
 
 type AddPhraseDialogProps = {
@@ -23,6 +24,9 @@ export function AddPhraseDialog({
 
   useEffect(() => {
     if (!open) return;
+
+    document.documentElement.classList.add("dialog-open");
+    setTelegramColor("#ababb2");
 
     const viewport = globalThis.visualViewport;
     let animationFrame = 0;
@@ -62,6 +66,8 @@ export function AddPhraseDialog({
       viewport?.removeEventListener("resize", syncVisualViewport);
       viewport?.removeEventListener("scroll", syncVisualViewport);
       globalThis.removeEventListener("resize", syncVisualViewport);
+      document.documentElement.classList.remove("dialog-open");
+      setTelegramColor("#ffffff");
     };
   }, [open]);
 
