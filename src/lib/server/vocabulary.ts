@@ -1,6 +1,11 @@
 import type { TelegramUser } from "./telegram-auth";
 import { getMementoDb } from "./supabase";
 import { STARTER_VOCABULARY } from "@/lib/domain/starter-vocabulary";
+import {
+  VOCABULARY_MAX_ITEMS,
+  type VocabularyInput,
+} from "@/lib/domain/vocabulary";
+import { AppError } from "./api";
 
 export type StoredVocabularyItem = {
   id: string;
@@ -89,6 +94,36 @@ export async function loadVocabulary(
     learning: items.filter((item) => item.status === "learning"),
     learned: items.filter((item) => item.status === "learned"),
   };
+}
+
+export async function importVocabularyItems(
+  user: TelegramUser,
+  items: VocabularyInput[],
+): Promise<number> {
+  await ensureUserAndSeed(user);
+  const { error } = await getMementoDb().rpc("import_vocabulary_items", {
+    requested_user_id: user.id,
+    requested_items: items,
+  });
+  if (error) {
+    if (error.message.includes("VOCABULARY_LIMIT_EXCEEDED")) {
+      throw new AppError(
+        "VOCABULARY_LIMIT_EXCEEDED",
+        `Your vocabulary can contain up to ${VOCABULARY_MAX_ITEMS} phrases.`,
+        409,
+      );
+    }
+    throw error;
+  }
+  return items.length;
+}
+
+export async function resetVocabulary(user: TelegramUser): Promise<void> {
+  await ensureUserAndSeed(user);
+  const { error } = await getMementoDb().rpc("reset_vocabulary", {
+    requested_user_id: user.id,
+  });
+  if (error) throw error;
 }
 
 export async function resetSchedule(vocabularyId: string): Promise<void> {

@@ -11,6 +11,7 @@
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
     "eval": "node --conditions=react-server --import tsx evals/runner.ts",
+    "telegram:webhook:set": "node --import tsx scripts/set-telegram-webhook.ts",
     "ci": "npm run lint && npm run typecheck && npm run test:coverage && npm run build"
   },
   "dependencies": {

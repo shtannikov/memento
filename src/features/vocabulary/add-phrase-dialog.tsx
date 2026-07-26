@@ -9,9 +9,10 @@ import {
   setTelegramColor,
 } from "@/lib/client/telegram";
 import type { NewVocabularyItem } from "./vocabulary.types";
-
-const TERM_MAX_LENGTH = 35;
-const DEFINITION_MAX_LENGTH = 45;
+import {
+  DEFINITION_MAX_LENGTH,
+  TERM_MAX_LENGTH,
+} from "@/lib/domain/vocabulary";
 
 type AddPhraseDialogProps = {
   open: boolean;
