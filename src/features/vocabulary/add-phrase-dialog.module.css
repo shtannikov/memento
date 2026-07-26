@@ -66,15 +66,37 @@
   margin-top: 16px;
 }
 
-.form label {
+.field {
   display: grid;
   gap: 6px;
+}
+
+.fieldHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.fieldHeader label,
+.characterCount,
+.limitReached {
   color: #94a3b8;
   font-size: 0.75rem;
   line-height: 1rem;
   font-weight: 600;
   letter-spacing: 0.1em;
   text-transform: uppercase;
+}
+
+.characterCount,
+.limitReached {
+  font-variant-numeric: tabular-nums;
+  letter-spacing: normal;
+  transition: color 160ms ease;
+}
+
+.limitReached {
+  color: #dc2626;
 }
 
 .form input {

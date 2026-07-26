@@ -16,6 +16,7 @@ import {
 } from "@/lib/client/telegram";
 
 import { AddPhraseDialog } from "./add-phrase-dialog";
+import styles from "./add-phrase-dialog.module.css";
 
 afterEach(() => {
   cleanup();
@@ -114,9 +115,19 @@ describe("AddPhraseDialog", () => {
 
     expect(term).toHaveAttribute("maxlength", "35");
     expect(definition).toHaveAttribute("maxlength", "45");
+    expect(term).toHaveAccessibleDescription("0 / 35");
+    expect(definition).toHaveAccessibleDescription("0 / 45");
 
     await user.type(term, longTerm);
     await user.type(definition, longDefinition);
+
+    expect(term).toHaveAccessibleDescription("35 / 35");
+    expect(definition).toHaveAccessibleDescription("45 / 45");
+    expect(screen.getByText("35 / 35")).toHaveClass(styles.limitReached);
+    expect(screen.getByText("45 / 45")).toHaveClass(
+      styles.limitReached,
+    );
+
     await user.click(
       screen.getByRole("button", { name: "Add to vocabulary" }),
     );
