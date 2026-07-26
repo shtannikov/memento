@@ -1,4 +1,11 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import {
+  cleanup,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+} from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
@@ -11,10 +18,85 @@ import {
 import { AddPhraseDialog } from "./add-phrase-dialog";
 
 afterEach(() => {
+  cleanup();
   delete globalThis.Telegram;
 });
 
 describe("AddPhraseDialog", () => {
+  it("stays open after outside taps and Escape", async () => {
+    const user = userEvent.setup();
+    const onOpenChange = vi.fn();
+    render(
+      <AddPhraseDialog
+        open
+        onOpenChange={onOpenChange}
+        onAdd={vi.fn()}
+      />,
+    );
+
+    const term = screen.getByPlaceholderText(
+      "e.g. to be in charge of sth",
+    );
+    await user.type(term, "to follow up sth");
+    fireEvent.pointerDown(document.body);
+    await user.keyboard("{Escape}");
+
+    expect(onOpenChange).not.toHaveBeenCalled();
+    expect(screen.getByRole("dialog")).toBeInTheDocument();
+    expect(term).toHaveValue("to follow up sth");
+  });
+
+  it("closes through the close button", async () => {
+    const user = userEvent.setup();
+    const onOpenChange = vi.fn();
+    render(
+      <AddPhraseDialog
+        open
+        onOpenChange={onOpenChange}
+        onAdd={vi.fn()}
+      />,
+    );
+
+    await user.click(
+      screen.getByRole("button", {
+        name: "Close add word dialog",
+      }),
+    );
+    expect(onOpenChange).toHaveBeenLastCalledWith(false);
+  });
+
+  it("adds a valid phrase and closes", async () => {
+    const user = userEvent.setup();
+    const onOpenChange = vi.fn();
+    const onAdd = vi.fn();
+    render(
+      <AddPhraseDialog
+        open
+        onOpenChange={onOpenChange}
+        onAdd={onAdd}
+      />,
+    );
+    await user.type(
+      screen.getByPlaceholderText("e.g. to be in charge of sth"),
+      "to follow up sth",
+    );
+    await user.type(
+      screen.getByPlaceholderText(
+        "e.g. to have responsibility for sth",
+      ),
+      "to continue checking something",
+    );
+    await user.click(
+      screen.getByRole("button", { name: "Add to vocabulary" }),
+    );
+
+    expect(onAdd).toHaveBeenCalledWith({
+      term: "to follow up sth",
+      definition: "to continue checking something",
+    });
+    expect(onOpenChange).toHaveBeenLastCalledWith(false);
+  });
+
   it("uses the Monolog backdrop tint that composites to Telegram chrome", () => {
     const globals = readFileSync(
       join(process.cwd(), "src/app/globals.css"),

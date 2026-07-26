@@ -108,12 +108,10 @@ export function AddPhraseDialog({
     };
   }, [open]);
 
-  function changeAddOpen(open: boolean) {
-    if (!open) {
-      setTerm("");
-      setDefinition("");
-    }
-    onOpenChange(open);
+  function closeAddDialog() {
+    setTerm("");
+    setDefinition("");
+    onOpenChange(false);
   }
 
   function submitVocabulary(event: FormEvent<HTMLFormElement>) {
@@ -130,13 +128,15 @@ export function AddPhraseDialog({
   }
 
   return (
-    <Dialog.Root open={open} onOpenChange={changeAddOpen}>
+    <Dialog.Root open={open}>
       <Dialog.Portal>
         <Dialog.Overlay ref={addOverlayRef} className={styles.overlay} />
         <Dialog.Content
           ref={addDialogRef}
           className={styles.addDialog}
           aria-describedby={undefined}
+          onEscapeKeyDown={(event) => event.preventDefault()}
+          onPointerDownOutside={(event) => event.preventDefault()}
         >
           <Dialog.Title className={styles.addTitle}>
             Add new word
@@ -171,12 +171,14 @@ export function AddPhraseDialog({
               Add to vocabulary
             </button>
           </form>
-          <Dialog.Close
+          <button
+            type="button"
             className={styles.iconButton}
             aria-label="Close add word dialog"
+            onClick={closeAddDialog}
           >
             <X aria-hidden="true" />
-          </Dialog.Close>
+          </button>
         </Dialog.Content>
       </Dialog.Portal>
     </Dialog.Root>
