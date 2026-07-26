@@ -6,9 +6,16 @@ import {
 } from "./vocabulary";
 
 const IMPORT_COMMAND = /^\/import(?:@[a-z0-9_]+)?$/i;
+const IMPORT_COMMAND_PREFIX = /^\/import(?:@[a-z0-9_]+)?(?=$|\s)/i;
 const RESET_COMMAND = /^\/reset(?:@[a-z0-9_]+)?$/i;
 const LIST_MARKER =
   /^(?:(?:[-*+•◦‣⁃∙·▪▫●○■□◆◇▶▷►▸➤➜–—]|[☐☑☒]|\[(?: |x|X)\])[ \t]?|(?:\d{1,3}[.)]|\(\d{1,3}\))[ \t])/u;
+const IMPORT_FORMAT_HELP =
+  "\n\nUse this format:\n" +
+  "/import\n" +
+  "phrase - description\n" +
+  "phrase - description\n\n" +
+  "Tip: ask ChatGPT to convert your vocabulary to this format before importing it.";
 
 export type ImportParseResult =
   | { ok: true; items: VocabularyInput[] }
@@ -20,15 +27,20 @@ export function readVocabularyCommand(text: string): VocabularyCommand | null {
   const lines = normalizeLines(text);
   const firstLine = lines[0]?.trim() ?? "";
 
-  if (IMPORT_COMMAND.test(firstLine)) return "import";
+  if (IMPORT_COMMAND_PREFIX.test(firstLine)) return "import";
   if (lines.length === 1 && RESET_COMMAND.test(firstLine)) return "reset";
   return null;
 }
 
 export function parseImportCommand(text: string): ImportParseResult {
   const lines = normalizeLines(text);
-  if (!IMPORT_COMMAND.test(lines[0]?.trim() ?? "")) {
-    return invalidImport("use /import on the first line");
+  const firstLine = lines[0]?.trim() ?? "";
+  if (!IMPORT_COMMAND.test(firstLine)) {
+    return invalidImport(
+      IMPORT_COMMAND_PREFIX.test(firstLine)
+        ? "put /import on its own first line"
+        : "use /import on the first line",
+    );
   }
 
   const itemLines = lines
@@ -102,6 +114,8 @@ function invalidImport(reason: string, lineNumber?: number): ImportParseResult {
   const location = lineNumber ? ` on line ${lineNumber}` : "";
   return {
     ok: false,
-    message: `Import failed${location}: ${reason}. Nothing was imported.`,
+    message:
+      `Import failed${location}: ${reason}. Nothing was imported.` +
+      IMPORT_FORMAT_HELP,
   };
 }

@@ -13,6 +13,9 @@ describe("vocabulary import commands", () => {
     expect(readVocabularyCommand("/import@MementoBot\r\nx - y")).toBe(
       "import",
     );
+    expect(readVocabularyCommand("/import x")).toBe("import");
+    expect(readVocabularyCommand("/import@MementoBot x")).toBe("import");
+    expect(readVocabularyCommand("/imported x")).toBeNull();
     expect(readVocabularyCommand("/reset")).toBe("reset");
     expect(readVocabularyCommand("/reset@MementoBot")).toBe("reset");
     expect(readVocabularyCommand("/reset\nunexpected")).toBeNull();
@@ -81,7 +84,16 @@ describe("vocabulary import commands", () => {
       ok: false,
       message:
         'Import failed on line 2: use the format "phrase - description". ' +
-        "Nothing was imported.",
+        "Nothing was imported.\n\n" +
+        "Use this format:\n" +
+        "/import\n" +
+        "phrase - description\n" +
+        "phrase - description\n\n" +
+        "Tip: ask ChatGPT to convert your vocabulary to this format before importing it.",
+    });
+    expect(parseImportCommand("/import x")).toMatchObject({
+      ok: false,
+      message: expect.stringContaining("put /import on its own first line"),
     });
   });
 

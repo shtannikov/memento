@@ -63,10 +63,24 @@ describe("Telegram webhook workflow", () => {
   it("returns validation and capacity errors without partial work", async () => {
     const importItems = vi.fn();
     const resetItems = vi.fn();
+    const malformedCommand = parseTelegramUpdate(update("/import x"));
     const invalid = parseTelegramUpdate(
       update("/import\nvalid - definition\ninvalid"),
     );
-    if (!invalid) throw new Error("Expected update to parse");
+    if (!malformedCommand || !invalid) {
+      throw new Error("Expected updates to parse");
+    }
+
+    const malformedReply = await processTelegramUpdate(malformedCommand, {
+      importItems,
+      resetItems,
+    });
+    expect(malformedReply?.text).toContain(
+      "Use this format:\n/import\nphrase - description",
+    );
+    expect(malformedReply?.text).toContain(
+      "ask ChatGPT to convert your vocabulary",
+    );
 
     const validationReply = await processTelegramUpdate(invalid, {
       importItems,
