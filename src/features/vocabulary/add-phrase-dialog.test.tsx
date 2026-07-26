@@ -16,6 +16,7 @@ import {
 } from "@/lib/client/telegram";
 
 import { AddPhraseDialog } from "./add-phrase-dialog";
+import styles from "./add-phrase-dialog.module.css";
 
 afterEach(() => {
   cleanup();
@@ -95,6 +96,46 @@ describe("AddPhraseDialog", () => {
       definition: "to continue checking something",
     });
     expect(onOpenChange).toHaveBeenLastCalledWith(false);
+  });
+
+  it("limits phrases to 35 characters and definitions to 45", async () => {
+    const user = userEvent.setup();
+    const onAdd = vi.fn();
+    render(
+      <AddPhraseDialog
+        open
+        onOpenChange={vi.fn()}
+        onAdd={onAdd}
+      />,
+    );
+    const term = screen.getByLabelText("Word or phrase");
+    const definition = screen.getByLabelText("Definition");
+    const longTerm = "p".repeat(36);
+    const longDefinition = "d".repeat(46);
+
+    expect(term).toHaveAttribute("maxlength", "35");
+    expect(definition).toHaveAttribute("maxlength", "45");
+    expect(term).toHaveAccessibleDescription("0 / 35");
+    expect(definition).toHaveAccessibleDescription("0 / 45");
+
+    await user.type(term, longTerm);
+    await user.type(definition, longDefinition);
+
+    expect(term).toHaveAccessibleDescription("35 / 35");
+    expect(definition).toHaveAccessibleDescription("45 / 45");
+    expect(screen.getByText("35 / 35")).toHaveClass(styles.limitReached);
+    expect(screen.getByText("45 / 45")).toHaveClass(
+      styles.limitReached,
+    );
+
+    await user.click(
+      screen.getByRole("button", { name: "Add to vocabulary" }),
+    );
+
+    expect(onAdd).toHaveBeenCalledWith({
+      term: longTerm.slice(0, 35),
+      definition: longDefinition.slice(0, 45),
+    });
   });
 
   it("uses the Monolog backdrop tint that composites to Telegram chrome", () => {

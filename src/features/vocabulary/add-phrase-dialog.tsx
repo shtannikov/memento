@@ -10,6 +10,9 @@ import {
 } from "@/lib/client/telegram";
 import type { NewVocabularyItem } from "./vocabulary.types";
 
+const TERM_MAX_LENGTH = 35;
+const DEFINITION_MAX_LENGTH = 45;
+
 type AddPhraseDialogProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -142,27 +145,55 @@ export function AddPhraseDialog({
             Add new word
           </Dialog.Title>
           <form className={styles.form} onSubmit={submitVocabulary}>
-            <label>
-              <span>Word or phrase</span>
+            <div className={styles.field}>
+              <div className={styles.fieldHeader}>
+                <label htmlFor="add-phrase-term">Word or phrase</label>
+                <span
+                  id="add-phrase-term-count"
+                  className={
+                    term.length === TERM_MAX_LENGTH
+                      ? styles.limitReached
+                      : styles.characterCount
+                  }
+                >
+                  {term.length} / {TERM_MAX_LENGTH}
+                </span>
+              </div>
               <input
+                id="add-phrase-term"
+                aria-describedby="add-phrase-term-count"
                 autoFocus
                 value={term}
                 onChange={(event) => setTerm(event.target.value)}
                 placeholder="e.g. to be in charge of sth"
-                maxLength={200}
+                maxLength={TERM_MAX_LENGTH}
                 required
               />
-            </label>
-            <label>
-              <span>Definition</span>
+            </div>
+            <div className={styles.field}>
+              <div className={styles.fieldHeader}>
+                <label htmlFor="add-phrase-definition">Definition</label>
+                <span
+                  id="add-phrase-definition-count"
+                  className={
+                    definition.length === DEFINITION_MAX_LENGTH
+                      ? styles.limitReached
+                      : styles.characterCount
+                  }
+                >
+                  {definition.length} / {DEFINITION_MAX_LENGTH}
+                </span>
+              </div>
               <input
+                id="add-phrase-definition"
+                aria-describedby="add-phrase-definition-count"
                 value={definition}
                 onChange={(event) => setDefinition(event.target.value)}
                 placeholder="e.g. to have responsibility for sth"
-                maxLength={500}
+                maxLength={DEFINITION_MAX_LENGTH}
                 required
               />
-            </label>
+            </div>
             <button
               className={styles.submitButton}
               type="submit"
