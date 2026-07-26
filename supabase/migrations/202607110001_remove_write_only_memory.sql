@@ -1,0 +1,2 @@
+-- Monolog migration already applied to the shared Supabase project.
+-- Intentionally contains no SQL; this file only aligns the shared migration history.

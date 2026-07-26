@@ -1,26 +1,52 @@
-import { useEffect } from "react";
-
 import { PreparingScreen } from "./preparing-screen";
 import { QuizScreen } from "./quiz-screen";
 import { RoundResult } from "./round-result";
 import { useQuizRound } from "./use-quiz-round";
 
 type QuizRoundProps = {
+  initData: string;
+  onVocabularyChanged: () => Promise<void>;
   onExit: () => void;
 };
 
-export function QuizRound({ onExit }: QuizRoundProps) {
-  const round = useQuizRound();
+export function QuizRound({
+  initData,
+  onVocabularyChanged,
+  onExit,
+}: QuizRoundProps) {
+  const round = useQuizRound(initData, onVocabularyChanged);
 
-  useEffect(() => {
-    if (round.phase !== "preparing") return;
+  function leaveRound() {
+    void round.abandon().finally(onExit);
+  }
 
-    const timer = window.setTimeout(round.begin, 1600);
-    return () => window.clearTimeout(timer);
-  }, [round.begin, round.phase]);
+  if (round.phase === "preparing" || round.phase === "saving") {
+    return (
+      <PreparingScreen
+        onCancel={leaveRound}
+        title={
+          round.phase === "saving"
+            ? "Saving your progress"
+            : "Preparing your quiz"
+        }
+      />
+    );
+  }
 
-  if (round.phase === "preparing") {
-    return <PreparingScreen onCancel={onExit} />;
+  if (round.phase === "error") {
+    return (
+      <PreparingScreen
+        onCancel={leaveRound}
+        title="Quiz unavailable"
+        animatedEllipsis={false}
+        error={round.error ?? "Please try again."}
+        onRetry={
+          round.errorCode === "DAILY_GENERATION_LIMIT"
+            ? undefined
+            : round.restart
+        }
+      />
+    );
   }
 
   if (round.phase === "complete") {
@@ -62,7 +88,7 @@ export function QuizRound({ onExit }: QuizRoundProps) {
       feedback={round.feedback}
       selectedAnswer={round.selectedAnswer}
       onAnswer={round.chooseAnswer}
-      onExit={onExit}
+      onExit={leaveRound}
     />
   );
 }

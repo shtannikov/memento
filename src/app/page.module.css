@@ -1,41 +1,54 @@
 .canvas {
+  width: 100%;
   min-height: 100dvh;
-  display: grid;
-  place-items: center;
-  padding: 24px;
-  background:
-    radial-gradient(circle at 10% 10%, rgb(124 36 248 / 8%), transparent 28rem),
-    radial-gradient(circle at 90% 90%, rgb(18 168 120 / 7%), transparent 24rem),
-    var(--background);
+  background: var(--surface);
 }
 
 .mobileShell {
   position: relative;
-  width: min(100%, 390px);
-  height: min(844px, calc(100dvh - 48px));
-  min-height: 680px;
+  width: 100%;
+  height: var(--visual-viewport-height, 100dvh);
+  min-height: 100dvh;
   overflow: hidden;
-  border: 1px solid rgb(24 27 45 / 8%);
-  border-radius: 34px;
   background: var(--surface);
-  box-shadow:
-    0 32px 80px rgb(30 23 44 / 16%),
-    0 2px 8px rgb(30 23 44 / 8%);
 }
 
-@media (max-width: 520px) {
-  .canvas {
-    display: block;
-    padding: 0;
-    background: var(--surface);
-  }
+:global(html.keyboard-open) .mobileShell {
+  height: var(--visual-viewport-bottom, var(--visual-viewport-height, 100dvh));
+  min-height: 0;
+  overflow: hidden;
+}
 
-  .mobileShell {
-    width: 100%;
-    height: 100dvh;
-    min-height: 600px;
-    border: 0;
-    border-radius: 0;
-    box-shadow: none;
-  }
+:global(html.keyboard-open) .canvas {
+  height: var(--visual-viewport-bottom, var(--visual-viewport-height, 100dvh));
+  min-height: 0;
+  overflow: hidden;
+}
+
+.stateScreen {
+  min-height: 100%;
+  display: grid;
+  place-content: center;
+  gap: 12px;
+  padding: 32px;
+  text-align: center;
+  background: #ffffff;
+}
+
+.stateScreen h1,
+.stateScreen p {
+  margin: 0;
+}
+
+.stateScreen p {
+  color: var(--muted);
+}
+
+.stateScreen button {
+  min-height: 44px;
+  color: white;
+  border: 0;
+  border-radius: 12px;
+  background: var(--violet);
+  font-weight: 700;
 }

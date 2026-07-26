@@ -1,47 +1,87 @@
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
-import { starterVocabulary } from "./starter-vocabulary";
+import {
+  addVocabularyItem,
+  changeVocabularyStatus,
+  loadVocabulary,
+  removeVocabularyItem,
+} from "@/lib/client/api";
 import type {
   NewVocabularyItem,
   VocabularyItem,
+  VocabularyData,
 } from "./vocabulary.types";
 
-export function useVocabulary() {
-  const [items, setItems] = useState(starterVocabulary);
+export function useVocabulary(initData: string | null) {
+  const [data, setData] = useState<VocabularyData>({
+    learning: [],
+    learned: [],
+  });
+  const [loading, setLoading] = useState(Boolean(initData));
+  const [error, setError] = useState<string | null>(null);
 
-  const learning = items.filter((item) => item.status === "learning");
-  const learned = items.filter((item) => item.status === "learned");
+  const refresh = useCallback(async () => {
+    if (!initData) return;
+    setLoading(true);
+    setError(null);
+    try {
+      setData(await loadVocabulary(initData));
+    } catch (caught) {
+      setError(
+        caught instanceof Error
+          ? caught.message
+          : "Couldn’t load your vocabulary.",
+      );
+    } finally {
+      setLoading(false);
+    }
+  }, [initData]);
 
-  function add(item: NewVocabularyItem) {
-    setItems((currentItems) => [
-      {
-        id: Date.now(),
-        term: item.term,
-        definition: item.definition,
-        status: "learning",
-      },
-      ...currentItems,
-    ]);
+  useEffect(() => {
+    const task = window.setTimeout(() => void refresh(), 0);
+    return () => window.clearTimeout(task);
+  }, [refresh]);
+
+  async function add(item: NewVocabularyItem) {
+    if (!initData) return;
+    await mutate(() => addVocabularyItem(initData, item));
   }
 
-  function remove(item: VocabularyItem) {
-    setItems((currentItems) =>
-      currentItems.filter((currentItem) => currentItem.id !== item.id),
-    );
+  async function remove(item: VocabularyItem) {
+    if (!initData) return;
+    await mutate(() => removeVocabularyItem(initData, item.id));
   }
 
-  function changeStatus(
+  async function changeStatus(
     item: VocabularyItem,
     status: VocabularyItem["status"],
   ) {
-    setItems((currentItems) =>
-      currentItems.map((currentItem) =>
-        currentItem.id === item.id
-          ? { ...currentItem, status }
-          : currentItem,
-      ),
+    if (!initData) return;
+    await mutate(() =>
+      changeVocabularyStatus(initData, item.id, status),
     );
   }
 
-  return { learning, learned, add, remove, changeStatus };
+  async function mutate(operation: () => Promise<VocabularyData>) {
+    setError(null);
+    try {
+      setData(await operation());
+    } catch (caught) {
+      setError(
+        caught instanceof Error
+          ? caught.message
+          : "Couldn’t update your vocabulary.",
+      );
+    }
+  }
+
+  return {
+    ...data,
+    loading,
+    error,
+    add,
+    remove,
+    changeStatus,
+    refresh,
+  };
 }

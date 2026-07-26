@@ -1,0 +1,1 @@
+-- Starter vocabulary is seeded per Telegram user by the application.

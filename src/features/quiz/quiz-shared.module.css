@@ -51,20 +51,45 @@
   line-height: 1.55;
 }
 
-.animatedDots {
-  display: inline-block;
-  width: 18px;
-  overflow: hidden;
-  vertical-align: bottom;
-  animation: dots 1.2s steps(4, end) infinite;
+.primaryButton {
+  min-width: 140px;
+  min-height: 48px;
+  margin-top: 20px;
+  color: white;
+  border: 0;
+  border-radius: 14px;
+  background: var(--violet);
+  font-weight: 720;
+  cursor: pointer;
 }
 
-@keyframes dots {
-  from {
-    width: 0;
+.animatedDots {
+  display: inline-flex;
+  width: 0.9em;
+  justify-content: space-between;
+  vertical-align: bottom;
+}
+
+.animatedDots span {
+  animation: dotPulse 1.2s ease-in-out infinite;
+}
+
+.animatedDots span:nth-child(2) {
+  animation-delay: 160ms;
+}
+
+.animatedDots span:nth-child(3) {
+  animation-delay: 320ms;
+}
+
+@keyframes dotPulse {
+  0%,
+  60%,
+  100% {
+    opacity: 0.2;
   }
 
-  to {
-    width: 18px;
+  30% {
+    opacity: 1;
   }
 }

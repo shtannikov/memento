@@ -1,0 +1,110 @@
+name: Pull Request
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches: [main]
+
+concurrency:
+  group: memento-pr-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      evals-required: ${{ steps.changes.outputs.evals-required }}
+      migrations-required: ${{ steps.changes.outputs.migrations-required }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - id: changes
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          changed="$(git diff --name-only "$BASE_SHA" "$HEAD_SHA")"
+          if echo "$changed" | grep -qE '^(src/lib/server/openai\.ts|src/lib/domain/starter-vocabulary\.ts|evals/)'; then
+            echo "evals-required=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "evals-required=false" >> "$GITHUB_OUTPUT"
+          fi
+          if echo "$changed" | grep -qE '^supabase/'; then
+            echo "migrations-required=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "migrations-required=false" >> "$GITHUB_OUTPUT"
+          fi
+
+  quality:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm run ci
+
+  evals:
+    needs: [changes, quality]
+    if: needs.changes.outputs.evals-required == 'true'
+    runs-on: ubuntu-latest
+    environment: Stage
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm run eval
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          OPENAI_CHAT_MODEL: ${{ vars.OPENAI_CHAT_MODEL }}
+
+  migrate-stage:
+    needs: [changes, quality, evals]
+    if: |
+      always() &&
+      needs.quality.result == 'success' &&
+      (needs.evals.result == 'success' || needs.evals.result == 'skipped') &&
+      needs.changes.outputs.migrations-required == 'true'
+    runs-on: ubuntu-latest
+    environment: Stage
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npx supabase link --project-ref "$SUPABASE_PROJECT_REF"
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
+      - run: npx supabase db push --linked --include-all
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+
+  ci-gate:
+    name: CI Gate
+    if: always()
+    needs: [changes, quality, evals, migrate-stage]
+    runs-on: ubuntu-latest
+    steps:
+      - env:
+          QUALITY: ${{ needs.quality.result }}
+          EVALS: ${{ needs.evals.result }}
+          MIGRATION: ${{ needs.migrate-stage.result }}
+        run: |
+          test "$QUALITY" = "success"
+          test "$EVALS" = "success" -o "$EVALS" = "skipped"
+          test "$MIGRATION" = "success" -o "$MIGRATION" = "skipped"
