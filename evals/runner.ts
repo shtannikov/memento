@@ -1,7 +1,10 @@
 import { loadEnvConfig } from "@next/env";
 
 import { STARTER_VOCABULARY } from "../src/lib/domain/starter-vocabulary";
-import type { GenerationVocabularyItem } from "../src/lib/server/openai";
+import type {
+  GenerationVocabularyItem,
+  RecentQuizSentence,
+} from "../src/lib/server/openai";
 
 loadEnvConfig(process.cwd());
 const openaiClient = import("../src/lib/server/openai");
@@ -13,6 +16,7 @@ type EvalCase = {
   id: string;
   description: string;
   items: GenerationVocabularyItem[];
+  recentSentences?: RecentQuizSentence[];
 };
 
 const russianDefinitions = [
@@ -57,11 +61,49 @@ const cases: EvalCase[] = [
       ...item,
     })),
   },
+  {
+    id: "avoid-recent-russian-definition-cards",
+    description:
+      "Generates fresh English situations instead of repeating recent cards when definitions are Russian.",
+    items: STARTER_VOCABULARY.slice(5, 9).map((item, index) => ({
+      id: String(index + 201),
+      term: item.term,
+      definition: russianDefinitions[index + 5],
+    })),
+    recentSentences: [
+      {
+        vocabularyId: "201",
+        sentence: "Let's ___ the meeting before lunch.",
+      },
+      {
+        vocabularyId: "202",
+        sentence:
+          "The committee must ___ repair costs before approving the project.",
+      },
+      {
+        vocabularyId: "203",
+        sentence: "Maya will ___ the event.",
+      },
+      {
+        vocabularyId: "204",
+        sentence: "I expected rain; ___, the sky stayed completely clear.",
+      },
+    ],
+  },
 ];
 
 async function runCase(evalCase: EvalCase) {
-  const { generateQuizCards, gradeQuizCards } = await openaiClient;
-  const cards = await generateQuizCards(evalCase.items, 1);
+  const {
+    areQuizSentencesTooSimilar,
+    generateQuizCards,
+    gradeQuizCards,
+  } = await openaiClient;
+  const cards = await generateQuizCards(
+    evalCase.items,
+    1,
+    undefined,
+    evalCase.recentSentences,
+  );
   const grade = await gradeQuizCards(evalCase.items, cards);
   const expectedIds = new Set(evalCase.items.map((item) => item.id));
   const cardIds = new Set(cards.map((card) => card.vocabularyId));
@@ -84,6 +126,14 @@ async function runCase(evalCase: EvalCase) {
           (option) => option.toLowerCase() === card.answer.toLowerCase(),
         ).length === 1,
     );
+  const novel = cards.every((card) =>
+    (evalCase.recentSentences ?? [])
+      .filter((recent) => recent.vocabularyId === card.vocabularyId)
+      .every(
+        (recent) =>
+          !areQuizSentencesTooSimilar(card.sentence, recent.sentence),
+      ),
+  );
   const failedEvaluations = grade.evaluations.filter(
     (evaluation) =>
       !evaluation.englishSentence ||
@@ -95,10 +145,12 @@ async function runCase(evalCase: EvalCase) {
     passed:
       structural &&
       noCyrillic &&
+      novel &&
       grade.passed &&
       grade.evaluations.length === evalCase.items.length,
     structural,
     noCyrillic,
+    novel,
     semantic: grade.passed,
     failedEvaluations,
   };

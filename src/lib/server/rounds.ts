@@ -5,6 +5,7 @@ import {
   getOpenAIClient,
   type GenerationVocabularyItem,
 } from "./openai";
+import { loadRecentQuizSentences } from "./quiz-history";
 import { getMementoDb } from "./supabase";
 
 export type ClientQuizCard = {
@@ -42,6 +43,7 @@ export async function createRound(
       409,
     );
   }
+  const recentSentences = await loadRecentQuizSentences(userId, items);
 
   const { data: createdRound, error: createError } = await supabase
     .from("rounds")
@@ -73,7 +75,12 @@ export async function createRound(
   }
 
   try {
-    const cards = await generateQuizCards(items, userId, openai);
+    const cards = await generateQuizCards(
+      items,
+      userId,
+      openai,
+      recentSentences,
+    );
     const { error: cardError } = await supabase.from("round_cards").insert(
       cards.map((card, position) => ({
         round_id: createdRound.id,

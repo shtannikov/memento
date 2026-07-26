@@ -1,10 +1,15 @@
-import { describe, expect, it } from "vitest";
+import type OpenAI from "openai";
+import { describe, expect, it, vi } from "vitest";
 
 import { STARTER_VOCABULARY } from "@/lib/domain/starter-vocabulary";
 import {
+  areQuizSentencesTooSimilar,
   buildQuizPrompt,
+  generateQuizCards,
+  normalizeQuizSentence,
   validateGeneratedCards,
   type GenerationVocabularyItem,
+  type GeneratedQuizCard,
 } from "./openai";
 
 const items: GenerationVocabularyItem[] = [
@@ -34,7 +39,19 @@ describe("quiz generation contract", () => {
       "Replacing ___ with answer must produce a complete, natural English sentence",
     );
     expect(prompt).toContain("Never display the literal text 'sth'");
-    expect(prompt).toContain("answer 'wrap up'");
+    expect(prompt).not.toContain("Let's ___ the meeting before lunch.");
+  });
+
+  it("passes recent wording as forbidden context without translating definitions", () => {
+    const prompt = buildQuizPrompt(items, [
+      {
+        vocabularyId: "1",
+        sentence: "She felt an ___ to check her phone.",
+      },
+    ]);
+    expect(prompt).toContain("do not reuse or closely paraphrase");
+    expect(prompt).toContain("She felt an ___ to check her phone.");
+    expect(prompt).toContain("Сильное внезапное желание.");
   });
 
   it("accepts a complete unambiguous card set", () => {
@@ -62,6 +79,81 @@ describe("quiz generation contract", () => {
     ).toThrow("Couldn’t prepare");
   });
 
+  it("normalizes cosmetic differences and rejects close paraphrases", () => {
+    expect(normalizeQuizSentence("  Let's ___ now! ")).toBe(
+      "let s blank now",
+    );
+    expect(
+      areQuizSentencesTooSimilar(
+        "The committee must ___ repair costs before approving the project.",
+        "The committee must ___ the repair costs before approving the plan.",
+      ),
+    ).toBe(true);
+    expect(
+      areQuizSentencesTooSimilar(
+        "She felt an ___ to check her phone.",
+        "His sudden ___ to travel surprised everyone.",
+      ),
+    ).toBe(false);
+  });
+
+  it("rejects a recent sentence for the same vocabulary item only", () => {
+    const cards = validCards();
+    expect(() =>
+      validateGeneratedCards(items, cards, [
+        { vocabularyId: "1", sentence: cards[0].sentence.toUpperCase() },
+      ]),
+    ).toThrow("Couldn’t prepare");
+    expect(
+      validateGeneratedCards(items, cards, [
+        { vocabularyId: "2", sentence: cards[0].sentence },
+      ]),
+    ).toEqual(cards);
+  });
+
+  it("retries once with the rejected wording added to forbidden context", async () => {
+    const repeated = validCards();
+    repeated[0] = {
+      ...repeated[0],
+      sentence: "She felt an ___ to check her phone.",
+    };
+    const fresh = alternateCards();
+    const parse = vi
+      .fn()
+      .mockResolvedValueOnce(completedResponse(repeated))
+      .mockResolvedValueOnce(completedResponse(fresh));
+    const openai = { responses: { parse } } as unknown as OpenAI;
+
+    await expect(
+      generateQuizCards(items, 42, openai, [
+        {
+          vocabularyId: "1",
+          sentence: "She felt an ___ to check her phone.",
+        },
+      ]),
+    ).resolves.toEqual(fresh);
+    expect(parse).toHaveBeenCalledTimes(2);
+    expect(
+      JSON.stringify(parse.mock.calls[1][0].input),
+    ).toContain("She felt an ___ to check her phone.");
+  });
+
+  it("fails after two invalid generations", async () => {
+    const repeated = validCards();
+    const history = [
+      { vocabularyId: "1", sentence: repeated[0].sentence },
+    ];
+    const parse = vi
+      .fn()
+      .mockResolvedValue(completedResponse(repeated));
+    const openai = { responses: { parse } } as unknown as OpenAI;
+
+    await expect(
+      generateQuizCards(items, 42, openai, history),
+    ).rejects.toThrow("Couldn’t prepare");
+    expect(parse).toHaveBeenCalledTimes(2);
+  });
+
   it("uses exactly the approved starter vocabulary and short definitions", () => {
     expect(STARTER_VOCABULARY).toHaveLength(10);
     expect(STARTER_VOCABULARY.map((item) => item.term)).toEqual([
@@ -81,3 +173,70 @@ describe("quiz generation contract", () => {
     ).toBe(true);
   });
 });
+
+function validCards(): GeneratedQuizCard[] {
+  const options = items.map((item) => item.term);
+  return [
+    {
+      vocabularyId: "1",
+      sentence: "She felt a sudden ___ to call home.",
+      answer: "urge",
+      options,
+    },
+    {
+      vocabularyId: "2",
+      sentence: "A desk job can make your routine increasingly ___.",
+      answer: "sedentary",
+      options,
+    },
+    {
+      vocabularyId: "3",
+      sentence: "They took a ___ walk along the river.",
+      answer: "leisurely",
+      options,
+    },
+    {
+      vocabularyId: "4",
+      sentence: "The café serves both sweet and ___ pastries.",
+      answer: "savoury",
+      options,
+    },
+  ];
+}
+
+function alternateCards(): GeneratedQuizCard[] {
+  const options = items.map((item) => item.term);
+  return [
+    {
+      vocabularyId: "1",
+      sentence: "He resisted the ___ to open the gift early.",
+      answer: "urge",
+      options,
+    },
+    {
+      vocabularyId: "2",
+      sentence: "Doctors warned that her ___ lifestyle needed more movement.",
+      answer: "sedentary",
+      options,
+    },
+    {
+      vocabularyId: "3",
+      sentence: "Our hosts prepared breakfast at a ___ pace.",
+      answer: "leisurely",
+      options,
+    },
+    {
+      vocabularyId: "4",
+      sentence: "We ordered a ___ pie filled with vegetables.",
+      answer: "savoury",
+      options,
+    },
+  ];
+}
+
+function completedResponse(cards: GeneratedQuizCard[]) {
+  return {
+    status: "completed",
+    output_parsed: { cards },
+  };
+}
