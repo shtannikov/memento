@@ -67,7 +67,7 @@ export function QuizScreen({
       >
         <p className={styles.eyebrow}>Choose the best answer</p>
         <h1>{card.sentence}</h1>
-        <div className={styles.options}>
+        <div className={styles.options} key={card.id}>
           {card.options.map((option, index) => {
             const isSelected = option === selectedAnswer;
             const feedbackClass =

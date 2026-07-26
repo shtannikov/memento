@@ -28,7 +28,9 @@ export function PreparingScreen({
         {title}
         {animatedEllipsis && (
           <span className={styles.animatedDots} aria-hidden="true">
-            ...
+            <span>.</span>
+            <span>.</span>
+            <span>.</span>
           </span>
         )}
       </h1>
