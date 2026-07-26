@@ -77,7 +77,10 @@ export function QuizScreen({
               <button
                 key={option}
                 className={`${styles.option} ${feedbackClass}`}
-                onClick={() => onAnswer(option)}
+                onClick={(event) => {
+                  if (event.detail > 0) event.currentTarget.blur();
+                  onAnswer(option);
+                }}
                 disabled={Boolean(selectedAnswer)}
               >
                 <span className={styles.optionIndex}>

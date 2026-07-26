@@ -143,13 +143,15 @@
     transform 150ms ease;
 }
 
-.option:not(:disabled):hover {
-  border-color: #c9aafa;
-  transform: translateY(-1px);
-}
-
 .option:disabled {
   cursor: default;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .option:not(:disabled):hover {
+    border-color: #c9aafa;
+    transform: translateY(-1px);
+  }
 }
 
 .optionIndex {

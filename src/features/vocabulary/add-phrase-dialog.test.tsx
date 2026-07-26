@@ -1,5 +1,7 @@
 import { render, screen, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 
 import {
   APP_BACKGROUND,
@@ -13,6 +15,28 @@ afterEach(() => {
 });
 
 describe("AddPhraseDialog", () => {
+  it("uses the Monolog backdrop tint that composites to Telegram chrome", () => {
+    const globals = readFileSync(
+      join(process.cwd(), "src/app/globals.css"),
+      "utf8",
+    );
+    const dialogStyles = readFileSync(
+      join(
+        process.cwd(),
+        "src/features/vocabulary/add-phrase-dialog.module.css",
+      ),
+      "utf8",
+    );
+
+    expect(globals).toContain(
+      "--dialog-backdrop: rgb(15 15 35 / 35%);",
+    );
+    expect(globals).toContain("--dialog-backdrop-solid: #ababb2;");
+    expect(dialogStyles).toContain(
+      "background: var(--dialog-backdrop);",
+    );
+  });
+
   it("clips the app shell and matches Telegram chrome above the iOS keyboard", async () => {
     const visualViewport = Object.assign(new EventTarget(), {
       height: 520,

@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 
 import { PreparingScreen } from "./preparing-screen";
@@ -84,8 +84,13 @@ describe("quiz UI", () => {
       />,
     );
 
-    screen.getByRole("button", { name: /wrap up/i }).focus();
-    expect(screen.getByRole("button", { name: /wrap up/i })).toHaveFocus();
+    const selectedOption = screen.getByRole("button", {
+      name: /wrap up/i,
+    });
+    selectedOption.focus();
+    expect(selectedOption).toHaveFocus();
+    fireEvent.click(selectedOption, { detail: 1 });
+    expect(document.activeElement).toBe(document.body);
 
     rerender(
       <QuizScreen
