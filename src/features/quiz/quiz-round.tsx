@@ -40,7 +40,11 @@ export function QuizRound({
         title="Quiz unavailable"
         animatedEllipsis={false}
         error={round.error ?? "Please try again."}
-        onRetry={round.restart}
+        onRetry={
+          round.errorCode === "DAILY_GENERATION_LIMIT"
+            ? undefined
+            : round.restart
+        }
       />
     );
   }

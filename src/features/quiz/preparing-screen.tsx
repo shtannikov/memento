@@ -1,4 +1,5 @@
 import { ArrowLeft } from "lucide-react";
+import { Fragment } from "react";
 
 import styles from "./quiz-shared.module.css";
 
@@ -32,7 +33,14 @@ export function PreparingScreen({
         )}
       </h1>
       <p className={styles.supportingCopy}>
-        {error ?? "Turning your words into questions."}
+        {error
+          ? error.split("\n").map((line, index) => (
+              <Fragment key={`${index}-${line}`}>
+                {index > 0 && <br />}
+                {line}
+              </Fragment>
+            ))
+          : "Turning your words into questions."}
       </p>
       {onRetry && (
         <button className={styles.primaryButton} onClick={onRetry}>

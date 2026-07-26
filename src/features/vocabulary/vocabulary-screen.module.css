@@ -12,10 +12,10 @@
 .header {
   padding:
     max(
-      56px,
-      calc(var(--tg-content-safe-area-inset-top, 0px) + 24px),
-      calc(var(--tg-safe-area-inset-top, 0px) + 24px),
-      calc(env(safe-area-inset-top, 0px) + 24px)
+      76px,
+      calc(var(--tg-content-safe-area-inset-top, 0px) + 44px),
+      calc(var(--tg-safe-area-inset-top, 0px) + 44px),
+      calc(env(safe-area-inset-top, 0px) + 44px)
     )
     20px 24px;
 }

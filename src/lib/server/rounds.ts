@@ -67,7 +67,7 @@ export async function createRound(
     await markRound(createdRound.id, userId, "failed");
     throw new AppError(
       "DAILY_GENERATION_LIMIT",
-      "You’ve used today’s five quiz generations. Try again tomorrow.",
+      "You’ve used today’s five quiz generations.\nTry again tomorrow.",
       429,
     );
   }

@@ -38,4 +38,23 @@ describe("quiz UI", () => {
       "m8 5 11 7-11 7V5Z",
     );
   });
+
+  it("keeps failed-quiz copy concise", () => {
+    render(
+      <RoundResult
+        success={false}
+        accuracy={0}
+        mistakes={3}
+        completed={1}
+        total={10}
+        onRestart={vi.fn()}
+        onVocabulary={vi.fn()}
+      />,
+    );
+
+    expect(screen.getByText("All three lives are gone.")).toBeVisible();
+    expect(
+      screen.queryByText(/learning progress is unchanged/i),
+    ).not.toBeInTheDocument();
+  });
 });

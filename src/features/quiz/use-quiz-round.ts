@@ -36,6 +36,7 @@ export function useQuizRound(
     null,
   );
   const [error, setError] = useState<string | null>(null);
+  const [errorCode, setErrorCode] = useState<string | null>(null);
   const started = useRef(false);
   const feedbackTimer = useRef<number | null>(null);
 
@@ -47,6 +48,7 @@ export function useQuizRound(
       }
       setPhase("preparing");
       setError(null);
+      setErrorCode(null);
       setSelectedAnswer(null);
       setCompletedIds([]);
       setFirstAttempts({});
@@ -60,6 +62,9 @@ export function useQuizRound(
         setQueue(round.cards);
         setPhase("active");
       } catch (caught) {
+        setErrorCode(
+          caught instanceof ClientError ? caught.code : null,
+        );
         setError(
           caught instanceof Error
             ? caught.message
@@ -181,6 +186,7 @@ export function useQuizRound(
     selectedAnswer,
     feedback,
     error,
+    errorCode,
     restart,
     chooseAnswer,
     abandon,

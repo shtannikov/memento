@@ -46,7 +46,7 @@ export function RoundResult({
       <p className={styles.supportingCopy}>
         {success
           ? "Every word made it through the round."
-          : "All three lives are gone. Your learning progress is unchanged."}
+          : "All three lives are gone."}
       </p>
       <div className={styles.stats}>
         <article>
