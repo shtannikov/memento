@@ -8,6 +8,128 @@ import type { VocabularyItem } from "./vocabulary.types";
 afterEach(cleanup);
 
 describe("VocabularyScreen", () => {
+  it("filters the active vocabulary tab by phrase or definition", async () => {
+    const user = userEvent.setup();
+    const learning: VocabularyItem[] = [
+      {
+        id: "1",
+        term: "Follow up",
+        definition: "continue checking",
+        status: "learning",
+      },
+      {
+        id: "2",
+        term: "take into account",
+        definition: "consider carefully",
+        status: "learning",
+      },
+    ];
+
+    render(
+      <VocabularyScreen
+        learning={learning}
+        learned={[]}
+        onAdd={vi.fn()}
+        onRemove={vi.fn()}
+        onChangeStatus={vi.fn()}
+        onStartQuiz={vi.fn()}
+      />,
+    );
+
+    const search = screen.getByRole("searchbox", {
+      name: "Search phrases",
+    });
+
+    expect(search).toHaveAttribute("placeholder", "Search phrases");
+
+    await user.type(search, "FOLLOW");
+
+    expect(
+      screen.getByRole("heading", { name: "Follow up" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole("heading", { name: "take into account" }),
+    ).not.toBeInTheDocument();
+
+    await user.click(
+      screen.getByRole("button", { name: "Clear search" }),
+    );
+
+    expect(search).toHaveValue("");
+    expect(search).toHaveFocus();
+    expect(
+      screen.queryByRole("button", { name: "Clear search" }),
+    ).not.toBeInTheDocument();
+
+    await user.type(search, "carefully");
+
+    expect(
+      screen.queryByRole("heading", { name: "Follow up" }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: "take into account" }),
+    ).toBeInTheDocument();
+
+    await user.clear(search);
+    await user.type(search, "missing phrase");
+
+    expect(screen.getByText("No matches found")).toBeInTheDocument();
+    expect(
+      screen.getByText("Try a different word or definition."),
+    ).toBeInTheDocument();
+  });
+
+  it("clears the search query when switching tabs", async () => {
+    const user = userEvent.setup();
+    const learning: VocabularyItem[] = [
+      {
+        id: "1",
+        term: "follow up",
+        definition: "continue checking",
+        status: "learning",
+      },
+    ];
+    const learned: VocabularyItem[] = [
+      {
+        id: "2",
+        term: "take into account",
+        definition: "consider",
+        status: "learned",
+      },
+    ];
+
+    render(
+      <VocabularyScreen
+        learning={learning}
+        learned={learned}
+        onAdd={vi.fn()}
+        onRemove={vi.fn()}
+        onChangeStatus={vi.fn()}
+        onStartQuiz={vi.fn()}
+      />,
+    );
+
+    await user.type(
+      screen.getByRole("searchbox", {
+        name: "Search phrases",
+      }),
+      "follow",
+    );
+    await user.click(screen.getByRole("tab", { name: "Learned" }));
+
+    expect(
+      screen.getByRole("searchbox", {
+        name: "Search phrases",
+      }),
+    ).toHaveValue("");
+    expect(
+      screen.getByRole("heading", { name: "take into account" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByText("No matches found"),
+    ).not.toBeInTheDocument();
+  });
+
   it("stays on Learned while restoring several phrases", async () => {
     const user = userEvent.setup();
     const onChangeStatus = vi.fn();

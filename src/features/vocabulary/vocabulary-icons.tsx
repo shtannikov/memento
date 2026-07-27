@@ -43,3 +43,16 @@ export function PlusIcon() {
 export function PlayIcon() {
   return <SvgIcon path="m8 5 11 7-11 7V5Z" size={20} />;
 }
+
+export function SearchIcon() {
+  return (
+    <SvgIcon
+      path="m21 21-4.35-4.35M19 11a8 8 0 1 1-16 0 8 8 0 0 1 16 0Z"
+      size={18}
+    />
+  );
+}
+
+export function CloseIcon() {
+  return <SvgIcon path="m7 7 10 10M17 7 7 17" />;
+}

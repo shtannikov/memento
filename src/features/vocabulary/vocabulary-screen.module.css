@@ -95,7 +95,7 @@
   width: 100%;
   align-items: center;
   padding: 4px;
-  margin-bottom: 20px;
+  margin-bottom: 12px;
   border-radius: 16px;
   background: #f1f5f9;
 }
@@ -130,10 +130,76 @@
 }
 
 .tabs button:focus-visible,
+.search:focus-within,
 .iconButton:focus-visible,
 .floatingButton:focus-visible {
   outline: 2px solid #8b5cf6;
   outline-offset: 2px;
+}
+
+.search {
+  display: flex;
+  min-height: 44px;
+  align-items: center;
+  gap: 10px;
+  padding: 0 6px 0 14px;
+  margin-bottom: 20px;
+  color: #94a3b8;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  background: #ffffff;
+  transition:
+    border-color 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.search:focus-within {
+  color: #7c3aed;
+  border-color: #c4b5fd;
+}
+
+.search input {
+  width: 100%;
+  min-width: 0;
+  padding: 11px 0;
+  color: #0f0f23;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  font: inherit;
+  font-size: 14px;
+  line-height: 20px;
+}
+
+.search input::placeholder {
+  color: #94a3b8;
+}
+
+.search input::-webkit-search-cancel-button {
+  appearance: none;
+}
+
+.searchClear {
+  display: grid;
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+  padding: 0;
+  color: #94a3b8;
+  place-items: center;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  cursor: pointer;
+  transition:
+    color 160ms ease,
+    background 160ms ease;
+}
+
+.searchClear:hover,
+.searchClear:active {
+  color: #475569;
+  background: #f1f5f9;
 }
 
 .list {
@@ -311,6 +377,12 @@
 @media (hover: none) and (pointer: coarse) {
   .tabs button:focus-visible {
     outline: none;
+  }
+}
+
+@media (max-width: 600px) {
+  .search input {
+    font-size: 1rem;
   }
 }
 
