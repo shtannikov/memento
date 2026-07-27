@@ -18,6 +18,9 @@ describe("vocabulary import commands", () => {
     expect(readVocabularyCommand("/imported x")).toBeNull();
     expect(readVocabularyCommand("/reset")).toBe("reset");
     expect(readVocabularyCommand("/reset@MementoBot")).toBe("reset");
+    expect(readVocabularyCommand("/start")).toBe("start");
+    expect(readVocabularyCommand("/start@MementoBot")).toBe("start");
+    expect(readVocabularyCommand("/start referral-code")).toBe("start");
     expect(readVocabularyCommand("/reset\nunexpected")).toBeNull();
     expect(readVocabularyCommand("/unknown")).toBeNull();
   });
@@ -80,7 +83,7 @@ describe("vocabulary import commands", () => {
         "⚠️ I couldn’t import that list.\n\n" +
         "Please use this format:\n" +
         "/import\n" +
-        "• phrase - description\n" +
+        "• phrase — description\n" +
         "• phrase — description\n\n" +
         "☝️A few rules:\n" +
         "• A phrase can’t be longer than 35 characters\n" +

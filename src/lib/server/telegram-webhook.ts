@@ -47,6 +47,7 @@ export type TelegramReply = {
   chatId: number;
   replyToMessageId: number;
   text: string;
+  parseMode?: "HTML";
 };
 
 type TelegramCommandDependencies = {
@@ -59,14 +60,20 @@ const defaultDependencies: TelegramCommandDependencies = {
   resetItems: resetVocabulary,
 };
 
-const HELP_MESSAGE =
-  "👋 Hey there. Here’s what I can help with:\n\n" +
+const START_MESSAGE =
+  "👋 Welcome to Memento!\n\n" +
+  "Tap <b>App</b> below to get started 👇";
+
+const FALLBACK_MESSAGE =
+  "👋 Hey there.\n\n" +
+  "Looking for the main app? Tap the <b>App</b> button below.\n\n" +
+  "And here’s what I can help with right here in chat:\n\n" +
   "📥 /import\n" +
   "Add phrases to your vocabulary.\n" +
   "Put /import on the first line, then add one phrase per line:\n" +
-  "• phrase - description\n" +
+  "• phrase — description\n" +
   "• phrase — description\n\n" +
-  "☝️A few rules:\n" +
+  "☝️ A few rules:\n" +
   `• A phrase can’t be longer than ${TERM_MAX_LENGTH} characters\n` +
   `• A description can’t be longer than ${DEFINITION_MAX_LENGTH} characters\n` +
   `• You can import up to ${IMPORT_MAX_ITEMS} phrases at a time\n\n` +
@@ -92,13 +99,15 @@ export async function processTelegramUpdate(
     return null;
   }
 
-  const reply = (text: string): TelegramReply => ({
+  const reply = (text: string, parseMode?: "HTML"): TelegramReply => ({
     chatId: message.chat.id,
     replyToMessageId: message.message_id,
     text,
+    ...(parseMode ? { parseMode } : {}),
   });
   const command = readVocabularyCommand(message.text);
-  if (!command) return reply(HELP_MESSAGE);
+  if (!command) return reply(FALLBACK_MESSAGE, "HTML");
+  if (command === "start") return reply(START_MESSAGE, "HTML");
 
   const user: TelegramUser = {
     id: message.from.id,

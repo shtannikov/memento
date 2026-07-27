@@ -28,6 +28,7 @@ export async function POST(request: Request) {
         reply.chatId,
         reply.text,
         reply.replyToMessageId,
+        reply.parseMode,
       );
     }
     return NextResponse.json({ ok: true });

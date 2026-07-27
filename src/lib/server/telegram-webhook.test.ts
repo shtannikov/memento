@@ -90,7 +90,7 @@ describe("Telegram webhook workflow", () => {
       resetItems,
     });
     expect(malformedReply?.text).toContain(
-      "Please use this format:\n/import\n• phrase - description",
+      "Please use this format:\n/import\n• phrase — description",
     );
     expect(malformedReply?.text).toContain(
       "• A phrase can’t be longer than 35 characters",
@@ -144,6 +144,28 @@ describe("Telegram webhook workflow", () => {
     );
   });
 
+  it("returns concise onboarding for the start command", async () => {
+    const dependencies = {
+      importItems: vi.fn(),
+      resetItems: vi.fn(),
+    };
+    const parsed = parseTelegramUpdate(update("/start@MementoBot"));
+    if (!parsed) throw new Error("Expected update to parse");
+
+    await expect(
+      processTelegramUpdate(parsed, dependencies),
+    ).resolves.toEqual({
+      chatId: 42,
+      replyToMessageId: 7,
+      text:
+        "👋 Welcome to Memento!\n\n" +
+        "Tap <b>App</b> below to get started 👇",
+      parseMode: "HTML",
+    });
+    expect(dependencies.importItems).not.toHaveBeenCalled();
+    expect(dependencies.resetItems).not.toHaveBeenCalled();
+  });
+
   it("treats unsupported private text as help and ignores other updates", async () => {
     const dependencies = {
       importItems: vi.fn(),
@@ -164,15 +186,18 @@ describe("Telegram webhook workflow", () => {
     expect(helpReply).toMatchObject({
       chatId: 42,
       replyToMessageId: 7,
+      parseMode: "HTML",
     });
     expect(helpReply?.text).toBe(
-      "👋 Hey there. Here’s what I can help with:\n\n" +
+      "👋 Hey there.\n\n" +
+        "Looking for the main app? Tap the <b>App</b> button below.\n\n" +
+        "And here’s what I can help with right here in chat:\n\n" +
         "📥 /import\n" +
         "Add phrases to your vocabulary.\n" +
         "Put /import on the first line, then add one phrase per line:\n" +
-        "• phrase - description\n" +
+        "• phrase — description\n" +
         "• phrase — description\n\n" +
-        "☝️A few rules:\n" +
+        "☝️ A few rules:\n" +
         "• A phrase can’t be longer than 35 characters\n" +
         "• A description can’t be longer than 45 characters\n" +
         "• You can import up to 50 phrases at a time\n\n" +
