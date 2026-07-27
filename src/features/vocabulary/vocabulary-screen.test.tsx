@@ -37,8 +37,10 @@ describe("VocabularyScreen", () => {
     );
 
     const search = screen.getByRole("searchbox", {
-      name: "Search vocabulary",
+      name: "Search phrases",
     });
+
+    expect(search).toHaveAttribute("placeholder", "Search phrases");
 
     await user.type(search, "FOLLOW");
 
@@ -92,7 +94,7 @@ describe("VocabularyScreen", () => {
 
     await user.type(
       screen.getByRole("searchbox", {
-        name: "Search vocabulary",
+        name: "Search phrases",
       }),
       "follow",
     );
@@ -100,7 +102,7 @@ describe("VocabularyScreen", () => {
 
     expect(
       screen.getByRole("searchbox", {
-        name: "Search vocabulary",
+        name: "Search phrases",
       }),
     ).toHaveValue("follow");
     expect(

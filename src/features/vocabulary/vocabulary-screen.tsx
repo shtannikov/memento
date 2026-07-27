@@ -85,13 +85,13 @@ export function VocabularyScreen({
           <label className={styles.search}>
             <SearchIcon />
             <span className={styles.visuallyHidden}>
-              Search vocabulary
+              Search phrases
             </span>
             <input
               type="search"
               value={searchQuery}
               onChange={(event) => setSearchQuery(event.target.value)}
-              placeholder="Search vocabulary"
+              placeholder="Search phrases"
               autoComplete="off"
               spellCheck={false}
             />
