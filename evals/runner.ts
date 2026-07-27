@@ -90,6 +90,33 @@ const cases: EvalCase[] = [
       },
     ],
   },
+  {
+    id: "phrasal-verb-argument-structure",
+    description:
+      "Keeps required clothing objects with transitive phrasal verbs and does not attach a second object to complete expressions.",
+    items: [
+      {
+        id: "301",
+        term: "put on",
+        definition: "Надеть предмет одежды.",
+      },
+      {
+        id: "302",
+        term: "take off",
+        definition: "Снять предмет одежды.",
+      },
+      {
+        id: "303",
+        term: "do the laundry",
+        definition: "Постирать одежду.",
+      },
+      {
+        id: "304",
+        term: "get dressed",
+        definition: "Одеться.",
+      },
+    ],
+  },
 ];
 
 async function runCase(evalCase: EvalCase) {
