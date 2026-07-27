@@ -90,6 +90,33 @@ const cases: EvalCase[] = [
       },
     ],
   },
+  {
+    id: "unique-idiomatic-options",
+    description:
+      "Rejects ambiguous connectors and uses transitive and fixed expressions with natural complements.",
+    items: [
+      {
+        id: "301",
+        term: "on the contrary",
+        definition: "Наоборот; верно противоположное.",
+      },
+      {
+        id: "302",
+        term: "as a matter of fact",
+        definition: "На самом деле; более того.",
+      },
+      {
+        id: "303",
+        term: "put on",
+        definition: "Надеть предмет одежды.",
+      },
+      {
+        id: "304",
+        term: "do the laundry",
+        definition: "Стирать одежду.",
+      },
+    ],
+  },
 ];
 
 async function runCase(evalCase: EvalCase) {
@@ -138,6 +165,8 @@ async function runCase(evalCase: EvalCase) {
     (evaluation) =>
       !evaluation.englishSentence ||
       !evaluation.meaningAligned ||
+      !evaluation.idiomaticAnswer ||
+      !evaluation.singleCorrectOption ||
       !evaluation.unambiguous ||
       !evaluation.definitionHidden,
   );

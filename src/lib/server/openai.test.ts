@@ -8,6 +8,7 @@ import {
   generateQuizCards,
   normalizeQuizSentence,
   validateGeneratedCards,
+  validateQuizGrade,
   type GenerationVocabularyItem,
   type GeneratedQuizCard,
 } from "./openai";
@@ -39,6 +40,11 @@ describe("quiz generation contract", () => {
       "Replacing ___ with answer must produce a complete, natural English sentence",
     );
     expect(prompt).toContain("Never display the literal text 'sth'");
+    expect(prompt).toContain("Test all four options");
+    expect(prompt).toContain("'___ my coat' for 'put on'");
+    expect(prompt).toContain(
+      "'___ because my clothes are muddy' for 'do the laundry'",
+    );
     expect(prompt).not.toContain("Let's ___ the meeting before lunch.");
   });
 
@@ -111,6 +117,23 @@ describe("quiz generation contract", () => {
     ).toEqual(cards);
   });
 
+  it("rejects semantic reviews with a plausible second answer or unidiomatic target", () => {
+    expect(() =>
+      validateQuizGrade(items, {
+        passed: false,
+        evaluations: items.map((item, index) => ({
+          vocabularyId: item.id,
+          englishSentence: true,
+          meaningAligned: true,
+          idiomaticAnswer: index !== 0,
+          singleCorrectOption: index !== 1,
+          unambiguous: true,
+          definitionHidden: true,
+        })),
+      }),
+    ).toThrow("Couldn’t prepare");
+  });
+
   it("retries once with the rejected wording added to forbidden context", async () => {
     const repeated = validCards();
     repeated[0] = {
@@ -121,7 +144,8 @@ describe("quiz generation contract", () => {
     const parse = vi
       .fn()
       .mockResolvedValueOnce(completedResponse(repeated))
-      .mockResolvedValueOnce(completedResponse(fresh));
+      .mockResolvedValueOnce(completedResponse(fresh))
+      .mockResolvedValueOnce(completedGrade(items));
     const openai = { responses: { parse } } as unknown as OpenAI;
 
     await expect(
@@ -132,10 +156,37 @@ describe("quiz generation contract", () => {
         },
       ]),
     ).resolves.toEqual(fresh);
-    expect(parse).toHaveBeenCalledTimes(2);
+    expect(parse).toHaveBeenCalledTimes(3);
     expect(
       JSON.stringify(parse.mock.calls[1][0].input),
     ).toContain("She felt an ___ to check her phone.");
+  });
+
+  it("retries when semantic review finds more than one correct option", async () => {
+    const first = validCards();
+    const fresh = alternateCards();
+    const parse = vi
+      .fn()
+      .mockResolvedValueOnce(completedResponse(first))
+      .mockResolvedValueOnce(
+        completedGrade(items, {
+          passed: false,
+          overrides: {
+            "1": { singleCorrectOption: false },
+          },
+        }),
+      )
+      .mockResolvedValueOnce(completedResponse(fresh))
+      .mockResolvedValueOnce(completedGrade(items));
+    const openai = { responses: { parse } } as unknown as OpenAI;
+
+    await expect(generateQuizCards(items, 42, openai)).resolves.toEqual(
+      fresh,
+    );
+    expect(parse).toHaveBeenCalledTimes(4);
+    expect(JSON.stringify(parse.mock.calls[2][0].input)).toContain(
+      first[0].sentence,
+    );
   });
 
   it("fails after two invalid generations", async () => {
@@ -238,5 +289,40 @@ function completedResponse(cards: GeneratedQuizCard[]) {
   return {
     status: "completed",
     output_parsed: { cards },
+  };
+}
+
+function completedGrade(
+  gradeItems: GenerationVocabularyItem[],
+  configuration?: {
+    passed: boolean;
+    overrides?: Record<
+      string,
+      Partial<{
+        englishSentence: boolean;
+        meaningAligned: boolean;
+        idiomaticAnswer: boolean;
+        singleCorrectOption: boolean;
+        unambiguous: boolean;
+        definitionHidden: boolean;
+      }>
+    >;
+  },
+) {
+  return {
+    status: "completed",
+    output_parsed: {
+      passed: configuration?.passed ?? true,
+      evaluations: gradeItems.map((item) => ({
+        vocabularyId: item.id,
+        englishSentence: true,
+        meaningAligned: true,
+        idiomaticAnswer: true,
+        singleCorrectOption: true,
+        unambiguous: true,
+        definitionHidden: true,
+        ...configuration?.overrides?.[item.id],
+      })),
+    },
   };
 }

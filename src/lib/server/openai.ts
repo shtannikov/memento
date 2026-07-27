@@ -42,6 +42,8 @@ const QuizGradeSchema = z.object({
       vocabularyId: z.string(),
       englishSentence: z.boolean(),
       meaningAligned: z.boolean(),
+      idiomaticAnswer: z.boolean(),
+      singleCorrectOption: z.boolean(),
       unambiguous: z.boolean(),
       definitionHidden: z.boolean(),
     }),
@@ -71,7 +73,10 @@ export function buildQuizPrompt(
     "For dictionary phrases beginning with 'to', omit or inflect the infinitive marker when the sentence requires it.",
     "In dictionary phrases, 'sth' is only an object placeholder. Never display the literal text 'sth'; put the concrete object in the sentence outside the blank whenever possible.",
     "The four options must be four distinct displayed forms derived from targets in this input whenever possible.",
-    "Exactly one option must fit both the grammar and meaning of the sentence. Do not translate, reveal, or quote definitions in sentences.",
+    "Test all four options by replacing ___ with each option. Exactly one option must produce grammatical, idiomatic English that makes sense in the context; the other three must be clearly wrong, not merely less likely.",
+    "Respect each expression's required complements and fixed usage. Put concrete objects outside the blank when a transitive expression needs one (for example, '___ my coat' for 'put on'). Do not add an object after an expression that already contains it (for example, write '___ because my clothes are muddy' for 'do the laundry', never '___ all my muddy clothes').",
+    "For discourse connectors, make the logical relation specific enough that no other connector option can reasonably fit.",
+    "Do not translate, reveal, or quote definitions in sentences.",
     "Create fresh situations and wording. For each vocabularyId, do not reuse or closely paraphrase any of its recentSentences.",
     "Return every vocabularyId exactly once and do not add items.",
     JSON.stringify({ items, recentSentences }),
@@ -93,13 +98,16 @@ export async function generateQuizCards(
       openai,
     );
     try {
-      return validateGeneratedCards(
+      const cards = validateGeneratedCards(
         items,
         response.output_parsed.cards,
         forbiddenSentences,
       );
-    } catch (error) {
-      if (attempt === 1) throw error;
+      const grade = await gradeQuizCards(items, cards, openai);
+      validateQuizGrade(items, grade);
+      return cards;
+    } catch {
+      if (attempt === 1) throw invalidGeneration();
       forbiddenSentences = [
         ...forbiddenSentences,
         ...response.output_parsed.cards.map((card) => ({
@@ -168,7 +176,7 @@ export async function gradeQuizCards(
       {
         role: "system",
         content:
-          "Grade English vocabulary exercises strictly. Judge grammar after replacing ___ with the displayed answer. The displayed answer may be an inflected form of the canonical target, and dictionary placeholders such as 'to' and 'sth' need not appear literally. A pass requires every filled sentence to be natural English, semantically aligned with its possibly non-English definition, unambiguous, and not to reveal or translate the definition.",
+          "Grade English vocabulary exercises strictly. For every card, replace ___ with each of its four options and assess the resulting complete sentences, not just the intended answer. The displayed answer may be an inflected form of the canonical target, and dictionary placeholders such as 'to' and 'sth' need not appear literally. Set idiomaticAnswer to false when the intended answer has a missing required complement, an extra or duplicated object, an unnatural collocation, or otherwise would not be used in that sentence. Set singleCorrectOption to true only when exactly one option is both grammatical and contextually reasonable; if another option could plausibly express the sentence's logic, it is false even when the intended answer seems slightly better. A pass requires every answer to be natural English, semantically aligned with its possibly non-English definition, the only correct option, unambiguous, and not to reveal or translate the definition.",
       },
       {
         role: "user",
@@ -183,6 +191,37 @@ export async function gradeQuizCards(
     throw new Error("Eval grader did not return a complete result");
   }
   return response.output_parsed;
+}
+
+export function validateQuizGrade(
+  items: GenerationVocabularyItem[],
+  grade: z.infer<typeof QuizGradeSchema>,
+): void {
+  const expectedIds = new Set(items.map((item) => item.id));
+  const seen = new Set<string>();
+  const evaluationsAreValid =
+    grade.evaluations.length === items.length &&
+    grade.evaluations.every((evaluation) => {
+      if (
+        !expectedIds.has(evaluation.vocabularyId) ||
+        seen.has(evaluation.vocabularyId)
+      ) {
+        return false;
+      }
+      seen.add(evaluation.vocabularyId);
+      return (
+        evaluation.englishSentence &&
+        evaluation.meaningAligned &&
+        evaluation.idiomaticAnswer &&
+        evaluation.singleCorrectOption &&
+        evaluation.unambiguous &&
+        evaluation.definitionHidden
+      );
+    });
+
+  if (!grade.passed || !evaluationsAreValid) {
+    throw invalidGeneration();
+  }
 }
 
 export function normalizeQuizSentence(sentence: string): string {
