@@ -8,6 +8,7 @@ import {
 const IMPORT_COMMAND = /^\/import(?:@[a-z0-9_]+)?$/i;
 const IMPORT_COMMAND_PREFIX = /^\/import(?:@[a-z0-9_]+)?(?=$|\s)/i;
 const RESET_COMMAND = /^\/reset(?:@[a-z0-9_]+)?$/i;
+const START_COMMAND = /^\/start(?:@[a-z0-9_]+)?(?:\s.*)?$/i;
 const LIST_MARKER =
   /^(?:(?:[-*+•◦‣⁃∙·▪▫●○■□◆◇▶▷►▸➤➜–—]|[☐☑☒]|\[(?: |x|X)\])[ \t]?|(?:\d{1,3}[.)]|\(\d{1,3}\))[ \t])/u;
 const ITEM_SEPARATOR = / (?:-|—) /u;
@@ -15,7 +16,7 @@ const IMPORT_FORMAT_ERROR =
   "⚠️ I couldn’t import that list.\n\n" +
   "Please use this format:\n" +
   "/import\n" +
-  "• phrase - description\n" +
+  "• phrase — description\n" +
   "• phrase — description\n\n" +
   "☝️A few rules:\n" +
   `• A phrase can’t be longer than ${TERM_MAX_LENGTH} characters\n` +
@@ -27,7 +28,7 @@ export type ImportParseResult =
   | { ok: true; items: VocabularyInput[] }
   | { ok: false; message: string };
 
-export type VocabularyCommand = "import" | "reset";
+export type VocabularyCommand = "import" | "reset" | "start";
 
 export function readVocabularyCommand(text: string): VocabularyCommand | null {
   const lines = normalizeLines(text);
@@ -35,6 +36,7 @@ export function readVocabularyCommand(text: string): VocabularyCommand | null {
 
   if (IMPORT_COMMAND_PREFIX.test(firstLine)) return "import";
   if (lines.length === 1 && RESET_COMMAND.test(firstLine)) return "reset";
+  if (lines.length === 1 && START_COMMAND.test(firstLine)) return "start";
   return null;
 }
 
