@@ -67,6 +67,29 @@ describe("Telegram webhook route", () => {
       42,
       "Imported 2 phrases.",
       7,
+      undefined,
+    );
+  });
+
+  it("forwards Telegram parse mode from the workflow", async () => {
+    const parsed = { update_id: 100 };
+    parseTelegramUpdate.mockReturnValue(parsed);
+    processTelegramUpdate.mockResolvedValue({
+      chatId: 42,
+      replyToMessageId: 7,
+      text: "Tap <b>App</b> below.",
+      parseMode: "HTML",
+    });
+    sendTelegramMessage.mockResolvedValue(undefined);
+
+    const response = await POST(request());
+
+    expect(response.status).toBe(200);
+    expect(sendTelegramMessage).toHaveBeenCalledWith(
+      42,
+      "Tap <b>App</b> below.",
+      7,
+      "HTML",
     );
   });
 

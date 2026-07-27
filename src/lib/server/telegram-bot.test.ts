@@ -39,6 +39,36 @@ describe("Telegram bot client", () => {
     );
   });
 
+  it("sends HTML formatting when requested", async () => {
+    process.env.TELEGRAM_BOT_TOKEN = "123:test";
+    const fetchMock = vi.fn().mockResolvedValue(
+      new Response(JSON.stringify({ ok: true }), { status: 200 }),
+    );
+    vi.stubGlobal("fetch", fetchMock);
+
+    await sendTelegramMessage(
+      42,
+      "Tap <b>App</b> below.",
+      7,
+      "HTML",
+    );
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      "https://api.telegram.org/bot123:test/sendMessage",
+      expect.objectContaining({
+        body: JSON.stringify({
+          chat_id: 42,
+          text: "Tap <b>App</b> below.",
+          parse_mode: "HTML",
+          reply_parameters: {
+            message_id: 7,
+            allow_sending_without_reply: true,
+          },
+        }),
+      }),
+    );
+  });
+
   it("surfaces Telegram and configuration errors", async () => {
     process.env.TELEGRAM_BOT_TOKEN = "123:test";
     vi.stubGlobal(
