@@ -71,7 +71,7 @@ const FALLBACK_MESSAGE =
   "📥 /import\n" +
   "Add phrases to your vocabulary.\n" +
   "Put /import on the first line, then add one phrase per line:\n" +
-  "• phrase - description\n" +
+  "• phrase — description\n" +
   "• phrase — description\n\n" +
   "☝️ A few rules:\n" +
   `• A phrase can’t be longer than ${TERM_MAX_LENGTH} characters\n` +

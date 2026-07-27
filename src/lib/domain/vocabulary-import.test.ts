@@ -83,7 +83,7 @@ describe("vocabulary import commands", () => {
         "⚠️ I couldn’t import that list.\n\n" +
         "Please use this format:\n" +
         "/import\n" +
-        "• phrase - description\n" +
+        "• phrase — description\n" +
         "• phrase — description\n\n" +
         "☝️A few rules:\n" +
         "• A phrase can’t be longer than 35 characters\n" +

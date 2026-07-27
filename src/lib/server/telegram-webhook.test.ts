@@ -90,7 +90,7 @@ describe("Telegram webhook workflow", () => {
       resetItems,
     });
     expect(malformedReply?.text).toContain(
-      "Please use this format:\n/import\n• phrase - description",
+      "Please use this format:\n/import\n• phrase — description",
     );
     expect(malformedReply?.text).toContain(
       "• A phrase can’t be longer than 35 characters",
@@ -195,7 +195,7 @@ describe("Telegram webhook workflow", () => {
         "📥 /import\n" +
         "Add phrases to your vocabulary.\n" +
         "Put /import on the first line, then add one phrase per line:\n" +
-        "• phrase - description\n" +
+        "• phrase — description\n" +
         "• phrase — description\n\n" +
         "☝️ A few rules:\n" +
         "• A phrase can’t be longer than 35 characters\n" +
