@@ -4,7 +4,11 @@ import { AddPhraseDialog } from "./add-phrase-dialog";
 import { VocabularyCard } from "./vocabulary-card";
 import { VocabularyEmptyState } from "./vocabulary-empty-state";
 import { VocabularyHeader } from "./vocabulary-header";
-import { PlayIcon, PlusIcon } from "./vocabulary-icons";
+import {
+  PlayIcon,
+  PlusIcon,
+  SearchIcon,
+} from "./vocabulary-icons";
 import styles from "./vocabulary-screen.module.css";
 import { VocabularyTabs } from "./vocabulary-tabs";
 import type {
@@ -36,7 +40,18 @@ export function VocabularyScreen({
   const [activeTab, setActiveTab] =
     useState<VocabularyStatus>("learning");
   const [addOpen, setAddOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
   const visibleItems = activeTab === "learning" ? learning : learned;
+  const normalizedQuery = searchQuery.trim().toLocaleLowerCase();
+  const filteredItems = normalizedQuery
+    ? visibleItems.filter(
+        (item) =>
+          item.term.toLocaleLowerCase().includes(normalizedQuery) ||
+          item.definition
+            .toLocaleLowerCase()
+            .includes(normalizedQuery),
+      )
+    : visibleItems;
 
   function removeItem(item: VocabularyItem) {
     if (
@@ -67,6 +82,20 @@ export function VocabularyScreen({
             activeTab={activeTab}
             onChange={setActiveTab}
           />
+          <label className={styles.search}>
+            <SearchIcon />
+            <span className={styles.visuallyHidden}>
+              Search vocabulary
+            </span>
+            <input
+              type="search"
+              value={searchQuery}
+              onChange={(event) => setSearchQuery(event.target.value)}
+              placeholder="Search vocabulary"
+              autoComplete="off"
+              spellCheck={false}
+            />
+          </label>
           <section
             id={`${activeTab}-panel`}
             role="tabpanel"
@@ -75,7 +104,7 @@ export function VocabularyScreen({
             }
             className={styles.list}
           >
-            {visibleItems.map((item) => (
+            {filteredItems.map((item) => (
               <VocabularyCard
                 key={item.id}
                 item={item}
@@ -84,15 +113,19 @@ export function VocabularyScreen({
                 onDelete={() => removeItem(item)}
               />
             ))}
-            {visibleItems.length === 0 && (
+            {filteredItems.length === 0 && (
               <VocabularyEmptyState
                 title={
-                  activeTab === "learning"
+                  normalizedQuery
+                    ? "No matches found"
+                    : activeTab === "learning"
                     ? "Nothing to learn yet"
                     : "No learned words yet"
                 }
                 text={
-                  activeTab === "learning"
+                  normalizedQuery
+                    ? "Try a different word or definition."
+                    : activeTab === "learning"
                     ? "Add a phrase to start your list."
                     : "Phrases you master will appear here."
                 }
