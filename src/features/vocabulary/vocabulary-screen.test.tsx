@@ -51,7 +51,16 @@ describe("VocabularyScreen", () => {
       screen.queryByRole("heading", { name: "take into account" }),
     ).not.toBeInTheDocument();
 
-    await user.clear(search);
+    await user.click(
+      screen.getByRole("button", { name: "Clear search" }),
+    );
+
+    expect(search).toHaveValue("");
+    expect(search).toHaveFocus();
+    expect(
+      screen.queryByRole("button", { name: "Clear search" }),
+    ).not.toBeInTheDocument();
+
     await user.type(search, "carefully");
 
     expect(
@@ -60,9 +69,17 @@ describe("VocabularyScreen", () => {
     expect(
       screen.getByRole("heading", { name: "take into account" }),
     ).toBeInTheDocument();
+
+    await user.clear(search);
+    await user.type(search, "missing phrase");
+
+    expect(screen.getByText("No matches found")).toBeInTheDocument();
+    expect(
+      screen.getByText("Try a different word or definition."),
+    ).toBeInTheDocument();
   });
 
-  it("keeps the search query across tabs and shows a search empty state", async () => {
+  it("clears the search query when switching tabs", async () => {
     const user = userEvent.setup();
     const learning: VocabularyItem[] = [
       {
@@ -104,15 +121,12 @@ describe("VocabularyScreen", () => {
       screen.getByRole("searchbox", {
         name: "Search phrases",
       }),
-    ).toHaveValue("follow");
+    ).toHaveValue("");
     expect(
-      screen.getByText("No matches found"),
+      screen.getByRole("heading", { name: "take into account" }),
     ).toBeInTheDocument();
     expect(
-      screen.getByText("Try a different word or definition."),
-    ).toBeInTheDocument();
-    expect(
-      screen.queryByText("No learned words yet"),
+      screen.queryByText("No matches found"),
     ).not.toBeInTheDocument();
   });
 

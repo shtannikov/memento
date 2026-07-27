@@ -52,3 +52,7 @@ export function SearchIcon() {
     />
   );
 }
+
+export function CloseIcon() {
+  return <SvgIcon path="m7 7 10 10M17 7 7 17" />;
+}

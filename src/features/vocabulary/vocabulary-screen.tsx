@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 
 import { AddPhraseDialog } from "./add-phrase-dialog";
 import { VocabularyCard } from "./vocabulary-card";
 import { VocabularyEmptyState } from "./vocabulary-empty-state";
 import { VocabularyHeader } from "./vocabulary-header";
 import {
+  CloseIcon,
   PlayIcon,
   PlusIcon,
   SearchIcon,
@@ -41,6 +42,7 @@ export function VocabularyScreen({
     useState<VocabularyStatus>("learning");
   const [addOpen, setAddOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const searchInputRef = useRef<HTMLInputElement>(null);
   const visibleItems = activeTab === "learning" ? learning : learned;
   const normalizedQuery = searchQuery.trim().toLocaleLowerCase();
   const filteredItems = normalizedQuery
@@ -63,6 +65,16 @@ export function VocabularyScreen({
     }
   }
 
+  function changeTab(tab: VocabularyStatus) {
+    setActiveTab(tab);
+    setSearchQuery("");
+  }
+
+  function clearSearch() {
+    setSearchQuery("");
+    searchInputRef.current?.focus();
+  }
+
   return (
     <>
       <div className={styles.screen}>
@@ -80,22 +92,31 @@ export function VocabularyScreen({
         >
           <VocabularyTabs
             activeTab={activeTab}
-            onChange={setActiveTab}
+            onChange={changeTab}
           />
-          <label className={styles.search}>
+          <div className={styles.search}>
             <SearchIcon />
-            <span className={styles.visuallyHidden}>
-              Search phrases
-            </span>
             <input
+              ref={searchInputRef}
               type="search"
               value={searchQuery}
               onChange={(event) => setSearchQuery(event.target.value)}
               placeholder="Search phrases"
+              aria-label="Search phrases"
               autoComplete="off"
               spellCheck={false}
             />
-          </label>
+            {searchQuery && (
+              <button
+                type="button"
+                className={styles.searchClear}
+                aria-label="Clear search"
+                onClick={clearSearch}
+              >
+                <CloseIcon />
+              </button>
+            )}
+          </div>
           <section
             id={`${activeTab}-panel`}
             role="tabpanel"
