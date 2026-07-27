@@ -197,7 +197,7 @@ describe("Telegram webhook workflow", () => {
         "Put /import on the first line, then add one phrase per line:\n" +
         "• phrase - description\n" +
         "• phrase — description\n\n" +
-        "☝️ A few rules:\n\n" +
+        "☝️ A few rules:\n" +
         "• A phrase can’t be longer than 35 characters\n" +
         "• A description can’t be longer than 45 characters\n" +
         "• You can import up to 50 phrases at a time\n\n" +

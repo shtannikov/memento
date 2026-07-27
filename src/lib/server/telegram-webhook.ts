@@ -73,7 +73,7 @@ const FALLBACK_MESSAGE =
   "Put /import on the first line, then add one phrase per line:\n" +
   "• phrase - description\n" +
   "• phrase — description\n\n" +
-  "☝️ A few rules:\n\n" +
+  "☝️ A few rules:\n" +
   `• A phrase can’t be longer than ${TERM_MAX_LENGTH} characters\n` +
   `• A description can’t be longer than ${DEFINITION_MAX_LENGTH} characters\n` +
   `• You can import up to ${IMPORT_MAX_ITEMS} phrases at a time\n\n` +
