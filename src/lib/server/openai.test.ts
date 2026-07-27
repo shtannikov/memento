@@ -6,6 +6,7 @@ import {
   areQuizSentencesTooSimilar,
   buildQuizPrompt,
   generateQuizCards,
+  gradeQuizCards,
   normalizeQuizSentence,
   validateGeneratedCards,
   type GenerationVocabularyItem,
@@ -40,6 +41,59 @@ describe("quiz generation contract", () => {
     );
     expect(prompt).toContain("Never display the literal text 'sth'");
     expect(prompt).not.toContain("Let's ___ the meeting before lunch.");
+  });
+
+  it("preserves required objects and avoids adding duplicate objects", () => {
+    const prompt = buildQuizPrompt([
+      {
+        id: "1",
+        term: "put on",
+        definition: "Place clothing on your body.",
+      },
+      {
+        id: "2",
+        term: "do the laundry",
+        definition: "Wash dirty clothes.",
+      },
+    ]);
+    expect(prompt).toContain("Preserve the target's argument structure");
+    expect(prompt).toContain("I need to ___ my coat");
+    expect(prompt).toContain("never 'I need to ___ before we go outside'");
+    expect(prompt).toContain("I need to ___ tonight");
+    expect(prompt).toContain(
+      "never 'I plan to ___ all the muddy clothes'",
+    );
+    expect(prompt).toContain(
+      "Rewrite the surrounding sentence so the supplied target itself fits naturally",
+    );
+  });
+
+  it("asks the semantic grader to reject missing and duplicate objects", async () => {
+    const parse = vi.fn().mockResolvedValue({
+      status: "completed",
+      output_parsed: {
+        evaluations: [],
+        passed: false,
+      },
+    });
+    const openai = { responses: { parse } } as unknown as OpenAI;
+
+    await gradeQuizCards([], [], openai);
+
+    const request = parse.mock.calls[0][0];
+    const instructions = request.input[0].content;
+    expect(instructions).toContain(
+      "reject an obligatorily transitive expression used without its object",
+    );
+    expect(instructions).toContain(
+      "reject an expression that already contains its object",
+    );
+    expect(instructions).toContain(
+      "I need to put on before we go outside",
+    );
+    expect(instructions).toContain(
+      "I plan to do the laundry all the muddy clothes",
+    );
   });
 
   it("passes recent wording as forbidden context without translating definitions", () => {
