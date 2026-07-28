@@ -25,6 +25,14 @@ export type RecentQuizSentence = {
   sentence: string;
 };
 
+type GeneratedQuizCardDraft = GeneratedQuizCard & {
+  optionChecks: Array<{
+    option: string;
+    fits: boolean;
+    visibleCue: string;
+  }>;
+};
+
 const QuizRoundSchema = z.object({
   cards: z.array(
     z.object({
@@ -32,6 +40,13 @@ const QuizRoundSchema = z.object({
       sentence: z.string(),
       answer: z.string(),
       options: z.array(z.string()),
+      optionChecks: z.array(
+        z.object({
+          option: z.string(),
+          fits: z.boolean(),
+          visibleCue: z.string(),
+        }),
+      ),
     }),
   ),
 });
@@ -75,7 +90,12 @@ export function buildQuizPrompt(
     "For example, use 'I need to ___ my coat' for 'put on', never 'I need to ___ before we go outside'; use 'I need to ___ tonight' for 'do the laundry', never 'I plan to ___ all the muddy clothes'.",
     "Do not silently substitute a more natural synonym that is absent from the supplied targets. Rewrite the surrounding sentence so the supplied target itself fits naturally.",
     "The four options must be four distinct displayed forms derived from targets in this input whenever possible.",
-    "Exactly one option must fit both the grammar and meaning of the sentence. Do not translate, reveal, or quote definitions in sentences.",
+    "Before returning each card, substitute every displayed option into the exact visible sentence and judge the resulting complete sentence without using vocabularyId, the hidden definition, or knowledge of the intended answer.",
+    "Exactly one option must be the uniquely best fit for the visible sentence. A non-answer is not excluded merely because it describes a different intended situation: if it produces another natural, coherent reading, the card is ambiguous and must be rewritten or use a different distractor.",
+    "Make the answer unique with a concrete visible semantic, discourse, sequence, or collocational cue. Keep distractors challenging, but never rely on an unstated assumption about what the person probably meant.",
+    "For example, reject 'After swimming, I need to ___ before meeting my friends' when the options include both 'comb my hair' and 'get dressed': both are coherent, and 'get dressed' may be the more likely prerequisite. Add visible context that specifically requires hair grooming, or choose a non-competing distractor.",
+    "Return one optionChecks entry for each displayed option in the same wording. Set fits=true for every option that creates any natural, coherent reading of the visible sentence, not only for the intended answer. In visibleCue, copy an exact quote of at least two words from the visible sentence that supports or excludes that option; never invent an explanation. Exactly one check must have fits=true, and it must be the declared answer.",
+    "Do not translate, reveal, or quote definitions in sentences.",
     "Create fresh situations and wording. For each vocabularyId, do not reuse or closely paraphrase any of its recentSentences.",
     "Return every vocabularyId exactly once and do not add items.",
     JSON.stringify({ items, recentSentences }),
@@ -97,9 +117,17 @@ export async function generateQuizCards(
       openai,
     );
     try {
+      const drafts = validateGeneratedOptionChecks(
+        response.output_parsed.cards,
+      );
       return validateGeneratedCards(
         items,
-        response.output_parsed.cards,
+        drafts.map(({ vocabularyId, sentence, answer, options }) => ({
+          vocabularyId,
+          sentence,
+          answer,
+          options,
+        })),
         forbiddenSentences,
       );
     } catch (error) {
@@ -115,6 +143,42 @@ export async function generateQuizCards(
   }
 
   throw invalidGeneration();
+}
+
+export function validateGeneratedOptionChecks(
+  cards: GeneratedQuizCardDraft[],
+): GeneratedQuizCardDraft[] {
+  for (const card of cards) {
+    const normalizedSentence = normalizeQuizSentence(card.sentence);
+    const normalizedAnswer = normalizeGeneratedOption(card.answer);
+    const normalizedOptions = card.options.map(normalizeGeneratedOption);
+    const normalizedChecks = card.optionChecks.map((check) => ({
+      option: normalizeGeneratedOption(check.option),
+      fits: check.fits,
+      visibleCue: normalizeQuizSentence(check.visibleCue),
+    }));
+    const fittingChecks = normalizedChecks.filter((check) => check.fits);
+
+    if (
+      normalizedChecks.length !== normalizedOptions.length ||
+      new Set(normalizedChecks.map((check) => check.option)).size !==
+        normalizedOptions.length ||
+      normalizedOptions.some(
+        (option) =>
+          !normalizedChecks.some((check) => check.option === option),
+      ) ||
+      normalizedChecks.some(
+        (check) =>
+          check.visibleCue.split(" ").length < 2 ||
+          !normalizedSentence.includes(check.visibleCue),
+      ) ||
+      fittingChecks.length !== 1 ||
+      fittingChecks[0].option !== normalizedAnswer
+    ) {
+      throw invalidGeneration();
+    }
+  }
+  return cards;
 }
 
 export function validateGeneratedCards(
@@ -217,6 +281,10 @@ export function areQuizSentencesTooSimilar(
     if (recentTokens.has(token)) sharedTokens += 1;
   }
   return sharedTokens / smallerSize >= 0.8;
+}
+
+function normalizeGeneratedOption(option: string): string {
+  return option.trim().toLocaleLowerCase("en");
 }
 
 async function requestQuizCards(

@@ -9,6 +9,7 @@ import {
   gradeQuizCards,
   normalizeQuizSentence,
   validateGeneratedCards,
+  validateGeneratedOptionChecks,
   type GenerationVocabularyItem,
   type GeneratedQuizCard,
 } from "./openai";
@@ -66,6 +67,58 @@ describe("quiz generation contract", () => {
     expect(prompt).toContain(
       "Rewrite the surrounding sentence so the supplied target itself fits naturally",
     );
+  });
+
+  it("rejects coherent alternative scenarios instead of guessing intent", () => {
+    const prompt = buildQuizPrompt([
+      {
+        id: "1",
+        term: "comb my hair",
+        definition: "Make my hair neat with a comb.",
+      },
+      {
+        id: "2",
+        term: "get dressed",
+        definition: "Put on clothes.",
+      },
+    ]);
+    expect(prompt).toContain(
+      "if it produces another natural, coherent reading, the card is ambiguous",
+    );
+    expect(prompt).toContain(
+      "both 'comb my hair' and 'get dressed'",
+    );
+    expect(prompt).toContain(
+      "'get dressed' may be the more likely prerequisite",
+    );
+    expect(prompt).toContain(
+      "never rely on an unstated assumption",
+    );
+    expect(prompt).toContain(
+      "Set fits=true for every option that creates any natural, coherent reading",
+    );
+    expect(prompt).toContain(
+      "copy an exact quote of at least two words",
+    );
+  });
+
+  it("requires one evidenced self-check per option and one fitting answer", () => {
+    const checkedCards = withOptionChecks(validCards());
+    expect(validateGeneratedOptionChecks(checkedCards)).toEqual(
+      checkedCards,
+    );
+
+    checkedCards[0].optionChecks[1].fits = true;
+    expect(() =>
+      validateGeneratedOptionChecks(checkedCards),
+    ).toThrow("Couldn’t prepare");
+
+    const unsupportedCueCards = withOptionChecks(validCards());
+    unsupportedCueCards[0].optionChecks[0].visibleCue =
+      "This text is absent";
+    expect(() =>
+      validateGeneratedOptionChecks(unsupportedCueCards),
+    ).toThrow("Couldn’t prepare");
   });
 
   it("asks the semantic grader to reject missing and duplicate objects", async () => {
@@ -291,6 +344,27 @@ function alternateCards(): GeneratedQuizCard[] {
 function completedResponse(cards: GeneratedQuizCard[]) {
   return {
     status: "completed",
-    output_parsed: { cards },
+    output_parsed: { cards: withOptionChecks(cards) },
   };
+}
+
+function withOptionChecks(cards: GeneratedQuizCard[]) {
+  return cards.map((card) => ({
+    ...card,
+    optionChecks: card.options.map((option) => ({
+      option,
+      fits: option === card.answer,
+      visibleCue: visibleCueFrom(card.sentence),
+    })),
+  }));
+}
+
+function visibleCueFrom(sentence: string): string {
+  return sentence
+    .split("___")
+    .map((part) => part.trim())
+    .sort((left, right) => right.length - left.length)[0]
+    .split(/\s+/)
+    .slice(0, 3)
+    .join(" ");
 }
