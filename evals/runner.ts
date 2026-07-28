@@ -117,6 +117,33 @@ const cases: EvalCase[] = [
       },
     ],
   },
+  {
+    id: "coherent-routine-actions",
+    description:
+      "Makes one routine action uniquely best through visible context instead of relying on the intended scenario.",
+    items: [
+      {
+        id: "401",
+        term: "comb my hair",
+        definition: "Причесаться.",
+      },
+      {
+        id: "402",
+        term: "get dressed",
+        definition: "Одеться.",
+      },
+      {
+        id: "403",
+        term: "do my eyebrows",
+        definition: "Привести брови в порядок.",
+      },
+      {
+        id: "404",
+        term: "yawn",
+        definition: "Зевнуть.",
+      },
+    ],
+  },
 ];
 
 async function runCase(evalCase: EvalCase) {
