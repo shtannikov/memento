@@ -68,6 +68,35 @@ describe("quiz generation contract", () => {
     );
   });
 
+  it("asks for a quick ambiguity check without expanding the output", () => {
+    const prompt = buildQuizPrompt([
+      {
+        id: "1",
+        term: "comb my hair",
+        definition: "Make my hair neat with a comb.",
+      },
+      {
+        id: "2",
+        term: "get dressed",
+        definition: "Put on clothes.",
+      },
+    ]);
+    expect(prompt).toContain(
+      "Quickly substitute all four options",
+    );
+    expect(prompt).toContain(
+      "both 'comb my hair' and 'get dressed'",
+    );
+    expect(prompt).toContain(
+      "'get dressed' may fit better",
+    );
+    expect(prompt).toContain(
+      "equally natural or more likely",
+    );
+    expect(prompt).not.toContain("optionChecks");
+    expect(prompt).not.toContain("visibleCue");
+  });
+
   it("asks the semantic grader to reject missing and duplicate objects", async () => {
     const parse = vi.fn().mockResolvedValue({
       status: "completed",
