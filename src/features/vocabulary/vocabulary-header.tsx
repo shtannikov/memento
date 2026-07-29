@@ -47,60 +47,66 @@ export function VocabularyHeader({
 
   return (
     <header className={styles.header}>
-      {activeLanguage && languages && onLanguageChange && (
-        <details
-          ref={languageMenuRef}
-          className={styles.languageSelector}
-        >
-          <summary
-            aria-label={`Change learning language. Current language: ${activeLanguage.label}`}
-          >
-            <span className={styles.languageCode}>
-              {activeLanguage.code}
-            </span>
-            <span>{activeLanguage.label}</span>
-            <span className={styles.languageChevron} aria-hidden="true">
-              ▾
-            </span>
-          </summary>
-          <div
-            className={styles.languageMenu}
-            aria-label="Learning language"
-          >
-            <p>Learning language</p>
-            {languages.map((language) => {
-              const selected = language.id === activeLanguage.id;
-
-              return (
-                <button
-                  key={language.id}
-                  type="button"
-                  aria-pressed={selected}
-                  onClick={() => {
-                    onLanguageChange(language.id);
-                    languageMenuRef.current?.removeAttribute("open");
-                  }}
-                >
-                  <span className={styles.languageCode}>
-                    {language.code}
-                  </span>
-                  <span>{language.label}</span>
-                  {selected && (
-                    <span
-                      className={styles.languageCheck}
-                      aria-hidden="true"
-                    >
-                      ✓
-                    </span>
-                  )}
-                </button>
-              );
-            })}
-          </div>
-        </details>
-      )}
       <div className={styles.headerRow}>
-        <h1>Vocabulary</h1>
+        <div className={styles.headerTitle}>
+          <h1>Vocabulary</h1>
+          {activeLanguage && languages && onLanguageChange && (
+            <details
+              ref={languageMenuRef}
+              className={styles.languageSelector}
+            >
+              <summary
+                aria-label={`Change learning language. Current language: ${activeLanguage.label}`}
+              >
+                <span className={styles.languageCode}>
+                  {activeLanguage.code}
+                </span>
+                <span
+                  className={styles.languageChevron}
+                  aria-hidden="true"
+                >
+                  ▾
+                </span>
+              </summary>
+              <div
+                className={styles.languageMenu}
+                aria-label="Learning language"
+              >
+                <p>Learning language</p>
+                {languages.map((language) => {
+                  const selected = language.id === activeLanguage.id;
+
+                  return (
+                    <button
+                      key={language.id}
+                      type="button"
+                      aria-pressed={selected}
+                      onClick={() => {
+                        onLanguageChange(language.id);
+                        languageMenuRef.current?.removeAttribute(
+                          "open",
+                        );
+                      }}
+                    >
+                      <span className={styles.languageCode}>
+                        {language.code}
+                      </span>
+                      <span>{language.label}</span>
+                      {selected && (
+                        <span
+                          className={styles.languageCheck}
+                          aria-hidden="true"
+                        >
+                          ✓
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            </details>
+          )}
+        </div>
         <div className={styles.totals} aria-label="Vocabulary totals">
           <VocabularyTotal count={learningCount} label="learning" />
           <div className={styles.totalDivider} />

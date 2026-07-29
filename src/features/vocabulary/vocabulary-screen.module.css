@@ -22,23 +22,17 @@
 }
 
 .languageSelector {
-  position: absolute;
+  position: relative;
   z-index: 8;
-  top: max(
-    16px,
-    calc(var(--tg-content-safe-area-inset-top, 0px) + 8px),
-    calc(var(--tg-safe-area-inset-top, 0px) + 8px),
-    calc(env(safe-area-inset-top, 0px) + 8px)
-  );
-  right: 20px;
+  flex-shrink: 0;
 }
 
 .languageSelector summary {
   display: inline-flex;
   min-height: 36px;
   align-items: center;
-  gap: 7px;
-  padding: 5px 10px 5px 6px;
+  gap: 4px;
+  padding: 5px 8px 5px 5px;
   color: #475569;
   border: 1px solid #e2e8f0;
   border-radius: 999px;
@@ -157,6 +151,13 @@
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
+}
+
+.headerTitle {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 8px;
 }
 
 .header h1 {
@@ -523,10 +524,6 @@
   .header {
     padding-right: 16px;
     padding-left: 16px;
-  }
-
-  .languageSelector {
-    right: 16px;
   }
 
   .floatingButton {
