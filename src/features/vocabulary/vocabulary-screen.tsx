@@ -3,7 +3,10 @@ import { useRef, useState } from "react";
 import { AddPhraseDialog } from "./add-phrase-dialog";
 import { VocabularyCard } from "./vocabulary-card";
 import { VocabularyEmptyState } from "./vocabulary-empty-state";
-import { VocabularyHeader } from "./vocabulary-header";
+import {
+  type LearningLanguage,
+  VocabularyHeader,
+} from "./vocabulary-header";
 import {
   CloseIcon,
   PlayIcon,
@@ -28,6 +31,9 @@ type VocabularyScreenProps = {
     status: VocabularyStatus,
   ) => void;
   onStartQuiz: () => void;
+  languages?: LearningLanguage[];
+  activeLanguageId?: string;
+  onLanguageChange?: (languageId: string) => void;
 };
 
 export function VocabularyScreen({
@@ -37,6 +43,9 @@ export function VocabularyScreen({
   onRemove,
   onChangeStatus,
   onStartQuiz,
+  languages,
+  activeLanguageId,
+  onLanguageChange,
 }: VocabularyScreenProps) {
   const [activeTab, setActiveTab] =
     useState<VocabularyStatus>("learning");
@@ -81,6 +90,9 @@ export function VocabularyScreen({
         <VocabularyHeader
           learningCount={learning.length}
           learnedCount={learned.length}
+          languages={languages}
+          activeLanguageId={activeLanguageId}
+          onLanguageChange={onLanguageChange}
         />
 
         <div

@@ -187,4 +187,35 @@ describe("VocabularyScreen", () => {
       "learning",
     );
   });
+
+  it("offers a scalable learning-language menu", async () => {
+    const user = userEvent.setup();
+    const onLanguageChange = vi.fn();
+
+    render(
+      <VocabularyScreen
+        learning={[]}
+        learned={[]}
+        onAdd={vi.fn()}
+        onRemove={vi.fn()}
+        onChangeStatus={vi.fn()}
+        onStartQuiz={vi.fn()}
+        languages={[
+          { id: "english", code: "EN", label: "English" },
+          { id: "czech", code: "CS", label: "Czech" },
+        ]}
+        activeLanguageId="english"
+        onLanguageChange={onLanguageChange}
+      />,
+    );
+
+    await user.click(
+      screen.getByLabelText(
+        "Change learning language. Current language: English",
+      ),
+    );
+    await user.click(screen.getByRole("button", { name: /Czech/ }));
+
+    expect(onLanguageChange).toHaveBeenCalledWith("czech");
+  });
 });
