@@ -108,7 +108,8 @@ convention says otherwise. Never print or commit credentials.
 - Add unit coverage for exact app-ID handling, independent bot token and
   webhook secret selection, direct Telegram import/reset routing, starters,
   prompt selection, and cross-app rejection.
-- Add live eval cases using production client methods. Cover the complete
+- Add live eval cases in a dedicated `evals/cases/<app-id>.ts` module using
+  production client methods. Cover the complete
   starter set, a smaller set, realistic morphology/grammar traps, multilingual
   definitions, and Russian definitions.
 - Make eval assertions target-language-aware. Do not reuse an English-only
