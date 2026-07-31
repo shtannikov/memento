@@ -57,6 +57,7 @@ describe("Telegram webhook workflow", () => {
         { term: "urge", definition: "desire" },
         { term: "figure out", definition: "understand" },
       ],
+      "en",
     );
   });
 
@@ -141,6 +142,25 @@ describe("Telegram webhook workflow", () => {
     });
     expect(resetItems).toHaveBeenCalledWith(
       expect.objectContaining({ id: 42 }),
+      "en",
+    );
+  });
+
+  it("routes Czech imports directly to the Czech app", async () => {
+    const importItems = vi.fn().mockResolvedValue(1);
+    const parsed = parseTelegramUpdate(update("/import\ndát si kávu - have coffee"));
+    if (!parsed) throw new Error("Expected update to parse");
+
+    await processTelegramUpdate(
+      parsed,
+      { importItems, resetItems: vi.fn() },
+      "cz",
+    );
+
+    expect(importItems).toHaveBeenCalledWith(
+      expect.objectContaining({ id: 42 }),
+      [{ term: "dát si kávu", definition: "have coffee" }],
+      "cz",
     );
   });
 

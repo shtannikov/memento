@@ -1,11 +1,12 @@
 import type { TelegramUser } from "./telegram-auth";
+import { DEFAULT_APP_ID, type AppId } from "@/lib/domain/app";
 import { getMementoDb } from "./supabase";
-import { STARTER_VOCABULARY } from "@/lib/domain/starter-vocabulary";
 import {
   VOCABULARY_MAX_ITEMS,
   type VocabularyInput,
 } from "@/lib/domain/vocabulary";
 import { AppError } from "./api";
+import { getAppConfig } from "./app-config";
 
 export type StoredVocabularyItem = {
   id: string;
@@ -14,9 +15,12 @@ export type StoredVocabularyItem = {
   status: "learning" | "learned";
 };
 
-export async function ensureUserAndSeed(user: TelegramUser): Promise<void> {
+export async function ensureUserAndSeed(
+  user: TelegramUser,
+  appId: AppId = DEFAULT_APP_ID,
+): Promise<void> {
   const supabase = getMementoDb();
-  const { data: appUser, error: userError } = await supabase
+  const { error: userError } = await supabase
     .from("app_users")
     .upsert(
       {
@@ -28,22 +32,35 @@ export async function ensureUserAndSeed(user: TelegramUser): Promise<void> {
       },
       { onConflict: "telegram_user_id" },
     )
-    .select("starter_seeded_at")
+    .select("telegram_user_id")
     .single();
   if (userError) throw userError;
-  if (appUser.starter_seeded_at) return;
+
+  const { data: userApp, error: userAppError } = await supabase
+    .from("user_apps")
+    .upsert(
+      { user_id: user.id, app_id: appId, updated_at: new Date().toISOString() },
+      { onConflict: "user_id,app_id" },
+    )
+    .select("starter_seeded_at")
+    .single();
+  if (userAppError) throw userAppError;
+  if (userApp.starter_seeded_at) return;
+
+  const starterVocabulary = getAppConfig(appId).starterVocabulary;
 
   const { error: seedError } = await supabase
     .from("vocabulary_items")
     .upsert(
-      STARTER_VOCABULARY.map((item) => ({
+      starterVocabulary.map((item) => ({
         user_id: user.id,
+        app_id: appId,
         term: item.term,
         definition: item.definition,
         status: "learning",
         is_removed: false,
       })),
-      { onConflict: "user_id,normalized_term", ignoreDuplicates: true },
+      { onConflict: "user_id,app_id,normalized_term", ignoreDuplicates: true },
     )
     .select("id");
   if (seedError) throw seedError;
@@ -52,9 +69,10 @@ export async function ensureUserAndSeed(user: TelegramUser): Promise<void> {
     .from("vocabulary_items")
     .select("id")
     .eq("user_id", user.id)
+    .eq("app_id", appId)
     .in(
       "normalized_term",
-      STARTER_VOCABULARY.map((item) => item.term.toLowerCase()),
+      starterVocabulary.map((item) => item.term.toLocaleLowerCase()),
     );
   if (starterError) throw starterError;
   const { error: scheduleError } = await supabase
@@ -66,20 +84,23 @@ export async function ensureUserAndSeed(user: TelegramUser): Promise<void> {
   if (scheduleError) throw scheduleError;
 
   const { error: markError } = await supabase
-    .from("app_users")
+    .from("user_apps")
     .update({ starter_seeded_at: new Date().toISOString() })
-    .eq("telegram_user_id", user.id)
+    .eq("user_id", user.id)
+    .eq("app_id", appId)
     .is("starter_seeded_at", null);
   if (markError) throw markError;
 }
 
 export async function loadVocabulary(
   userId: number,
+  appId: AppId = DEFAULT_APP_ID,
 ): Promise<{ learning: StoredVocabularyItem[]; learned: StoredVocabularyItem[] }> {
   const { data, error } = await getMementoDb()
     .from("vocabulary_items")
     .select("id, term, definition, status")
     .eq("user_id", userId)
+    .eq("app_id", appId)
     .eq("is_removed", false)
     .order("created_at", { ascending: false });
   if (error) throw error;
@@ -99,10 +120,12 @@ export async function loadVocabulary(
 export async function importVocabularyItems(
   user: TelegramUser,
   items: VocabularyInput[],
+  appId: AppId = DEFAULT_APP_ID,
 ): Promise<number> {
-  await ensureUserAndSeed(user);
+  await ensureUserAndSeed(user, appId);
   const { error } = await getMementoDb().rpc("import_vocabulary_items", {
     requested_user_id: user.id,
+    requested_app_id: appId,
     requested_items: items,
   });
   if (error) {
@@ -118,10 +141,14 @@ export async function importVocabularyItems(
   return items.length;
 }
 
-export async function resetVocabulary(user: TelegramUser): Promise<void> {
-  await ensureUserAndSeed(user);
+export async function resetVocabulary(
+  user: TelegramUser,
+  appId: AppId = DEFAULT_APP_ID,
+): Promise<void> {
+  await ensureUserAndSeed(user, appId);
   const { error } = await getMementoDb().rpc("reset_vocabulary", {
     requested_user_id: user.id,
+    requested_app_id: appId,
   });
   if (error) throw error;
 }

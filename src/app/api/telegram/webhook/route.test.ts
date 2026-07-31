@@ -62,12 +62,13 @@ describe("Telegram webhook route", () => {
     const response = await POST(request());
 
     expect(response.status).toBe(200);
-    expect(processTelegramUpdate).toHaveBeenCalledWith(parsed);
+    expect(processTelegramUpdate).toHaveBeenCalledWith(parsed, undefined, "en");
     expect(sendTelegramMessage).toHaveBeenCalledWith(
       42,
       "Imported 2 phrases.",
       7,
       undefined,
+      "en",
     );
   });
 
@@ -90,6 +91,7 @@ describe("Telegram webhook route", () => {
       "Tap <b>App</b> below.",
       7,
       "HTML",
+      "en",
     );
   });
 

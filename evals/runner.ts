@@ -1,6 +1,10 @@
 import { loadEnvConfig } from "@next/env";
 
-import { STARTER_VOCABULARY } from "../src/lib/domain/starter-vocabulary";
+import {
+  CZECH_STARTER_VOCABULARY,
+  STARTER_VOCABULARY,
+} from "../src/lib/domain/starter-vocabulary";
+import type { AppId } from "../src/lib/domain/app";
 import type {
   GenerationVocabularyItem,
   RecentQuizSentence,
@@ -15,6 +19,7 @@ const QUALITY_RETRIES = 2;
 type EvalCase = {
   id: string;
   description: string;
+  appId: AppId;
   items: GenerationVocabularyItem[];
   recentSentences?: RecentQuizSentence[];
 };
@@ -37,6 +42,7 @@ const cases: EvalCase[] = [
     id: "approved-starter-vocabulary",
     description:
       "Generates grammatical, unambiguous cards for every approved starter word and phrase.",
+    appId: "en",
     items: STARTER_VOCABULARY.map((item, index) => ({
       id: String(index + 1),
       ...item,
@@ -46,6 +52,7 @@ const cases: EvalCase[] = [
     id: "russian-definitions",
     description:
       "Uses Russian definitions as guidance while keeping targets and exercises in English.",
+    appId: "en",
     items: STARTER_VOCABULARY.map((item, index) => ({
       id: String(index + 1),
       term: item.term,
@@ -56,6 +63,7 @@ const cases: EvalCase[] = [
     id: "smaller-round",
     description:
       "Generates a structurally complete round when fewer than ten items are available.",
+    appId: "en",
     items: STARTER_VOCABULARY.slice(5).map((item, index) => ({
       id: String(index + 101),
       ...item,
@@ -65,6 +73,7 @@ const cases: EvalCase[] = [
     id: "avoid-recent-russian-definition-cards",
     description:
       "Generates fresh English situations instead of repeating recent cards when definitions are Russian.",
+    appId: "en",
     items: STARTER_VOCABULARY.slice(5, 9).map((item, index) => ({
       id: String(index + 201),
       term: item.term,
@@ -94,6 +103,7 @@ const cases: EvalCase[] = [
     id: "phrasal-verb-argument-structure",
     description:
       "Keeps required clothing objects with transitive phrasal verbs and does not attach a second object to complete expressions.",
+    appId: "en",
     items: [
       {
         id: "301",
@@ -121,6 +131,7 @@ const cases: EvalCase[] = [
     id: "coherent-routine-actions",
     description:
       "Makes one routine action uniquely best through visible context instead of relying on the intended scenario.",
+    appId: "en",
     items: [
       {
         id: "401",
@@ -144,6 +155,28 @@ const cases: EvalCase[] = [
       },
     ],
   },
+  {
+    id: "czech-starter-vocabulary",
+    description:
+      "Generates grammatical Czech cards with natural inflection and reflexive particles.",
+    appId: "cz",
+    items: CZECH_STARTER_VOCABULARY.map((item, index) => ({
+      id: String(index + 501),
+      ...item,
+    })),
+  },
+  {
+    id: "czech-russian-definitions",
+    description:
+      "Uses Russian definitions as guidance while keeping targets and exercises in Czech.",
+    appId: "cz",
+    items: [
+      { id: "601", term: "dát si kávu", definition: "Выпить кофе." },
+      { id: "602", term: "těšit se na něco", definition: "Ждать с нетерпением." },
+      { id: "603", term: "dávat smysl", definition: "Иметь смысл." },
+      { id: "604", term: "mít pravdu", definition: "Быть правым." },
+    ],
+  },
 ];
 
 async function runCase(evalCase: EvalCase) {
@@ -157,8 +190,14 @@ async function runCase(evalCase: EvalCase) {
     1,
     undefined,
     evalCase.recentSentences,
+    evalCase.appId,
   );
-  const grade = await gradeQuizCards(evalCase.items, cards);
+  const grade = await gradeQuizCards(
+    evalCase.items,
+    cards,
+    undefined,
+    evalCase.appId,
+  );
   const expectedIds = new Set(evalCase.items.map((item) => item.id));
   const cardIds = new Set(cards.map((card) => card.vocabularyId));
   const noCyrillic = cards.every(
@@ -190,7 +229,7 @@ async function runCase(evalCase: EvalCase) {
   );
   const failedEvaluations = grade.evaluations.filter(
     (evaluation) =>
-      !evaluation.englishSentence ||
+      !evaluation.targetLanguageSentence ||
       !evaluation.meaningAligned ||
       !evaluation.unambiguous ||
       !evaluation.definitionHidden,

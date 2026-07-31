@@ -1,4 +1,5 @@
 import { DAILY_GENERATION_LIMIT, ROUND_SIZE } from "@/lib/domain/round";
+import type { AppId } from "@/lib/domain/app";
 import { randomizeQuizOptions } from "@/lib/domain/quiz-options";
 import { AppError } from "./api";
 import {
@@ -25,6 +26,7 @@ export type PreparedRound = {
 
 export async function createRound(
   userId: number,
+  appId: AppId,
   retryRoundId?: string,
 ): Promise<PreparedRound> {
   const supabase = getMementoDb();
@@ -32,11 +34,12 @@ export async function createRound(
     .from("rounds")
     .update({ status: "cancelled", completed_at: new Date().toISOString() })
     .eq("user_id", userId)
+    .eq("app_id", appId)
     .in("status", ["preparing", "active"]);
 
   const items = retryRoundId
-    ? await loadRetryItems(userId, retryRoundId)
-    : await selectRoundItems(userId);
+    ? await loadRetryItems(userId, appId, retryRoundId)
+    : await selectRoundItems(userId, appId);
   if (items.length === 0) {
     throw new AppError(
       "NO_LEARNING_ITEMS",
@@ -44,12 +47,13 @@ export async function createRound(
       409,
     );
   }
-  const recentSentences = await loadRecentQuizSentences(userId, items);
+  const recentSentences = await loadRecentQuizSentences(userId, items, appId);
 
   const { data: createdRound, error: createError } = await supabase
     .from("rounds")
     .insert({
       user_id: userId,
+      app_id: appId,
       status: "preparing",
       selected_vocabulary_ids: items.map((item) => item.id),
       total_items: items.length,
@@ -63,11 +67,11 @@ export async function createRound(
   const today = new Date().toISOString().slice(0, 10);
   const { data: reserved, error: quotaError } = await supabase.rpc(
     "reserve_generation_attempt",
-    { requested_user_id: userId, requested_date: today },
+    { requested_user_id: userId, requested_app_id: appId, requested_date: today },
   );
   if (quotaError) throw quotaError;
   if (!reserved) {
-    await markRound(createdRound.id, userId, "failed");
+    await markRound(createdRound.id, userId, appId, "failed");
     throw new AppError(
       "DAILY_GENERATION_LIMIT",
       "You’ve used today’s five quiz generations.\nTry again tomorrow.",
@@ -81,6 +85,7 @@ export async function createRound(
       userId,
       openai,
       recentSentences,
+      appId,
     );
     const cards = randomizeQuizOptions(generatedCards);
     const { error: cardError } = await supabase.from("round_cards").insert(
@@ -103,17 +108,18 @@ export async function createRound(
       })
       .eq("id", createdRound.id)
       .eq("user_id", userId)
+      .eq("app_id", appId)
       .eq("status", "preparing");
     if (activateError) throw activateError;
 
-    const attempts = await generationAttempts(userId, today);
+    const attempts = await generationAttempts(userId, appId, today);
     return {
       id: createdRound.id,
       attemptsRemaining: Math.max(0, DAILY_GENERATION_LIMIT - attempts),
       cards: cards.map((card) => ({ ...card, id: card.vocabularyId })),
     };
   } catch (error) {
-    await markRound(createdRound.id, userId, "failed");
+    await markRound(createdRound.id, userId, appId, "failed");
     if (error instanceof AppError) throw error;
     throw new AppError(
       "GENERATION_FAILED",
@@ -126,12 +132,14 @@ export async function createRound(
 
 async function selectRoundItems(
   userId: number,
+  appId: AppId,
 ): Promise<GenerationVocabularyItem[]> {
   const supabase = getMementoDb();
   const { data: vocabulary, error } = await supabase
     .from("vocabulary_items")
     .select("id, term, definition")
     .eq("user_id", userId)
+    .eq("app_id", appId)
     .eq("status", "learning")
     .eq("is_removed", false);
   if (error) throw error;
@@ -175,6 +183,7 @@ async function selectRoundItems(
 
 async function loadRetryItems(
   userId: number,
+  appId: AppId,
   retryRoundId: string,
 ): Promise<GenerationVocabularyItem[]> {
   const supabase = getMementoDb();
@@ -183,6 +192,7 @@ async function loadRetryItems(
     .select("selected_vocabulary_ids, status")
     .eq("id", retryRoundId)
     .eq("user_id", userId)
+    .eq("app_id", appId)
     .single();
   if (error || !round || !["failed", "cancelled"].includes(round.status)) {
     throw new AppError("ROUND_STALE", "This quiz can no longer be retried.", 409);
@@ -192,6 +202,7 @@ async function loadRetryItems(
     .from("vocabulary_items")
     .select("id, term, definition")
     .eq("user_id", userId)
+    .eq("app_id", appId)
     .eq("status", "learning")
     .eq("is_removed", false)
     .in("id", round.selected_vocabulary_ids);
@@ -213,6 +224,7 @@ async function loadRetryItems(
 async function markRound(
   roundId: string,
   userId: number,
+  appId: AppId,
   status: "failed" | "cancelled",
 ): Promise<void> {
   await getMementoDb()
@@ -220,17 +232,20 @@ async function markRound(
     .update({ status, completed_at: new Date().toISOString() })
     .eq("id", roundId)
     .eq("user_id", userId)
+    .eq("app_id", appId)
     .in("status", ["preparing", "active"]);
 }
 
 async function generationAttempts(
   userId: number,
+  appId: AppId,
   date: string,
 ): Promise<number> {
   const { data } = await getMementoDb()
     .from("generation_usage")
     .select("attempts")
     .eq("user_id", userId)
+    .eq("app_id", appId)
     .eq("usage_date", date)
     .maybeSingle();
   return data?.attempts ?? 0;

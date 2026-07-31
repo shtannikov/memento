@@ -1,6 +1,8 @@
 import "server-only";
 
 import { z } from "zod";
+import type { AppId } from "@/lib/domain/app";
+import { getAppConfig, readAppSecret } from "./app-config";
 
 const TelegramResponseSchema = z.object({
   ok: z.boolean(),
@@ -12,9 +14,12 @@ export async function sendTelegramMessage(
   text: string,
   replyToMessageId?: number,
   parseMode?: "HTML",
+  appId: AppId = "en",
 ): Promise<void> {
-  const token = process.env.TELEGRAM_BOT_TOKEN;
-  if (!token) throw new Error("TELEGRAM_BOT_TOKEN is not configured");
+  const token = readAppSecret(appId, "botToken");
+  if (!token) {
+    throw new Error(`${getAppConfig(appId).botTokenEnv} is not configured`);
+  }
 
   const response = await fetch(
     `https://api.telegram.org/bot${token}/sendMessage`,

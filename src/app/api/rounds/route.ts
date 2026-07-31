@@ -15,11 +15,11 @@ const CreateRoundSchema = z.object({
 
 export async function POST(request: Request) {
   try {
-    const user = authenticateRequest(request);
-    await ensureUserAndSeed(user);
+    const { appId, user } = authenticateRequest(request);
+    await ensureUserAndSeed(user, appId);
     const body = await parseJson(request, CreateRoundSchema);
     return NextResponse.json({
-      round: await createRound(user.id, body.retryRoundId),
+      round: await createRound(user.id, appId, body.retryRoundId),
     });
   } catch (error) {
     return apiError(error);

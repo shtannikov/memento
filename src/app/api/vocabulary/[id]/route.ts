@@ -22,8 +22,8 @@ type RouteContext = { params: Promise<{ id: string }> };
 
 export async function PATCH(request: Request, context: RouteContext) {
   try {
-    const user = authenticateRequest(request);
-    await ensureUserAndSeed(user);
+    const { appId, user } = authenticateRequest(request);
+    await ensureUserAndSeed(user, appId);
     const { id } = await context.params;
     if (!/^\d+$/.test(id)) {
       throw new AppError("INVALID_REQUEST", "Invalid vocabulary item.", 400);
@@ -37,6 +37,7 @@ export async function PATCH(request: Request, context: RouteContext) {
       })
       .eq("id", id)
       .eq("user_id", user.id)
+      .eq("app_id", appId)
       .eq("is_removed", false)
       .select("id")
       .maybeSingle();
@@ -47,7 +48,7 @@ export async function PATCH(request: Request, context: RouteContext) {
     if (action === "restore") await resetSchedule(id);
 
     return NextResponse.json({
-      vocabulary: await loadVocabulary(user.id),
+      vocabulary: await loadVocabulary(user.id, appId),
     });
   } catch (error) {
     return apiError(error);
@@ -56,8 +57,8 @@ export async function PATCH(request: Request, context: RouteContext) {
 
 export async function DELETE(request: Request, context: RouteContext) {
   try {
-    const user = authenticateRequest(request);
-    await ensureUserAndSeed(user);
+    const { appId, user } = authenticateRequest(request);
+    await ensureUserAndSeed(user, appId);
     const { id } = await context.params;
     if (!/^\d+$/.test(id)) {
       throw new AppError("INVALID_REQUEST", "Invalid vocabulary item.", 400);
@@ -70,6 +71,7 @@ export async function DELETE(request: Request, context: RouteContext) {
       })
       .eq("id", id)
       .eq("user_id", user.id)
+      .eq("app_id", appId)
       .select("id")
       .maybeSingle();
     if (error) throw error;
@@ -78,7 +80,7 @@ export async function DELETE(request: Request, context: RouteContext) {
     }
 
     return NextResponse.json({
-      vocabulary: await loadVocabulary(user.id),
+      vocabulary: await loadVocabulary(user.id, appId),
     });
   } catch (error) {
     return apiError(error);

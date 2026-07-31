@@ -1,6 +1,7 @@
 import "server-only";
 
 import { z } from "zod";
+import { DEFAULT_APP_ID, type AppId } from "@/lib/domain/app";
 
 import {
   parseImportCommand,
@@ -88,6 +89,7 @@ export function parseTelegramUpdate(value: unknown): TelegramUpdate | null {
 export async function processTelegramUpdate(
   update: TelegramUpdate,
   dependencies: TelegramCommandDependencies = defaultDependencies,
+  appId: AppId = DEFAULT_APP_ID,
 ): Promise<TelegramReply | null> {
   const message = update.message;
   if (
@@ -117,7 +119,7 @@ export async function processTelegramUpdate(
   };
 
   if (command === "reset") {
-    await dependencies.resetItems(user);
+    await dependencies.resetItems(user, appId);
     return reply("🧹 Done! Your vocabulary has been reset.");
   }
 
@@ -128,6 +130,7 @@ export async function processTelegramUpdate(
     const imported = await dependencies.importItems(
       user,
       parsedImport.items,
+      appId,
     );
     const noun = imported === 1 ? "phrase" : "phrases";
     return reply(`✅ Imported ${imported} ${noun}!`);

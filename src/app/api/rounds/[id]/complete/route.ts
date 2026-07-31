@@ -26,13 +26,24 @@ type RouteContext = { params: Promise<{ id: string }> };
 
 export async function POST(request: Request, context: RouteContext) {
   try {
-    const user = authenticateRequest(request);
+    const { appId, user } = authenticateRequest(request);
     const { id } = await context.params;
     if (!z.string().uuid().safeParse(id).success) {
       throw new AppError("INVALID_REQUEST", "Invalid quiz.", 400);
     }
     const body = await parseJson(request, CompletionSchema);
-    const { data, error } = await getMementoDb().rpc("complete_round", {
+    const supabase = getMementoDb();
+    const { data: round, error: roundError } = await supabase
+      .from("rounds")
+      .select("id")
+      .eq("id", id)
+      .eq("user_id", user.id)
+      .eq("app_id", appId)
+      .maybeSingle();
+    if (roundError) throw roundError;
+    if (!round) throw new AppError("NOT_FOUND", "Quiz not found.", 404);
+
+    const { data, error } = await supabase.rpc("complete_round", {
       requested_round_id: id,
       requested_user_id: user.id,
       first_attempt_results: body.firstAttempts.map((result) => ({

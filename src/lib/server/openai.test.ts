@@ -1,7 +1,10 @@
 import type OpenAI from "openai";
 import { describe, expect, it, vi } from "vitest";
 
-import { STARTER_VOCABULARY } from "@/lib/domain/starter-vocabulary";
+import {
+  CZECH_STARTER_VOCABULARY,
+  STARTER_VOCABULARY,
+} from "@/lib/domain/starter-vocabulary";
 import {
   areQuizSentencesTooSimilar,
   buildQuizPrompt,
@@ -26,6 +29,25 @@ describe("quiz generation contract", () => {
     expect(prompt).toContain("definition may be in any language");
     expect(prompt).toContain("Сильное внезапное желание.");
     expect(prompt).toContain("natural English sentence");
+  });
+
+  it("uses a dedicated Czech prompt with Czech grammar constraints", () => {
+    const prompt = buildQuizPrompt(
+      [
+        {
+          id: "1",
+          term: "těšit se na něco",
+          definition: "Look forward to something.",
+        },
+      ],
+      [],
+      "cz",
+    );
+    expect(prompt).toContain("target is always Czech");
+    expect(prompt).toContain("case, person, number, gender");
+    expect(prompt).toContain("reflexive particles se and si");
+    expect(prompt).toContain("Už se ___ víkend");
+    expect(prompt).not.toContain("target is always English");
   });
 
   it("asks for natural displayed forms instead of literal dictionary notation", () => {
@@ -254,6 +276,16 @@ describe("quiz generation contract", () => {
     expect(
       STARTER_VOCABULARY.every((item) => item.definition.length <= 30),
     ).toBe(true);
+  });
+
+  it("keeps Czech starters independent from the English app", () => {
+    expect(CZECH_STARTER_VOCABULARY).toHaveLength(10);
+    expect(CZECH_STARTER_VOCABULARY.map((item) => item.term)).toContain(
+      "těšit se na něco",
+    );
+    expect(STARTER_VOCABULARY.map((item) => item.term)).not.toContain(
+      "těšit se na něco",
+    );
   });
 });
 
