@@ -8,6 +8,12 @@ const migration = readFileSync(
   ),
   "utf8",
 );
+const indexMigration = readFileSync(
+  resolve(
+    "supabase/migrations/20260731132103_index_user_apps_language.sql",
+  ),
+  "utf8",
+);
 
 describe("language app catalog migration", () => {
   it("moves supported app IDs from schema checks into catalog rows", () => {
@@ -40,6 +46,12 @@ describe("language app catalog migration", () => {
     );
     expect(migration).toContain(
       "grant select, insert on table memento.language_apps to service_role",
+    );
+  });
+
+  it("indexes the catalog foreign key", () => {
+    expect(indexMigration).toContain(
+      "on memento.user_apps (app_id)",
     );
   });
 });
