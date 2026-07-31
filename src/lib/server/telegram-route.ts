@@ -29,6 +29,15 @@ export async function handleTelegramWebhook(request: Request, appId: AppId) {
         reply.parseMode,
         appId,
       );
+      for (const followUp of reply.followUps ?? []) {
+        await sendTelegramMessage(
+          reply.chatId,
+          followUp.text,
+          undefined,
+          followUp.parseMode,
+          appId,
+        );
+      }
     }
     return NextResponse.json({ ok: true });
   } catch (error) {

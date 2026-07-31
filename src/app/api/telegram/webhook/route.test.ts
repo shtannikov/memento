@@ -95,6 +95,39 @@ describe("Telegram webhook route", () => {
     );
   });
 
+  it("sends help follow-ups as separate messages in order", async () => {
+    const parsed = { update_id: 100 };
+    parseTelegramUpdate.mockReturnValue(parsed);
+    processTelegramUpdate.mockResolvedValue({
+      chatId: 42,
+      replyToMessageId: 7,
+      text: "Command summary",
+      parseMode: "HTML",
+      followUps: [{ text: "<b>How to import</b>", parseMode: "HTML" }],
+    });
+    sendTelegramMessage.mockResolvedValue(undefined);
+
+    const response = await POST(request());
+
+    expect(response.status).toBe(200);
+    expect(sendTelegramMessage).toHaveBeenNthCalledWith(
+      1,
+      42,
+      "Command summary",
+      7,
+      "HTML",
+      "en",
+    );
+    expect(sendTelegramMessage).toHaveBeenNthCalledWith(
+      2,
+      42,
+      "<b>How to import</b>",
+      undefined,
+      "HTML",
+      "en",
+    );
+  });
+
   it("acknowledges supported updates that need no reply", async () => {
     parseTelegramUpdate.mockReturnValue({ update_id: 100 });
     processTelegramUpdate.mockResolvedValue(null);

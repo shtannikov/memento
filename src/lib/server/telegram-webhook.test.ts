@@ -105,6 +105,8 @@ describe("Telegram webhook workflow", () => {
     expect(malformedReply?.text).toContain(
       "ask ChatGPT to convert your vocabulary",
     );
+    expect(malformedReply).toMatchObject({ parseMode: "HTML" });
+    expect(malformedReply?.text).toContain("💡 <b>Tip:</b>");
 
     const validationReply = await processTelegramUpdate(invalid, {
       importItems,
@@ -228,9 +230,15 @@ describe("Telegram webhook workflow", () => {
     expect(helpReply?.text).toBe(
       "👋 Hey there.\n\n" +
         "Looking for the main app? Tap the <b>App</b> button below.\n\n" +
-        "And here’s what I can help with right here in chat:\n\n" +
-        "📥 /import\n" +
-        "Add phrases to your vocabulary.\n" +
+        "Here’s what I can help with right here in chat:\n" +
+        "📥 /import — Add phrases to your vocabulary\n" +
+        "🧹 /reset — Delete all phrases from your vocabulary",
+    );
+    expect(helpReply?.followUps).toEqual([
+      {
+        parseMode: "HTML",
+        text:
+          "<b>How to import</b>\n\n" +
         "Put /import on the first line, then add one phrase per line:\n" +
         "• phrase — description\n" +
         "• phrase — description\n\n" +
@@ -238,9 +246,10 @@ describe("Telegram webhook workflow", () => {
         "• A phrase can’t be longer than 35 characters\n" +
         "• A description can’t be longer than 45 characters\n" +
         "• You can import up to 50 phrases at a time\n\n" +
-        "🧹 /reset\n" +
-        "Delete all phrases from your vocabulary.",
-    );
+          "💡 <b>Tip:</b> ChatGPT can generate and format this list for you. " +
+          "Ask it to put /import on the first line and use phrase — description for each item.",
+      },
+    ]);
     await expect(
       processTelegramUpdate(explicitHelp, dependencies),
     ).resolves.toEqual(helpReply);

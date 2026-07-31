@@ -50,6 +50,10 @@ export type TelegramReply = {
   replyToMessageId: number;
   text: string;
   parseMode?: "HTML";
+  followUps?: Array<{
+    text: string;
+    parseMode?: "HTML";
+  }>;
 };
 
 type TelegramCommandDependencies = {
@@ -65,9 +69,12 @@ const defaultDependencies: TelegramCommandDependencies = {
 const FALLBACK_MESSAGE =
   "👋 Hey there.\n\n" +
   "Looking for the main app? Tap the <b>App</b> button below.\n\n" +
-  "And here’s what I can help with right here in chat:\n\n" +
-  "📥 /import\n" +
-  "Add phrases to your vocabulary.\n" +
+  "Here’s what I can help with right here in chat:\n" +
+  "📥 /import — Add phrases to your vocabulary\n" +
+  "🧹 /reset — Delete all phrases from your vocabulary";
+
+const IMPORT_HELP_MESSAGE =
+  "<b>How to import</b>\n\n" +
   "Put /import on the first line, then add one phrase per line:\n" +
   "• phrase — description\n" +
   "• phrase — description\n\n" +
@@ -75,8 +82,8 @@ const FALLBACK_MESSAGE =
   `• A phrase can’t be longer than ${TERM_MAX_LENGTH} characters\n` +
   `• A description can’t be longer than ${DEFINITION_MAX_LENGTH} characters\n` +
   `• You can import up to ${IMPORT_MAX_ITEMS} phrases at a time\n\n` +
-  "🧹 /reset\n" +
-  "Delete all phrases from your vocabulary.";
+  "💡 <b>Tip:</b> ChatGPT can generate and format this list for you. " +
+  "Ask it to put /import on the first line and use phrase — description for each item.";
 
 export function parseTelegramUpdate(value: unknown): TelegramUpdate | null {
   const parsed = TelegramUpdateSchema.safeParse(value);
@@ -105,7 +112,12 @@ export async function processTelegramUpdate(
     ...(parseMode ? { parseMode } : {}),
   });
   const command = readVocabularyCommand(message.text);
-  if (!command) return reply(FALLBACK_MESSAGE, "HTML");
+  if (!command) {
+    return {
+      ...reply(FALLBACK_MESSAGE, "HTML"),
+      followUps: [{ text: IMPORT_HELP_MESSAGE, parseMode: "HTML" }],
+    };
+  }
   if (command === "start") {
     return reply(
       `👋 Welcome to ${getLanguage(appId).appName}!\n\n` +
@@ -127,7 +139,12 @@ export async function processTelegramUpdate(
   }
 
   const parsedImport = parseImportCommand(message.text);
-  if (!parsedImport.ok) return reply(parsedImport.message);
+  if (!parsedImport.ok) {
+    return reply(
+      parsedImport.message,
+      parsedImport.formatHelp ? "HTML" : undefined,
+    );
+  }
 
   try {
     const imported = await dependencies.importItems(
