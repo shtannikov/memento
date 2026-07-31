@@ -35,7 +35,7 @@ export type AuthenticatedRequest = {
 export function authenticateRequest(request: Request): AuthenticatedRequest {
   const requestedApp = request.headers.get(APP_HEADER) ?? DEFAULT_APP_ID;
   if (!isAppId(requestedApp)) {
-    throw new AppError("INVALID_APP", "This Memento app is not supported.", 400);
+    throw new AppError("INVALID_APP", "This app is not supported.", 400);
   }
   const token = process.env[getLanguage(requestedApp).botTokenEnv];
   if (!token) throw new AppError("SERVER_NOT_CONFIGURED", "The app is not configured.", 503);

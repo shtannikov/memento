@@ -2,8 +2,9 @@
 
 Memento runs one product entry point per learning language while sharing this
 repository, Vercel project, and Supabase projects. English uses `/` and the
-existing bot. Czech uses `/cz` and its own bot. There is no language selector or
-user whitelist: possession/discovery of a bot is the access boundary.
+existing bot under the product name Memento. Czech uses `/cz` and its own bot
+under the product name Pomněnka. There is no language selector or user
+whitelist: possession/discovery of a bot is the access boundary.
 
 The product identifier for Czech is always `cz`. The standards-based locale
 inside the Czech language pack is `cs-CZ`; it must not be used in routes,
@@ -53,12 +54,12 @@ Sensitive bot credentials.
 
 ## Adding another language
 
-Create `src/languages/<app-id>/index.ts` with the language manifest, bot env
-names, routes, starter vocabulary, generation prompt, and grader. Put its live
-cases beside it in `src/languages/<app-id>/evals.ts`, then add the language
-manifest once to `src/languages/registry.ts`. The eval loader discovers its
-cases by convention; the dynamic Mini App page and webhook route consume the
-language registry automatically.
+Create `src/languages/<app-id>/index.ts` with the product name, language
+manifest, bot env names, routes, starter vocabulary, generation prompt, and
+grader. Put its live cases beside it in `src/languages/<app-id>/evals.ts`, then
+add the language manifest once to `src/languages/registry.ts`. The eval loader
+discovers its cases by convention; the dynamic Mini App page and webhook
+consume the language registry automatically.
 
 Register the new ID in the Stage catalog before deploying its application code,
 and in Production immediately before the Production release. Do not create a

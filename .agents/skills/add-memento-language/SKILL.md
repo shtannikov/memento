@@ -14,6 +14,7 @@ Before editing, resolve these values from the request or state explicit
 assumptions:
 
 - product app ID used in routes, database rows, and env names;
+- product app name shown in UI, metadata, and Telegram onboarding;
 - standards locale used only for linguistic operations;
 - target-language name and Mini App route;
 - Stage and Production bot ownership;
@@ -105,8 +106,9 @@ where app_id = '<app-id>';
 ## Add the application
 
 - Create `src/languages/<app-id>/index.ts` containing the complete language
-  manifest: ID, locale, app/webhook paths, env-variable names, starters,
-  native grammar rules and examples, generation prompt, and grader prompt.
+  manifest: ID, product name, locale, app/webhook paths, env-variable names,
+  starters, native grammar rules and examples, generation prompt, and grader
+  prompt.
 - Add the definition once to `src/languages/registry.ts`. The shared dynamic
   Mini App page and webhook route must discover it from that registry; do not
   add language-specific Next.js route files.

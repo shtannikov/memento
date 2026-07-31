@@ -11,7 +11,13 @@ import type { AppId } from "@/lib/domain/app";
 
 type Destination = "vocabulary" | "quiz";
 
-export function MementoApp({ appId }: { appId: AppId }) {
+export function MementoApp({
+  appId,
+  appName,
+}: {
+  appId: AppId;
+  appName: string;
+}) {
   const [destination, setDestination] = useState<Destination>("vocabulary");
   const [initData, setInitData] = useState<string | null>(null);
   const [startupError, setStartupError] = useState<string | null>(null);
@@ -22,17 +28,19 @@ export function MementoApp({ appId }: { appId: AppId }) {
     queueMicrotask(() => {
       if (!active) return;
       try {
-        setInitData(initializeTelegram());
+        setInitData(initializeTelegram(appName));
       } catch (error) {
         setStartupError(
-          error instanceof Error ? error.message : "Open Memento in Telegram.",
+          error instanceof Error
+            ? error.message
+            : `Open ${appName} in Telegram.`,
         );
       }
     });
     return () => {
       active = false;
     };
-  }, []);
+  }, [appName]);
 
   useEffect(() => {
     const viewport = globalThis.visualViewport;
@@ -67,7 +75,7 @@ export function MementoApp({ appId }: { appId: AppId }) {
       <section className={styles.mobileShell} aria-live="polite">
         {(startupError || vocabulary.error) && (
           <div className={styles.stateScreen}>
-            <h1>Memento</h1>
+            <h1>{appName}</h1>
             <p>{startupError ?? vocabulary.error}</p>
             {vocabulary.error && (
               <button onClick={() => void vocabulary.refresh()}>Try again</button>
@@ -77,7 +85,7 @@ export function MementoApp({ appId }: { appId: AppId }) {
 
         {!startupError && !vocabulary.error && vocabulary.loading && (
           <div className={styles.stateScreen}>
-            <h1>Loading Memento…</h1>
+            <h1>Loading {appName}…</h1>
           </div>
         )}
 

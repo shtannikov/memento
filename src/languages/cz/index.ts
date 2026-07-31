@@ -15,6 +15,7 @@ const starterVocabulary = [
 
 export const CZECH_LANGUAGE = {
   id: "cz",
+  appName: "Pomněnka",
   locale: "cs-CZ",
   targetLanguage: "Czech",
   appPath: "/cz",

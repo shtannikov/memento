@@ -21,6 +21,7 @@ const starterVocabulary = [
 
 export const ENGLISH_LANGUAGE = {
   id: "en",
+  appName: "Memento",
   locale: "en",
   targetLanguage: "English",
   appPath: "/",

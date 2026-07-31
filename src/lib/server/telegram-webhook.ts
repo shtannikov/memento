@@ -2,6 +2,7 @@ import "server-only";
 
 import { z } from "zod";
 import { DEFAULT_APP_ID, type AppId } from "@/lib/domain/app";
+import { getLanguage } from "@/languages/registry";
 
 import {
   parseImportCommand,
@@ -61,10 +62,6 @@ const defaultDependencies: TelegramCommandDependencies = {
   resetItems: resetVocabulary,
 };
 
-const START_MESSAGE =
-  "👋 Welcome to Memento!\n\n" +
-  "Tap <b>App</b> below to get started 👇";
-
 const FALLBACK_MESSAGE =
   "👋 Hey there.\n\n" +
   "Looking for the main app? Tap the <b>App</b> button below.\n\n" +
@@ -109,7 +106,13 @@ export async function processTelegramUpdate(
   });
   const command = readVocabularyCommand(message.text);
   if (!command) return reply(FALLBACK_MESSAGE, "HTML");
-  if (command === "start") return reply(START_MESSAGE, "HTML");
+  if (command === "start") {
+    return reply(
+      `👋 Welcome to ${getLanguage(appId).appName}!\n\n` +
+        "Tap <b>App</b> below to get started 👇",
+      "HTML",
+    );
+  }
 
   const user: TelegramUser = {
     id: message.from.id,

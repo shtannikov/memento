@@ -140,7 +140,7 @@ async function request<T>(
       typeof record.code === "string" ? record.code : "REQUEST_FAILED",
       typeof record.message === "string"
         ? record.message
-        : "Couldn’t reach Memento. Please try again.",
+        : "Couldn’t reach the app. Please try again.",
       response.status,
       typeof record.retryRoundId === "string"
         ? record.retryRoundId

@@ -11,6 +11,7 @@ export type LanguageRecentSentence = {
 
 export type LanguageDefinition<Id extends string = string> = {
   id: Id;
+  appName: string;
   locale: string;
   targetLanguage: string;
   appPath: string;

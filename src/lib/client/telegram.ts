@@ -28,7 +28,7 @@ export class ClientError extends Error {
   }
 }
 
-export function initializeTelegram(): string {
+export function initializeTelegram(appName: string): string {
   const webApp = globalThis.Telegram?.WebApp;
   setTelegramColor(APP_BACKGROUND);
   webApp?.ready();
@@ -44,7 +44,7 @@ export function initializeTelegram(): string {
   if (!initData) {
     throw new ClientError(
       "TELEGRAM_REQUIRED",
-      "Open Memento from its Telegram bot.",
+      `Open ${appName} from its Telegram bot.`,
     );
   }
   return initData;

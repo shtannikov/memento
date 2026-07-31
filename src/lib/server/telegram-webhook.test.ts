@@ -186,6 +186,23 @@ describe("Telegram webhook workflow", () => {
     expect(dependencies.resetItems).not.toHaveBeenCalled();
   });
 
+  it("uses the Czech product name in Czech onboarding", async () => {
+    const parsed = parseTelegramUpdate(update("/start"));
+    if (!parsed) throw new Error("Expected update to parse");
+
+    await expect(
+      processTelegramUpdate(
+        parsed,
+        { importItems: vi.fn(), resetItems: vi.fn() },
+        "cz",
+      ),
+    ).resolves.toMatchObject({
+      text:
+        "👋 Welcome to Pomněnka!\n\n" +
+        "Tap <b>App</b> below to get started 👇",
+    });
+  });
+
   it("treats unsupported private text as help and ignores other updates", async () => {
     const dependencies = {
       importItems: vi.fn(),
