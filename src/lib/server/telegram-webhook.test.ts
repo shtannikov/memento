@@ -239,15 +239,15 @@ describe("Telegram webhook workflow", () => {
         parseMode: "HTML",
         text:
           "<b>How to import</b>\n\n" +
-        "Put /import on the first line, then add one phrase per line:\n" +
-        "• phrase — description\n" +
-        "• phrase — description\n\n" +
-        "☝️ A few rules:\n" +
-        "• A phrase can’t be longer than 35 characters\n" +
-        "• A description can’t be longer than 45 characters\n" +
-        "• You can import up to 50 phrases at a time\n\n" +
+          "Put /import on the first line, then add one phrase per line:\n" +
+          "• phrase — description\n" +
+          "• phrase — description\n\n" +
+          "☝️ A few rules:\n" +
+          "• A phrase can’t be longer than 35 characters\n" +
+          "• A description can’t be longer than 45 characters\n" +
+          "• You can import up to 50 phrases at a time\n\n" +
           "💡 <b>Tip:</b> ChatGPT can generate and format this list for you. " +
-          "Ask it to put /import on the first line and use phrase — description for each item.",
+          "Just copy this message and ask the chat to follow the formatting rules.",
       },
     ]);
     await expect(

@@ -83,7 +83,7 @@ const IMPORT_HELP_MESSAGE =
   `• A description can’t be longer than ${DEFINITION_MAX_LENGTH} characters\n` +
   `• You can import up to ${IMPORT_MAX_ITEMS} phrases at a time\n\n` +
   "💡 <b>Tip:</b> ChatGPT can generate and format this list for you. " +
-  "Ask it to put /import on the first line and use phrase — description for each item.";
+  "Just copy this message and ask the chat to follow the formatting rules.";
 
 export function parseTelegramUpdate(value: unknown): TelegramUpdate | null {
   const parsed = TelegramUpdateSchema.safeParse(value);
