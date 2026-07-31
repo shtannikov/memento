@@ -6,12 +6,18 @@ import {
 } from "./telegram-webhook-auth";
 
 const originalSecret = process.env.TELEGRAM_WEBHOOK_SECRET;
+const originalCzechSecret = process.env.TELEGRAM_CZ_WEBHOOK_SECRET;
 
 afterEach(() => {
   if (originalSecret === undefined) {
     delete process.env.TELEGRAM_WEBHOOK_SECRET;
   } else {
     process.env.TELEGRAM_WEBHOOK_SECRET = originalSecret;
+  }
+  if (originalCzechSecret === undefined) {
+    delete process.env.TELEGRAM_CZ_WEBHOOK_SECRET;
+  } else {
+    process.env.TELEGRAM_CZ_WEBHOOK_SECRET = originalCzechSecret;
   }
 });
 
@@ -46,5 +52,15 @@ describe("Telegram webhook authentication", () => {
     expect(() =>
       authenticateTelegramWebhook(new Request("https://example.test")),
     ).toThrow(TelegramWebhookConfigurationError);
+  });
+
+  it("uses an independent secret for the Czech webhook", () => {
+    process.env.TELEGRAM_WEBHOOK_SECRET = "english-secret";
+    process.env.TELEGRAM_CZ_WEBHOOK_SECRET = "czech-secret";
+    const request = new Request("https://example.test", {
+      headers: { "X-Telegram-Bot-Api-Secret-Token": "czech-secret" },
+    });
+    expect(authenticateTelegramWebhook(request, "cz")).toBe(true);
+    expect(authenticateTelegramWebhook(request, "en")).toBe(false);
   });
 });

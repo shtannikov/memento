@@ -1,6 +1,8 @@
 import "server-only";
 
 import { z } from "zod";
+import { DEFAULT_APP_ID, type AppId } from "@/lib/domain/app";
+import { getLanguage } from "@/languages/registry";
 
 import {
   parseImportCommand,
@@ -48,6 +50,10 @@ export type TelegramReply = {
   replyToMessageId: number;
   text: string;
   parseMode?: "HTML";
+  followUps?: Array<{
+    text: string;
+    parseMode?: "HTML";
+  }>;
 };
 
 type TelegramCommandDependencies = {
@@ -60,16 +66,15 @@ const defaultDependencies: TelegramCommandDependencies = {
   resetItems: resetVocabulary,
 };
 
-const START_MESSAGE =
-  "👋 Welcome to Memento!\n\n" +
-  "Tap <b>App</b> below to get started 👇";
-
 const FALLBACK_MESSAGE =
   "👋 Hey there.\n\n" +
   "Looking for the main app? Tap the <b>App</b> button below.\n\n" +
-  "And here’s what I can help with right here in chat:\n\n" +
-  "📥 /import\n" +
-  "Add phrases to your vocabulary.\n" +
+  "Here’s what I can help with right here in chat:\n" +
+  "📥 /import — Add phrases to your vocabulary\n" +
+  "🧹 /reset — Delete all phrases from your vocabulary";
+
+const IMPORT_HELP_MESSAGE =
+  "<b>How to import</b>\n\n" +
   "Put /import on the first line, then add one phrase per line:\n" +
   "• phrase — description\n" +
   "• phrase — description\n\n" +
@@ -77,8 +82,8 @@ const FALLBACK_MESSAGE =
   `• A phrase can’t be longer than ${TERM_MAX_LENGTH} characters\n` +
   `• A description can’t be longer than ${DEFINITION_MAX_LENGTH} characters\n` +
   `• You can import up to ${IMPORT_MAX_ITEMS} phrases at a time\n\n` +
-  "🧹 /reset\n" +
-  "Delete all phrases from your vocabulary.";
+  "💡 <b>Tip:</b> ChatGPT can generate and format this list for you. " +
+  "Just paste this message into ChatGPT and ask it to follow the formatting rules.";
 
 export function parseTelegramUpdate(value: unknown): TelegramUpdate | null {
   const parsed = TelegramUpdateSchema.safeParse(value);
@@ -88,6 +93,7 @@ export function parseTelegramUpdate(value: unknown): TelegramUpdate | null {
 export async function processTelegramUpdate(
   update: TelegramUpdate,
   dependencies: TelegramCommandDependencies = defaultDependencies,
+  appId: AppId = DEFAULT_APP_ID,
 ): Promise<TelegramReply | null> {
   const message = update.message;
   if (
@@ -106,8 +112,19 @@ export async function processTelegramUpdate(
     ...(parseMode ? { parseMode } : {}),
   });
   const command = readVocabularyCommand(message.text);
-  if (!command) return reply(FALLBACK_MESSAGE, "HTML");
-  if (command === "start") return reply(START_MESSAGE, "HTML");
+  if (!command) {
+    return {
+      ...reply(FALLBACK_MESSAGE, "HTML"),
+      followUps: [{ text: IMPORT_HELP_MESSAGE, parseMode: "HTML" }],
+    };
+  }
+  if (command === "start") {
+    return reply(
+      `👋 Welcome to ${getLanguage(appId).appName}!\n\n` +
+        "Tap <b>App</b> below to get started 👇",
+      "HTML",
+    );
+  }
 
   const user: TelegramUser = {
     id: message.from.id,
@@ -117,17 +134,23 @@ export async function processTelegramUpdate(
   };
 
   if (command === "reset") {
-    await dependencies.resetItems(user);
+    await dependencies.resetItems(user, appId);
     return reply("🧹 Done! Your vocabulary has been reset.");
   }
 
   const parsedImport = parseImportCommand(message.text);
-  if (!parsedImport.ok) return reply(parsedImport.message);
+  if (!parsedImport.ok) {
+    return reply(
+      parsedImport.message,
+      parsedImport.formatHelp ? "HTML" : undefined,
+    );
+  }
 
   try {
     const imported = await dependencies.importItems(
       user,
       parsedImport.items,
+      appId,
     );
     const noun = imported === 1 ? "phrase" : "phrases";
     return reply(`✅ Imported ${imported} ${noun}!`);

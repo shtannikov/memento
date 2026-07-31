@@ -6,13 +6,14 @@ import {
   loadVocabulary,
   removeVocabularyItem,
 } from "@/lib/client/api";
+import type { AppId } from "@/lib/domain/app";
 import type {
   NewVocabularyItem,
   VocabularyItem,
   VocabularyData,
 } from "./vocabulary.types";
 
-export function useVocabulary(initData: string | null) {
+export function useVocabulary(initData: string | null, appId: AppId) {
   const [data, setData] = useState<VocabularyData>({
     learning: [],
     learned: [],
@@ -25,7 +26,7 @@ export function useVocabulary(initData: string | null) {
     setLoading(true);
     setError(null);
     try {
-      setData(await loadVocabulary(initData));
+      setData(await loadVocabulary(initData, appId));
     } catch (caught) {
       setError(
         caught instanceof Error
@@ -35,7 +36,7 @@ export function useVocabulary(initData: string | null) {
     } finally {
       setLoading(false);
     }
-  }, [initData]);
+  }, [appId, initData]);
 
   useEffect(() => {
     const task = window.setTimeout(() => void refresh(), 0);
@@ -44,12 +45,12 @@ export function useVocabulary(initData: string | null) {
 
   async function add(item: NewVocabularyItem) {
     if (!initData) return;
-    await mutate(() => addVocabularyItem(initData, item));
+    await mutate(() => addVocabularyItem(initData, appId, item));
   }
 
   async function remove(item: VocabularyItem) {
     if (!initData) return;
-    await mutate(() => removeVocabularyItem(initData, item.id));
+    await mutate(() => removeVocabularyItem(initData, appId, item.id));
   }
 
   async function changeStatus(
@@ -58,7 +59,7 @@ export function useVocabulary(initData: string | null) {
   ) {
     if (!initData) return;
     await mutate(() =>
-      changeVocabularyStatus(initData, item.id, status),
+      changeVocabularyStatus(initData, appId, item.id, status),
     );
   }
 

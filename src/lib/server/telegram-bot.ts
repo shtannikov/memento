@@ -1,6 +1,8 @@
 import "server-only";
 
 import { z } from "zod";
+import type { AppId } from "@/lib/domain/app";
+import { getLanguage } from "@/languages/registry";
 
 const TelegramResponseSchema = z.object({
   ok: z.boolean(),
@@ -12,9 +14,13 @@ export async function sendTelegramMessage(
   text: string,
   replyToMessageId?: number,
   parseMode?: "HTML",
+  appId: AppId = "en",
 ): Promise<void> {
-  const token = process.env.TELEGRAM_BOT_TOKEN;
-  if (!token) throw new Error("TELEGRAM_BOT_TOKEN is not configured");
+  const language = getLanguage(appId);
+  const token = process.env[language.botTokenEnv];
+  if (!token) {
+    throw new Error(`${language.botTokenEnv} is not configured`);
+  }
 
   const response = await fetch(
     `https://api.telegram.org/bot${token}/sendMessage`,

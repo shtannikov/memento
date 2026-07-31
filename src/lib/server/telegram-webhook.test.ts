@@ -57,6 +57,7 @@ describe("Telegram webhook workflow", () => {
         { term: "urge", definition: "desire" },
         { term: "figure out", definition: "understand" },
       ],
+      "en",
     );
   });
 
@@ -104,6 +105,8 @@ describe("Telegram webhook workflow", () => {
     expect(malformedReply?.text).toContain(
       "ask ChatGPT to convert your vocabulary",
     );
+    expect(malformedReply).toMatchObject({ parseMode: "HTML" });
+    expect(malformedReply?.text).toContain("💡 <b>Tip:</b>");
 
     const validationReply = await processTelegramUpdate(invalid, {
       importItems,
@@ -141,6 +144,25 @@ describe("Telegram webhook workflow", () => {
     });
     expect(resetItems).toHaveBeenCalledWith(
       expect.objectContaining({ id: 42 }),
+      "en",
+    );
+  });
+
+  it("routes Czech imports directly to the Czech app", async () => {
+    const importItems = vi.fn().mockResolvedValue(1);
+    const parsed = parseTelegramUpdate(update("/import\ndát si kávu - have coffee"));
+    if (!parsed) throw new Error("Expected update to parse");
+
+    await processTelegramUpdate(
+      parsed,
+      { importItems, resetItems: vi.fn() },
+      "cz",
+    );
+
+    expect(importItems).toHaveBeenCalledWith(
+      expect.objectContaining({ id: 42 }),
+      [{ term: "dát si kávu", definition: "have coffee" }],
+      "cz",
     );
   });
 
@@ -164,6 +186,23 @@ describe("Telegram webhook workflow", () => {
     });
     expect(dependencies.importItems).not.toHaveBeenCalled();
     expect(dependencies.resetItems).not.toHaveBeenCalled();
+  });
+
+  it("uses the Czech product name in Czech onboarding", async () => {
+    const parsed = parseTelegramUpdate(update("/start"));
+    if (!parsed) throw new Error("Expected update to parse");
+
+    await expect(
+      processTelegramUpdate(
+        parsed,
+        { importItems: vi.fn(), resetItems: vi.fn() },
+        "cz",
+      ),
+    ).resolves.toMatchObject({
+      text:
+        "👋 Welcome to Pomněnka!\n\n" +
+        "Tap <b>App</b> below to get started 👇",
+    });
   });
 
   it("treats unsupported private text as help and ignores other updates", async () => {
@@ -191,19 +230,26 @@ describe("Telegram webhook workflow", () => {
     expect(helpReply?.text).toBe(
       "👋 Hey there.\n\n" +
         "Looking for the main app? Tap the <b>App</b> button below.\n\n" +
-        "And here’s what I can help with right here in chat:\n\n" +
-        "📥 /import\n" +
-        "Add phrases to your vocabulary.\n" +
-        "Put /import on the first line, then add one phrase per line:\n" +
-        "• phrase — description\n" +
-        "• phrase — description\n\n" +
-        "☝️ A few rules:\n" +
-        "• A phrase can’t be longer than 35 characters\n" +
-        "• A description can’t be longer than 45 characters\n" +
-        "• You can import up to 50 phrases at a time\n\n" +
-        "🧹 /reset\n" +
-        "Delete all phrases from your vocabulary.",
+        "Here’s what I can help with right here in chat:\n" +
+        "📥 /import — Add phrases to your vocabulary\n" +
+        "🧹 /reset — Delete all phrases from your vocabulary",
     );
+    expect(helpReply?.followUps).toEqual([
+      {
+        parseMode: "HTML",
+        text:
+          "<b>How to import</b>\n\n" +
+          "Put /import on the first line, then add one phrase per line:\n" +
+          "• phrase — description\n" +
+          "• phrase — description\n\n" +
+          "☝️ A few rules:\n" +
+          "• A phrase can’t be longer than 35 characters\n" +
+          "• A description can’t be longer than 45 characters\n" +
+          "• You can import up to 50 phrases at a time\n\n" +
+          "💡 <b>Tip:</b> ChatGPT can generate and format this list for you. " +
+          "Just paste this message into ChatGPT and ask it to follow the formatting rules.",
+      },
+    ]);
     await expect(
       processTelegramUpdate(explicitHelp, dependencies),
     ).resolves.toEqual(helpReply);

@@ -3,6 +3,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { sendTelegramMessage } from "./telegram-bot";
 
 const originalToken = process.env.TELEGRAM_BOT_TOKEN;
+const originalCzechToken = process.env.TELEGRAM_CZ_BOT_TOKEN;
 
 afterEach(() => {
   vi.unstubAllGlobals();
@@ -10,6 +11,11 @@ afterEach(() => {
     delete process.env.TELEGRAM_BOT_TOKEN;
   } else {
     process.env.TELEGRAM_BOT_TOKEN = originalToken;
+  }
+  if (originalCzechToken === undefined) {
+    delete process.env.TELEGRAM_CZ_BOT_TOKEN;
+  } else {
+    process.env.TELEGRAM_CZ_BOT_TOKEN = originalCzechToken;
   }
 });
 
@@ -87,6 +93,21 @@ describe("Telegram bot client", () => {
     delete process.env.TELEGRAM_BOT_TOKEN;
     await expect(sendTelegramMessage(42, "hello")).rejects.toThrow(
       "TELEGRAM_BOT_TOKEN",
+    );
+  });
+
+  it("sends Czech replies through the Czech bot", async () => {
+    process.env.TELEGRAM_CZ_BOT_TOKEN = "456:czech";
+    const fetchMock = vi.fn().mockResolvedValue(
+      new Response(JSON.stringify({ ok: true }), { status: 200 }),
+    );
+    vi.stubGlobal("fetch", fetchMock);
+
+    await sendTelegramMessage(42, "Ahoj", undefined, undefined, "cz");
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      "https://api.telegram.org/bot456:czech/sendMessage",
+      expect.any(Object),
     );
   });
 });

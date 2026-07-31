@@ -1,5 +1,7 @@
 import "server-only";
 
+import { DEFAULT_APP_ID, type AppId } from "@/lib/domain/app";
+
 import type {
   GenerationVocabularyItem,
   RecentQuizSentence,
@@ -18,6 +20,7 @@ type StoredQuizSentence = {
 export async function loadRecentQuizSentences(
   userId: number,
   items: GenerationVocabularyItem[],
+  appId: AppId = DEFAULT_APP_ID,
 ): Promise<RecentQuizSentence[]> {
   if (items.length === 0) return [];
 
@@ -26,6 +29,7 @@ export async function loadRecentQuizSentences(
     .from("rounds")
     .select("id")
     .eq("user_id", userId)
+    .eq("app_id", appId)
     .order("created_at", { ascending: false })
     .limit(RECENT_ROUND_LIMIT);
   if (roundsError) throw roundsError;

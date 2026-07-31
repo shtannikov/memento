@@ -12,7 +12,7 @@ type RouteContext = { params: Promise<{ id: string }> };
 
 export async function POST(request: Request, context: RouteContext) {
   try {
-    const user = authenticateRequest(request);
+    const { appId, user } = authenticateRequest(request);
     const { id } = await context.params;
     if (!z.string().uuid().safeParse(id).success) {
       throw new AppError("INVALID_REQUEST", "Invalid quiz.", 400);
@@ -25,6 +25,7 @@ export async function POST(request: Request, context: RouteContext) {
       })
       .eq("id", id)
       .eq("user_id", user.id)
+      .eq("app_id", appId)
       .in("status", ["preparing", "active"]);
     if (error) throw error;
     return NextResponse.json({ ok: true });

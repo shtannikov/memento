@@ -1,9 +1,10 @@
 import type { Metadata, Viewport } from "next";
 import Script from "next/script";
+import { ENGLISH_LANGUAGE } from "@/languages/en";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Memento",
+  title: ENGLISH_LANGUAGE.appName,
   description: "Turn passive vocabulary into words you recognize with confidence.",
 };
 
