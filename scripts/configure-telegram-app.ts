@@ -1,4 +1,7 @@
+import { loadEnvConfig } from "@next/env";
 import { APP_IDS, getLanguage, isAppId } from "../src/languages/registry";
+import { readArgument } from "./cli-arguments";
+import { configureTelegramApp } from "./configure-telegram-app-workflow";
 import { z } from "zod";
 
 const TelegramResponseSchema = z.object({
@@ -6,10 +9,12 @@ const TelegramResponseSchema = z.object({
   description: z.string().optional(),
   result: z.unknown().optional(),
 });
-const WebhookInfoSchema = z.object({ url: z.string() });
 
-const requestedAppId = readArgument("--app");
-const rawBaseUrl = readArgument("--base-url");
+loadEnvConfig(process.cwd());
+
+const args = process.argv.slice(2);
+const requestedAppId = readArgument(args, "--app");
+const rawBaseUrl = readArgument(args, "--base-url");
 
 if (!requestedAppId || !isAppId(requestedAppId)) {
   fail(`Use --app with one of: ${APP_IDS.join(", ")}.`);
@@ -28,34 +33,19 @@ if (!secret) fail(`${language.webhookSecretEnv} is required.`);
 const webhookUrl = `${baseUrl}${language.webhookPath}`;
 const miniAppUrl = `${baseUrl}${language.appPath}`;
 
-await telegram("setWebhook", {
-  url: webhookUrl,
-  secret_token: secret,
-  allowed_updates: ["message"],
-  drop_pending_updates: false,
-});
-await telegram("setChatMenuButton", {
-  menu_button: {
-    type: "web_app",
-    text: "App",
-    web_app: { url: miniAppUrl },
-  },
-});
-const webhookInfo = await telegram("getWebhookInfo", {});
-const parsedWebhookInfo = WebhookInfoSchema.safeParse(webhookInfo);
-if (!parsedWebhookInfo.success || parsedWebhookInfo.data.url !== webhookUrl) {
-  fail(
-    `Telegram returned an unexpected webhook URL: ${
-      parsedWebhookInfo.success
-        ? parsedWebhookInfo.data.url
-        : "none"
-    }`,
-  );
-}
-
-console.log(
-  `Configured ${language.id}: webhook ${webhookUrl}, Mini App ${miniAppUrl}`,
-);
+void configureTelegramApp(telegram, {
+  webhookUrl,
+  miniAppUrl,
+  webhookSecret: secret,
+})
+  .then(() => {
+    console.log(
+      `Configured ${language.id}: webhook ${webhookUrl}, Mini App ${miniAppUrl}`,
+    );
+  })
+  .catch((error: unknown) => {
+    fail(error instanceof Error ? error.message : "Telegram configuration failed.");
+  });
 
 async function telegram(
   method: string,
@@ -82,11 +72,6 @@ async function telegram(
     );
   }
   return payload.data.result;
-}
-
-function readArgument(name: string): string | undefined {
-  const index = process.argv.indexOf(name);
-  return index >= 0 ? process.argv[index + 1] : undefined;
 }
 
 function fail(message: string): never {

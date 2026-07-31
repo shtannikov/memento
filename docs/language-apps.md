@@ -21,7 +21,21 @@ Preview variables must contain the Czech Stage bot credentials. Production
 variables must contain the Czech Production bot credentials. Never reuse a bot
 token or webhook secret across Stage and Production.
 
-## Provision a bot
+## Register and provision a language
+
+Register the app ID in the target Supabase project before deploying code that
+uses it. Load that environment's `SUPABASE_URL` and `SUPABASE_SECRET_KEY`, then
+run:
+
+```sh
+npm run language:register -- --app cz
+```
+
+The command is idempotent and verifies the resulting row in
+`memento.language_apps`. English and Czech are seeded by the catalog migration,
+so this command is mainly the data-only registration path for future languages.
+It replaces per-language schema migrations: adding an ID must not alter table
+constraints or replace core database functions.
 
 Create the bot in BotFather, choose a random webhook secret, set the two
 environment variables locally without committing them, and run:
@@ -44,7 +58,10 @@ manifest once to `src/languages/registry.ts`. The eval loader discovers its
 cases by convention; the dynamic Mini App page, webhook route, and provisioning
 script consume the language registry automatically.
 
-Extend the database app-ID checks with a schema-first migration before merging
-the application code. Do not make the existing prompts into a universal
-interpolated prompt. Follow `.agents/skills/add-memento-language/SKILL.md` for
-the complete rollout.
+Register the new ID in the Stage catalog before deploying its application code,
+and in Production immediately before the Production release. Do not create a
+migration merely to add a language. A schema migration is appropriate only when
+the shared storage shape or behavior changes for every language.
+
+Do not make the existing prompts into a universal interpolated prompt. Follow
+`.agents/skills/add-memento-language/SKILL.md` for the complete rollout.

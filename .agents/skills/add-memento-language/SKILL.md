@@ -31,6 +31,8 @@ into the other.
   accept an unverified user-selected app ID as authorization.
 - Share the repository, Vercel project, Supabase Stage/Production projects, and
   structural quiz schema.
+- Treat `memento.language_apps` as a data catalog, not a schema allowlist. A new
+  language adds a catalog row and must not replace constraints or core RPCs.
 - Isolate vocabulary, starter state, rounds, history, retries, and generation
   quota by `app_id`.
 - Keep prompts, grader instructions, examples, starter vocabulary, and eval
@@ -56,6 +58,7 @@ Read the current implementations; file names may have evolved:
 - `src/lib/server/telegram-route.ts`
 - `src/app/api/telegram/webhook/`
 - `evals/runner.ts`
+- `scripts/register-language-app.ts`
 - `scripts/configure-telegram-app.ts`
 - `docs/language-apps.md`
 - `supabase/migrations/`
@@ -64,27 +67,31 @@ Read the relevant local Next.js guide under `node_modules/next/dist/docs/`
 before adding routes or changing framework APIs. Follow `AGENTS.md` for all
 validation and deployment requirements.
 
-## Implement in two release phases
+## Register data without changing the schema
 
-### 1. Add the schema first
+Do not create a migration merely to add a learning language. Do not extend SQL
+checks, enums, or function bodies with its product ID. The shared schema uses
+foreign keys into the service-role-only `memento.language_apps` catalog, and
+core RPCs validate that catalog dynamically.
 
-Create the migration with `npx supabase migration new <name>`.
+After adding the language to the code registry, explicitly register it in each
+target environment with that environment's server-only Supabase credentials:
 
-- Extend every `app_id` check to include the new product ID.
-- Preserve `en` defaults and all existing data.
-- Add or update app-aware uniqueness and indexes only when required.
-- Keep legacy English RPC signatures while adding app-aware overloads.
-- Revoke access from `public`, `anon`, and `authenticated`; grant only the
-  intended `service_role` access.
-- Add a migration contract test.
-- Publish this as its own draft PR. Require Stage migration success and inspect
-  the resulting schema before continuing.
+```sh
+npm run language:register -- --app <app-id>
+```
 
-Merge the schema PR to Production before merging application code. Vercel and
-database workflows deploy independently, so combining both phases can briefly
-run new English code against an old schema.
+- Register Stage before deploying or testing the new application entry point.
+- Register Production immediately before releasing the application code.
+- Verify the command's resulting catalog row; do not assume Stage and
+  Production are synchronized.
+- Keep registration explicit. Do not automatically sync every code-registry ID
+  during unrelated deployments.
+- Create a migration only when the shared storage shape, constraints, indexes,
+  or behavior changes for every language. Follow the normal schema-first PR
+  workflow for such structural changes.
 
-### 2. Add the application
+## Add the application
 
 - Create `src/languages/<app-id>/index.ts` containing the complete language
   manifest: ID, locale, app/webhook paths, env-variable names, starters,
@@ -127,15 +134,16 @@ npm run eval
 ```
 
 After publishing, require Vercel `Ready` and HTTP 200 for both `/` and the new
-language route. Run Supabase security and performance advisors after DDL; treat
-service-role-only RLS-without-policy notices as intentional only after verifying
-that table and function grants remain closed to client roles.
+language route. Verify the target database contains the catalog row. Run
+Supabase security and performance advisors only after DDL; treat
+service-role-only RLS-without-policy notices as intentional only after
+verifying that table and function grants remain closed to client roles.
 
 ## Hand off the release
 
 Report:
 
-- schema PR and implementation PR, including merge order;
+- application PR and Stage/Production catalog registration status;
 - current Preview URL and tested language route;
 - English regression and new-language eval results;
 - exact Stage/Production secrets still required;
