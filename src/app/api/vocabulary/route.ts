@@ -23,10 +23,10 @@ const NewVocabularySchema = z.object({
 
 export async function GET(request: Request) {
   try {
-    const user = authenticateRequest(request);
-    await ensureUserAndSeed(user);
+    const { appId, user } = authenticateRequest(request);
+    await ensureUserAndSeed(user, appId);
     return NextResponse.json({
-      vocabulary: await loadVocabulary(user.id),
+      vocabulary: await loadVocabulary(user.id, appId),
     });
   } catch (error) {
     return apiError(error);
@@ -35,11 +35,11 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
-    const user = authenticateRequest(request);
+    const { appId, user } = authenticateRequest(request);
     const body = await parseJson(request, NewVocabularySchema);
-    await importVocabularyItems(user, [body]);
+    await importVocabularyItems(user, [body], appId);
     return NextResponse.json(
-      { vocabulary: await loadVocabulary(user.id) },
+      { vocabulary: await loadVocabulary(user.id, appId) },
       { status: 201 },
     );
   } catch (error) {

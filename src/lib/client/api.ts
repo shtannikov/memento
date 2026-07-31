@@ -4,20 +4,24 @@ import type {
   VocabularyStatus,
 } from "@/features/vocabulary/vocabulary.types";
 import type { PreparedRound } from "@/features/quiz/quiz.types";
+import { APP_HEADER, type AppId } from "@/lib/domain/app";
 import { ClientError } from "./telegram";
 
 export async function loadVocabulary(
   initData: string,
+  appId: AppId,
 ): Promise<VocabularyData> {
-  return request(initData, "/api/vocabulary", { method: "GET" }, "vocabulary");
+  return request(initData, appId, "/api/vocabulary", { method: "GET" }, "vocabulary");
 }
 
 export async function addVocabularyItem(
   initData: string,
+  appId: AppId,
   item: NewVocabularyItem,
 ): Promise<VocabularyData> {
   return request(
     initData,
+    appId,
     "/api/vocabulary",
     { method: "POST", body: JSON.stringify(item) },
     "vocabulary",
@@ -26,11 +30,13 @@ export async function addVocabularyItem(
 
 export async function changeVocabularyStatus(
   initData: string,
+  appId: AppId,
   id: string,
   status: VocabularyStatus,
 ): Promise<VocabularyData> {
   return request(
     initData,
+    appId,
     `/api/vocabulary/${id}`,
     {
       method: "PATCH",
@@ -44,10 +50,12 @@ export async function changeVocabularyStatus(
 
 export async function removeVocabularyItem(
   initData: string,
+  appId: AppId,
   id: string,
 ): Promise<VocabularyData> {
   return request(
     initData,
+    appId,
     `/api/vocabulary/${id}`,
     { method: "DELETE" },
     "vocabulary",
@@ -56,10 +64,12 @@ export async function removeVocabularyItem(
 
 export async function prepareRound(
   initData: string,
+  appId: AppId,
   retryRoundId?: string,
 ): Promise<PreparedRound> {
   return request(
     initData,
+    appId,
     "/api/rounds",
     {
       method: "POST",
@@ -73,12 +83,14 @@ export async function prepareRound(
 
 export async function completeRound(
   initData: string,
+  appId: AppId,
   roundId: string,
   firstAttempts: Array<{ vocabularyId: string; correct: boolean }>,
   mistakes: number,
 ): Promise<void> {
   await request(
     initData,
+    appId,
     `/api/rounds/${roundId}/complete`,
     {
       method: "POST",
@@ -90,10 +102,12 @@ export async function completeRound(
 
 export async function failRound(
   initData: string,
+  appId: AppId,
   roundId: string,
 ): Promise<void> {
   await request(
     initData,
+    appId,
     `/api/rounds/${roundId}/fail`,
     { method: "POST" },
     "ok",
@@ -102,6 +116,7 @@ export async function failRound(
 
 async function request<T>(
   initData: string,
+  appId: AppId,
   path: string,
   init: RequestInit,
   key: string,
@@ -111,6 +126,7 @@ async function request<T>(
     cache: "no-store",
     headers: {
       Authorization: `tma ${initData}`,
+      [APP_HEADER]: appId,
       "Content-Type": "application/json",
     },
   });
@@ -124,7 +140,7 @@ async function request<T>(
       typeof record.code === "string" ? record.code : "REQUEST_FAILED",
       typeof record.message === "string"
         ? record.message
-        : "Couldn’t reach Memento. Please try again.",
+        : "Couldn’t reach the app. Please try again.",
       response.status,
       typeof record.retryRoundId === "string"
         ? record.retryRoundId

@@ -1,7 +1,8 @@
 import type OpenAI from "openai";
 import { describe, expect, it, vi } from "vitest";
 
-import { STARTER_VOCABULARY } from "@/lib/domain/starter-vocabulary";
+import { CZECH_LANGUAGE } from "@/languages/cz";
+import { ENGLISH_LANGUAGE } from "@/languages/en";
 import {
   areQuizSentencesTooSimilar,
   buildQuizPrompt,
@@ -26,6 +27,27 @@ describe("quiz generation contract", () => {
     expect(prompt).toContain("definition may be in any language");
     expect(prompt).toContain("Сильное внезапное желание.");
     expect(prompt).toContain("natural English sentence");
+  });
+
+  it("uses a dedicated Czech prompt with Czech grammar constraints", () => {
+    const prompt = buildQuizPrompt(
+      [
+        {
+          id: "1",
+          term: "čekat na někoho",
+          definition: "to wait for someone",
+        },
+      ],
+      [],
+      "cz",
+    );
+    expect(prompt).toContain("target is always Czech");
+    expect(prompt).toContain("case, person, number, gender");
+    expect(prompt).toContain("reflexive particles se and si");
+    expect(prompt).toContain("A particle may be in the visible sentence");
+    expect(prompt).toContain("Jeho číslo si musím ___");
+    expect(prompt).toContain("Mám jen jednu židli");
+    expect(prompt).not.toContain("target is always English");
   });
 
   it("asks for natural displayed forms instead of literal dictionary notation", () => {
@@ -238,8 +260,8 @@ describe("quiz generation contract", () => {
   });
 
   it("uses exactly the approved starter vocabulary and short definitions", () => {
-    expect(STARTER_VOCABULARY).toHaveLength(10);
-    expect(STARTER_VOCABULARY.map((item) => item.term)).toEqual([
+    expect(ENGLISH_LANGUAGE.starterVocabulary).toHaveLength(10);
+    expect(ENGLISH_LANGUAGE.starterVocabulary.map((item) => item.term)).toEqual([
       "sedentary",
       "savoury",
       "leisurely",
@@ -252,8 +274,32 @@ describe("quiz generation contract", () => {
       "to a certain extent",
     ]);
     expect(
-      STARTER_VOCABULARY.every((item) => item.definition.length <= 30),
+      ENGLISH_LANGUAGE.starterVocabulary.every(
+        (item) => item.definition.length <= 30,
+      ),
     ).toBe(true);
+  });
+
+  it("keeps Czech starters independent from the English app", () => {
+    expect(CZECH_LANGUAGE.starterVocabulary).toHaveLength(10);
+    expect(CZECH_LANGUAGE.starterVocabulary).toEqual([
+      { term: "zapamatovat si", definition: "to remember" },
+      { term: "zapomenout", definition: "to forget" },
+      { term: "víc", definition: "more" },
+      { term: "procházet se", definition: "to take a walk" },
+      { term: "pohovka", definition: "sofa" },
+      { term: "nábytek", definition: "furniture" },
+      { term: "čekat na někoho", definition: "to wait for someone" },
+      {
+        term: "starat se o někoho",
+        definition: "to take care of someone",
+      },
+      { term: "ještě", definition: "still; yet; another" },
+      { term: "už", definition: "already; no longer" },
+    ]);
+    expect(
+      ENGLISH_LANGUAGE.starterVocabulary.map((item) => item.term),
+    ).not.toContain("zapamatovat si");
   });
 });
 

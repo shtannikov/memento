@@ -2,6 +2,13 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 
 import {
+  APP_HEADER,
+  DEFAULT_APP_ID,
+  type AppId,
+} from "@/lib/domain/app";
+import { getLanguage, isAppId } from "@/languages/registry";
+
+import {
   readInitDataAuthorization,
   TelegramAuthError,
   type TelegramUser,
@@ -20,10 +27,22 @@ export class AppError extends Error {
   }
 }
 
-export function authenticateRequest(request: Request): TelegramUser {
-  const token = process.env.TELEGRAM_BOT_TOKEN;
+export type AuthenticatedRequest = {
+  appId: AppId;
+  user: TelegramUser;
+};
+
+export function authenticateRequest(request: Request): AuthenticatedRequest {
+  const requestedApp = request.headers.get(APP_HEADER) ?? DEFAULT_APP_ID;
+  if (!isAppId(requestedApp)) {
+    throw new AppError("INVALID_APP", "This app is not supported.", 400);
+  }
+  const token = process.env[getLanguage(requestedApp).botTokenEnv];
   if (!token) throw new AppError("SERVER_NOT_CONFIGURED", "The app is not configured.", 503);
-  return validateTelegramInitData(readInitDataAuthorization(request), token);
+  return {
+    appId: requestedApp,
+    user: validateTelegramInitData(readInitDataAuthorization(request), token),
+  };
 }
 
 export async function parseJson<T>(

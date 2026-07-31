@@ -2,19 +2,22 @@ import { PreparingScreen } from "./preparing-screen";
 import { QuizScreen } from "./quiz-screen";
 import { RoundResult } from "./round-result";
 import { useQuizRound } from "./use-quiz-round";
+import type { AppId } from "@/lib/domain/app";
 
 type QuizRoundProps = {
+  appId?: AppId;
   initData: string;
   onVocabularyChanged: () => Promise<void>;
   onExit: () => void;
 };
 
 export function QuizRound({
+  appId = "en",
   initData,
   onVocabularyChanged,
   onExit,
 }: QuizRoundProps) {
-  const round = useQuizRound(initData, onVocabularyChanged);
+  const round = useQuizRound(initData, appId, onVocabularyChanged);
 
   function leaveRound() {
     void round.abandon().finally(onExit);

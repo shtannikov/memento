@@ -79,6 +79,7 @@ describe("vocabulary import commands", () => {
   it("requires the command, at least one item, and the exact separator", () => {
     const formatError = {
       ok: false,
+      formatHelp: true,
       message:
         "⚠️ I couldn’t import that list.\n\n" +
         "Please use this format:\n" +
@@ -89,7 +90,7 @@ describe("vocabulary import commands", () => {
         "• A phrase can’t be longer than 35 characters\n" +
         "• A description can’t be longer than 45 characters\n" +
         "• You can import up to 50 phrases at a time\n\n" +
-        "💡 Tip: ask ChatGPT to convert your vocabulary to this format before importing it.",
+        "💡 <b>Tip:</b> ask ChatGPT to convert your vocabulary to this format before importing it.",
     };
 
     expect(parseImportCommand("phrase - description")).toEqual(formatError);

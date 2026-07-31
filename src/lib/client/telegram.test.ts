@@ -23,14 +23,15 @@ describe("initializeTelegram", () => {
         requestFullscreen,
       },
     };
-    expect(initializeTelegram()).toBe("signed");
+    expect(initializeTelegram("Memento")).toBe("signed");
     expect(ready).toHaveBeenCalledOnce();
     expect(expand).toHaveBeenCalledOnce();
     expect(requestFullscreen).toHaveBeenCalledOnce();
   });
 
   it("fails clearly outside Telegram", () => {
-    expect(() => initializeTelegram()).toThrow("Open Memento");
+    expect(() => initializeTelegram("Memento")).toThrow("Open Memento");
+    expect(() => initializeTelegram("Pomněnka")).toThrow("Open Pomněnka");
   });
 
   it("keeps Telegram chrome and the document theme color in sync", () => {

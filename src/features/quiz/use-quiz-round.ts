@@ -7,6 +7,7 @@ import {
 } from "@/lib/client/api";
 import { ClientError } from "@/lib/client/telegram";
 import { ROUND_LIVES } from "@/lib/domain/round";
+import type { AppId } from "@/lib/domain/app";
 import type { QuizCard, QuizFeedback } from "./quiz.types";
 
 type QuizPhase =
@@ -19,6 +20,7 @@ type QuizPhase =
 
 export function useQuizRound(
   initData: string,
+  appId: AppId,
   onVocabularyChanged: () => Promise<void>,
 ) {
   const [phase, setPhase] = useState<QuizPhase>("preparing");
@@ -55,7 +57,7 @@ export function useQuizRound(
       setMistakes(0);
       setLives(ROUND_LIVES);
       try {
-        const round = await prepareRound(initData, retryId);
+        const round = await prepareRound(initData, appId, retryId);
         setRoundId(round.id);
         setRetryRoundId(null);
         setCards(round.cards);
@@ -76,7 +78,7 @@ export function useQuizRound(
         setPhase("error");
       }
     },
-    [initData],
+    [appId, initData],
   );
 
   useEffect(() => {
@@ -132,7 +134,7 @@ export function useQuizRound(
             vocabularyId: card.vocabularyId,
             correct: nextFirstAttempts[card.id],
           }));
-          void completeRound(initData, roundId, results, mistakes)
+          void completeRound(initData, appId, roundId, results, mistakes)
             .then(onVocabularyChanged)
             .then(() => setPhase("complete"))
             .catch((caught) => {
@@ -154,7 +156,7 @@ export function useQuizRound(
       setSelectedAnswer(null);
 
       if (nextLives === 0) {
-        void failRound(initData, roundId);
+        void failRound(initData, appId, roundId);
         setRetryRoundId(roundId);
         setPhase("failed");
       } else {
@@ -165,7 +167,7 @@ export function useQuizRound(
 
   async function abandon(): Promise<void> {
     if (roundId && ["preparing", "active", "saving"].includes(phase)) {
-      await failRound(initData, roundId).catch(() => undefined);
+      await failRound(initData, appId, roundId).catch(() => undefined);
     }
   }
 
