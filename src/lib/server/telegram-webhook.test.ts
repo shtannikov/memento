@@ -247,7 +247,7 @@ describe("Telegram webhook workflow", () => {
           "• A description can’t be longer than 45 characters\n" +
           "• You can import up to 50 phrases at a time\n\n" +
           "💡 <b>Tip:</b> ChatGPT can generate and format this list for you. " +
-          "Just copy this message and ask the chat to follow the formatting rules.",
+          "Just paste this message into ChatGPT and ask it to follow the formatting rules.",
       },
     ]);
     await expect(
