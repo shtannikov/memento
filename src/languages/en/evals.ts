@@ -1,5 +1,5 @@
-import { STARTER_VOCABULARY } from "../../src/lib/domain/starter-vocabulary";
-import type { EvalCase } from "./types";
+import type { EvalCase } from "../../../evals/types";
+import { ENGLISH_LANGUAGE } from ".";
 
 const russianDefinitions = [
   "Связанный с малоподвижным образом жизни.",
@@ -14,13 +14,13 @@ const russianDefinitions = [
   "Частично, но не полностью.",
 ];
 
-export const ENGLISH_EVAL_CASES: EvalCase[] = [
+export const EVAL_CASES: EvalCase[] = [
   {
     id: "approved-starter-vocabulary",
     description:
       "Generates grammatical, unambiguous cards for every approved starter word and phrase.",
-    appId: "en",
-    items: STARTER_VOCABULARY.map((item, index) => ({
+    appId: ENGLISH_LANGUAGE.id,
+    items: ENGLISH_LANGUAGE.starterVocabulary.map((item, index) => ({
       id: String(index + 1),
       ...item,
     })),
@@ -29,8 +29,8 @@ export const ENGLISH_EVAL_CASES: EvalCase[] = [
     id: "russian-definitions",
     description:
       "Uses Russian definitions as guidance while keeping targets and exercises in English.",
-    appId: "en",
-    items: STARTER_VOCABULARY.map((item, index) => ({
+    appId: ENGLISH_LANGUAGE.id,
+    items: ENGLISH_LANGUAGE.starterVocabulary.map((item, index) => ({
       id: String(index + 1),
       term: item.term,
       definition: russianDefinitions[index],
@@ -40,8 +40,8 @@ export const ENGLISH_EVAL_CASES: EvalCase[] = [
     id: "smaller-round",
     description:
       "Generates a structurally complete round when fewer than ten items are available.",
-    appId: "en",
-    items: STARTER_VOCABULARY.slice(5).map((item, index) => ({
+    appId: ENGLISH_LANGUAGE.id,
+    items: ENGLISH_LANGUAGE.starterVocabulary.slice(5).map((item, index) => ({
       id: String(index + 101),
       ...item,
     })),
@@ -50,12 +50,14 @@ export const ENGLISH_EVAL_CASES: EvalCase[] = [
     id: "avoid-recent-russian-definition-cards",
     description:
       "Generates fresh English situations instead of repeating recent cards when definitions are Russian.",
-    appId: "en",
-    items: STARTER_VOCABULARY.slice(5, 9).map((item, index) => ({
-      id: String(index + 201),
-      term: item.term,
-      definition: russianDefinitions[index + 5],
-    })),
+    appId: ENGLISH_LANGUAGE.id,
+    items: ENGLISH_LANGUAGE.starterVocabulary
+      .slice(5, 9)
+      .map((item, index) => ({
+        id: String(index + 201),
+        term: item.term,
+        definition: russianDefinitions[index + 5],
+      })),
     recentSentences: [
       {
         vocabularyId: "201",
@@ -80,56 +82,32 @@ export const ENGLISH_EVAL_CASES: EvalCase[] = [
     id: "phrasal-verb-argument-structure",
     description:
       "Keeps required clothing objects with transitive phrasal verbs and does not attach a second object to complete expressions.",
-    appId: "en",
+    appId: ENGLISH_LANGUAGE.id,
     items: [
-      {
-        id: "301",
-        term: "put on",
-        definition: "Надеть предмет одежды.",
-      },
-      {
-        id: "302",
-        term: "take off",
-        definition: "Снять предмет одежды.",
-      },
+      { id: "301", term: "put on", definition: "Надеть предмет одежды." },
+      { id: "302", term: "take off", definition: "Снять предмет одежды." },
       {
         id: "303",
         term: "do the laundry",
         definition: "Постирать одежду.",
       },
-      {
-        id: "304",
-        term: "get dressed",
-        definition: "Одеться.",
-      },
+      { id: "304", term: "get dressed", definition: "Одеться." },
     ],
   },
   {
     id: "coherent-routine-actions",
     description:
       "Makes one routine action uniquely best through visible context instead of relying on the intended scenario.",
-    appId: "en",
+    appId: ENGLISH_LANGUAGE.id,
     items: [
-      {
-        id: "401",
-        term: "comb my hair",
-        definition: "Причесаться.",
-      },
-      {
-        id: "402",
-        term: "get dressed",
-        definition: "Одеться.",
-      },
+      { id: "401", term: "comb my hair", definition: "Причесаться." },
+      { id: "402", term: "get dressed", definition: "Одеться." },
       {
         id: "403",
         term: "do my eyebrows",
         definition: "Привести брови в порядок.",
       },
-      {
-        id: "404",
-        term: "yawn",
-        definition: "Зевнуть.",
-      },
+      { id: "404", term: "yawn", definition: "Зевнуть." },
     ],
   },
 ];

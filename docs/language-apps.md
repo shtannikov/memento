@@ -37,7 +37,14 @@ be repaired the same way with `--app en`.
 
 ## Adding another language
 
-Add the app ID to `src/lib/domain/app.ts`, provide a dedicated starter list and
-prompt/grader pack, add a page and webhook route, extend the database app-ID
-checks with a migration, and add language-specific live eval cases. Do not make
-the English or Czech prompts into a universal interpolated prompt.
+Create `src/languages/<app-id>/index.ts` with the language manifest, bot env
+names, routes, starter vocabulary, generation prompt, and grader. Put its live
+cases beside it in `src/languages/<app-id>/evals.ts`, then add the language
+manifest once to `src/languages/registry.ts`. The eval loader discovers its
+cases by convention; the dynamic Mini App page, webhook route, and provisioning
+script consume the language registry automatically.
+
+Extend the database app-ID checks with a schema-first migration before merging
+the application code. Do not make the existing prompts into a universal
+interpolated prompt. Follow `.agents/skills/add-memento-language/SKILL.md` for
+the complete rollout.

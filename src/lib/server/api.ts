@@ -4,10 +4,9 @@ import { z } from "zod";
 import {
   APP_HEADER,
   DEFAULT_APP_ID,
-  isAppId,
   type AppId,
 } from "@/lib/domain/app";
-import { readAppSecret } from "./app-config";
+import { getLanguage, isAppId } from "@/languages/registry";
 
 import {
   readInitDataAuthorization,
@@ -38,7 +37,7 @@ export function authenticateRequest(request: Request): AuthenticatedRequest {
   if (!isAppId(requestedApp)) {
     throw new AppError("INVALID_APP", "This Memento app is not supported.", 400);
   }
-  const token = readAppSecret(requestedApp, "botToken");
+  const token = process.env[getLanguage(requestedApp).botTokenEnv];
   if (!token) throw new AppError("SERVER_NOT_CONFIGURED", "The app is not configured.", 503);
   return {
     appId: requestedApp,

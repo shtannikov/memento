@@ -3,7 +3,7 @@ import "server-only";
 import { Buffer } from "node:buffer";
 import { timingSafeEqual } from "node:crypto";
 import type { AppId } from "@/lib/domain/app";
-import { readAppSecret, getAppConfig } from "./app-config";
+import { getLanguage } from "@/languages/registry";
 
 const TELEGRAM_SECRET_HEADER = "x-telegram-bot-api-secret-token";
 
@@ -18,11 +18,10 @@ export function authenticateTelegramWebhook(
   request: Request,
   appId: AppId = "en",
 ): boolean {
-  const configuredSecret = readAppSecret(appId, "webhookSecret");
+  const language = getLanguage(appId);
+  const configuredSecret = process.env[language.webhookSecretEnv];
   if (!configuredSecret) {
-    throw new TelegramWebhookConfigurationError(
-      getAppConfig(appId).webhookSecretEnv,
-    );
+    throw new TelegramWebhookConfigurationError(language.webhookSecretEnv);
   }
 
   const receivedSecret = request.headers.get(TELEGRAM_SECRET_HEADER) ?? "";

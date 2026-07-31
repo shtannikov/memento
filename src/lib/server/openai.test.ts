@@ -1,10 +1,8 @@
 import type OpenAI from "openai";
 import { describe, expect, it, vi } from "vitest";
 
-import {
-  CZECH_STARTER_VOCABULARY,
-  STARTER_VOCABULARY,
-} from "@/lib/domain/starter-vocabulary";
+import { CZECH_LANGUAGE } from "@/languages/cz";
+import { ENGLISH_LANGUAGE } from "@/languages/en";
 import {
   areQuizSentencesTooSimilar,
   buildQuizPrompt,
@@ -260,8 +258,8 @@ describe("quiz generation contract", () => {
   });
 
   it("uses exactly the approved starter vocabulary and short definitions", () => {
-    expect(STARTER_VOCABULARY).toHaveLength(10);
-    expect(STARTER_VOCABULARY.map((item) => item.term)).toEqual([
+    expect(ENGLISH_LANGUAGE.starterVocabulary).toHaveLength(10);
+    expect(ENGLISH_LANGUAGE.starterVocabulary.map((item) => item.term)).toEqual([
       "sedentary",
       "savoury",
       "leisurely",
@@ -274,16 +272,18 @@ describe("quiz generation contract", () => {
       "to a certain extent",
     ]);
     expect(
-      STARTER_VOCABULARY.every((item) => item.definition.length <= 30),
+      ENGLISH_LANGUAGE.starterVocabulary.every(
+        (item) => item.definition.length <= 30,
+      ),
     ).toBe(true);
   });
 
   it("keeps Czech starters independent from the English app", () => {
-    expect(CZECH_STARTER_VOCABULARY).toHaveLength(10);
-    expect(CZECH_STARTER_VOCABULARY.map((item) => item.term)).toContain(
+    expect(CZECH_LANGUAGE.starterVocabulary).toHaveLength(10);
+    expect(CZECH_LANGUAGE.starterVocabulary.map((item) => item.term)).toContain(
       "těšit se na něco",
     );
-    expect(STARTER_VOCABULARY.map((item) => item.term)).not.toContain(
+    expect(ENGLISH_LANGUAGE.starterVocabulary.map((item) => item.term)).not.toContain(
       "těšit se na něco",
     );
   });

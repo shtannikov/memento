@@ -1,16 +1,13 @@
 import { loadEnvConfig } from "@next/env";
 
-import { CZECH_EVAL_CASES } from "./cases/cz";
-import { ENGLISH_EVAL_CASES } from "./cases/en";
-import type { EvalCase } from "./cases/types";
+import { loadEvalCases } from "./loader";
+import type { EvalCase } from "./types";
 
 loadEnvConfig(process.cwd());
 const openaiClient = import("../src/lib/server/openai");
 
 const MAX_TRANSIENT_RETRIES = 2;
 const QUALITY_RETRIES = 2;
-
-const cases: EvalCase[] = [...ENGLISH_EVAL_CASES, ...CZECH_EVAL_CASES];
 
 async function runCase(evalCase: EvalCase) {
   const {
@@ -103,6 +100,7 @@ async function main() {
     throw new Error("OPENAI_API_KEY is required for live evals");
   }
 
+  const cases = await loadEvalCases();
   let failed = false;
   for (const evalCase of cases) {
     const startedAt = Date.now();

@@ -46,17 +46,17 @@ into the other.
 
 Read the current implementations; file names may have evolved:
 
-- `src/lib/domain/app.ts`
-- `src/lib/server/app-config.ts`
-- `src/lib/server/language-packs/`
-- `src/lib/domain/starter-vocabulary.ts`
+- `src/languages/registry.ts`
+- `src/languages/types.ts`
+- `src/languages/en/`
+- `src/languages/cz/`
 - `src/lib/server/openai.ts`
 - `src/lib/server/vocabulary.ts`
 - `src/lib/server/rounds.ts`
 - `src/lib/server/telegram-route.ts`
 - `src/app/api/telegram/webhook/`
 - `evals/runner.ts`
-- `scripts/configure-telegram-app.mjs`
+- `scripts/configure-telegram-app.ts`
 - `docs/language-apps.md`
 - `supabase/migrations/`
 
@@ -86,16 +86,17 @@ run new English code against an old schema.
 
 ### 2. Add the application
 
-- Register the product ID in `src/lib/domain/app.ts`.
-- Add its locale, env-variable names, and starter list to app configuration.
-- Add a dedicated language-pack file with native grammar rules, examples,
-  generation system prompt, and grader prompt.
-- Add a static Mini App page and a constant app-ID webhook route.
+- Create `src/languages/<app-id>/index.ts` containing the complete language
+  manifest: ID, locale, app/webhook paths, env-variable names, starters,
+  native grammar rules and examples, generation prompt, and grader prompt.
+- Add the definition once to `src/languages/registry.ts`. The shared dynamic
+  Mini App page and webhook route must discover it from that registry; do not
+  add language-specific Next.js route files.
 - Thread the app ID through client requests, Telegram auth, vocabulary, rounds,
   history, completion/failure, and daily quota queries.
 - Make Telegram `/import` and `/reset` target the current bot's app directly.
-- Extend `scripts/configure-telegram-app.mjs` and the runbook with the new route,
-  webhook, token, and webhook-secret variables.
+- Keep `scripts/configure-telegram-app.ts` registry-driven; do not add a
+  language switch or duplicate its route/env configuration there.
 - Update `AGENTS.md` and CI change detection when new prompt/starter paths are
   introduced.
 
@@ -108,8 +109,10 @@ convention says otherwise. Never print or commit credentials.
 - Add unit coverage for exact app-ID handling, independent bot token and
   webhook secret selection, direct Telegram import/reset routing, starters,
   prompt selection, and cross-app rejection.
-- Add live eval cases in a dedicated `evals/cases/<app-id>.ts` module using
-  production client methods. Cover the complete
+- Add live eval cases beside the manifest in
+  `src/languages/<app-id>/evals.ts` using production client methods. Export them
+  as `EVAL_CASES`; `evals/loader.ts` discovers every registered language by
+  convention, so do not add another central eval import. Cover the complete
   starter set, a smaller set, realistic morphology/grammar traps, multilingual
   definitions, and Russian definitions.
 - Make eval assertions target-language-aware. Do not reuse an English-only

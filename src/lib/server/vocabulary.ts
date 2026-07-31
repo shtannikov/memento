@@ -6,7 +6,7 @@ import {
   type VocabularyInput,
 } from "@/lib/domain/vocabulary";
 import { AppError } from "./api";
-import { getAppConfig } from "./app-config";
+import { getLanguage } from "@/languages/registry";
 
 export type StoredVocabularyItem = {
   id: string;
@@ -47,7 +47,7 @@ export async function ensureUserAndSeed(
   if (userAppError) throw userAppError;
   if (userApp.starter_seeded_at) return;
 
-  const starterVocabulary = getAppConfig(appId).starterVocabulary;
+  const starterVocabulary = getLanguage(appId).starterVocabulary;
 
   const { error: seedError } = await supabase
     .from("vocabulary_items")

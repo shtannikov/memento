@@ -6,14 +6,14 @@ import { zodTextFormat } from "openai/helpers/zod";
 import { z } from "zod";
 
 import { DEFAULT_APP_ID, type AppId } from "@/lib/domain/app";
+import { getLanguage } from "@/languages/registry";
+import type {
+  LanguageRecentSentence,
+  LanguageVocabularyItem,
+} from "@/languages/types";
 import { AppError } from "./api";
-import { getLanguagePack } from "./language-packs";
 
-export type GenerationVocabularyItem = {
-  id: string;
-  term: string;
-  definition: string;
-};
+export type GenerationVocabularyItem = LanguageVocabularyItem;
 
 export type GeneratedQuizCard = {
   vocabularyId: string;
@@ -22,10 +22,7 @@ export type GeneratedQuizCard = {
   options: string[];
 };
 
-export type RecentQuizSentence = {
-  vocabularyId: string;
-  sentence: string;
-};
+export type RecentQuizSentence = LanguageRecentSentence;
 
 const QuizRoundSchema = z.object({
   cards: z.array(
@@ -66,7 +63,7 @@ export function buildQuizPrompt(
   recentSentences: RecentQuizSentence[] = [],
   appId: AppId = DEFAULT_APP_ID,
 ): string {
-  return getLanguagePack(appId).buildQuizPrompt(items, recentSentences);
+  return getLanguage(appId).buildQuizPrompt(items, recentSentences);
 }
 
 export async function generateQuizCards(
@@ -161,7 +158,7 @@ export async function gradeQuizCards(
     input: [
       {
         role: "system",
-        content: getLanguagePack(appId).graderPrompt,
+        content: getLanguage(appId).graderPrompt,
       },
       {
         role: "user",
@@ -227,7 +224,7 @@ async function requestQuizCards(
       input: [
         {
           role: "system",
-          content: getLanguagePack(appId).quizSystemPrompt,
+          content: getLanguage(appId).quizSystemPrompt,
         },
         { role: "user", content: buildQuizPrompt(items, recentSentences, appId) },
       ],

@@ -19,7 +19,7 @@ This version has breaking changes — APIs, conventions, and file structure may 
 
 - Run `npm run ci` before committing changes to application logic. It includes lint, type-checking, coverage-gated unit tests, and the production build.
 - Every workflow function and pure helper must have colocated `*.test.ts` coverage. New branches and failure modes require matching tests.
-- OpenAI prompts, schemas, model configuration, starter vocabulary, and generation validation live on the production client path in `src/lib/server/openai.ts`.
+- OpenAI schemas, model configuration, and generation validation live in `src/lib/server/openai.ts`; each language's prompts, grader, starter vocabulary, manifest, and evals live together under `src/languages/<app-id>/` and are consumed by that production path.
 - Any change to that OpenAI path or to starter vocabulary must update `evals/` and run `npm run eval` with the Stage OpenAI configuration.
 - Evals must exercise production client methods, use realistic English and multilingual fixtures, and include Russian-definition coverage. Do not call the OpenAI SDK directly from eval cases.
 - Do not weaken assertions, coverage thresholds, or eval graders to make CI pass. Fix the implementation or add a justified case-specific expectation.

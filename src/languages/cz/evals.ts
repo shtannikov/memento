@@ -1,13 +1,13 @@
-import { CZECH_STARTER_VOCABULARY } from "../../src/lib/domain/starter-vocabulary";
-import type { EvalCase } from "./types";
+import type { EvalCase } from "../../../evals/types";
+import { CZECH_LANGUAGE } from ".";
 
-export const CZECH_EVAL_CASES: EvalCase[] = [
+export const EVAL_CASES: EvalCase[] = [
   {
     id: "czech-starter-vocabulary",
     description:
       "Generates grammatical Czech cards with natural inflection and reflexive particles.",
-    appId: "cz",
-    items: CZECH_STARTER_VOCABULARY.map((item, index) => ({
+    appId: CZECH_LANGUAGE.id,
+    items: CZECH_LANGUAGE.starterVocabulary.map((item, index) => ({
       id: String(index + 501),
       ...item,
     })),
@@ -16,7 +16,7 @@ export const CZECH_EVAL_CASES: EvalCase[] = [
     id: "czech-russian-definitions",
     description:
       "Uses Russian definitions as guidance while keeping targets and exercises in Czech.",
-    appId: "cz",
+    appId: CZECH_LANGUAGE.id,
     items: [
       { id: "601", term: "dát si kávu", definition: "Выпить кофе." },
       {
