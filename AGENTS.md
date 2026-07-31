@@ -15,7 +15,7 @@ This version has breaking changes — APIs, conventions, and file structure may 
 
 ## Main logic, tests, and evals
 
-- When adding or releasing another learning language, use `.agents/skills/add-memento-language/SKILL.md` and follow its explicit catalog-registration rollout.
+- When adding or releasing another learning language, use `.agents/skills/add-memento-language/SKILL.md` and follow its explicit authenticated Supabase catalog-registration rollout.
 
 - Run `npm run ci` before committing changes to application logic. It includes lint, type-checking, coverage-gated unit tests, and the production build.
 - Every workflow function and pure helper must have colocated `*.test.ts` coverage. New branches and failure modes require matching tests.

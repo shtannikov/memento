@@ -24,30 +24,32 @@ token or webhook secret across Stage and Production.
 ## Register and provision a language
 
 Register the app ID in the target Supabase project before deploying code that
-uses it. Load that environment's `SUPABASE_URL` and `SUPABASE_SECRET_KEY`, then
-run:
+uses it. Use the authenticated Supabase app or the Supabase SQL editor and run:
 
-```sh
-npm run language:register -- --app cz
+```sql
+insert into memento.language_apps (app_id)
+values ('cz')
+on conflict (app_id) do nothing;
+
+select app_id
+from memento.language_apps
+where app_id = 'cz';
 ```
 
-The command is idempotent and verifies the resulting row in
-`memento.language_apps`. English and Czech are seeded by the catalog migration,
-so this command is mainly the data-only registration path for future languages.
-It replaces per-language schema migrations: adding an ID must not alter table
-constraints or replace core database functions.
+Run the insert and verification against Stage first, then against Production
+immediately before release. English and Czech are seeded by the catalog
+migration, so this data-only registration path is mainly for future languages.
+Do not retrieve Vercel Sensitive variables into a local admin script, and do not
+add a public registration endpoint or automatic deployment hook. Adding an ID
+must not alter table constraints or replace core database functions.
 
-Create the bot in BotFather, choose a random webhook secret, set the two
-environment variables locally without committing them, and run:
-
-```sh
-npm run telegram:configure -- --app cz --base-url https://preview.example.com
-```
-
-For Production, rerun the same command with the production credentials and
-stable production origin. The command configures and verifies the webhook and
-sets the Telegram `App` menu button to the correct language route. English can
-be repaired the same way with `--app en`.
+Create the bot in BotFather, choose a random webhook secret, and store both
+values as Vercel Sensitive variables. Bot webhook and `App` menu-button
+provisioning are external release prerequisites owned by the operator. Verify
+the Stage bot against the current Preview origin before configuring and
+verifying the separate Production bot against the stable Production origin.
+Do not add a local provisioning script that attempts to retrieve Vercel
+Sensitive bot credentials.
 
 ## Adding another language
 
@@ -55,8 +57,8 @@ Create `src/languages/<app-id>/index.ts` with the language manifest, bot env
 names, routes, starter vocabulary, generation prompt, and grader. Put its live
 cases beside it in `src/languages/<app-id>/evals.ts`, then add the language
 manifest once to `src/languages/registry.ts`. The eval loader discovers its
-cases by convention; the dynamic Mini App page, webhook route, and provisioning
-script consume the language registry automatically.
+cases by convention; the dynamic Mini App page and webhook route consume the
+language registry automatically.
 
 Register the new ID in the Stage catalog before deploying its application code,
 and in Production immediately before the Production release. Do not create a

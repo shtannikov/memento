@@ -11,8 +11,6 @@
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
     "eval": "node --conditions=react-server --import tsx evals/runner.ts",
-    "language:register": "node --import tsx scripts/register-language-app.ts",
-    "telegram:configure": "node --import tsx scripts/configure-telegram-app.ts",
     "ci": "npm run lint && npm run typecheck && npm run test:coverage && npm run build"
   },
   "dependencies": {

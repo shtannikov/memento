@@ -58,8 +58,6 @@ Read the current implementations; file names may have evolved:
 - `src/lib/server/telegram-route.ts`
 - `src/app/api/telegram/webhook/`
 - `evals/runner.ts`
-- `scripts/register-language-app.ts`
-- `scripts/configure-telegram-app.ts`
 - `docs/language-apps.md`
 - `supabase/migrations/`
 
@@ -74,17 +72,30 @@ checks, enums, or function bodies with its product ID. The shared schema uses
 foreign keys into the service-role-only `memento.language_apps` catalog, and
 core RPCs validate that catalog dynamically.
 
-After adding the language to the code registry, explicitly register it in each
-target environment with that environment's server-only Supabase credentials:
+After adding the language to the code registry, use authenticated Supabase
+admin tooling such as the connected Supabase app or the Supabase SQL editor to
+run this idempotent statement against the intended project:
 
-```sh
-npm run language:register -- --app <app-id>
+```sql
+insert into memento.language_apps (app_id)
+values ('<app-id>')
+on conflict (app_id) do nothing;
+
+select app_id
+from memento.language_apps
+where app_id = '<app-id>';
 ```
 
 - Register Stage before deploying or testing the new application entry point.
 - Register Production immediately before releasing the application code.
-- Verify the command's resulting catalog row; do not assume Stage and
+- Confirm the exact Supabase project before every write and verify the resulting
+  catalog row; do not assume Stage and
   Production are synchronized.
+- Do not retrieve Vercel Sensitive environment variables to run local admin
+  scripts. Sensitive values are intentionally unavailable outside Vercel
+  builds and Functions.
+- Do not add a public registration endpoint, deployment hook, or automatic
+  registry synchronization merely to insert the catalog row.
 - Keep registration explicit. Do not automatically sync every code-registry ID
   during unrelated deployments.
 - Create a migration only when the shared storage shape, constraints, indexes,
@@ -102,8 +113,12 @@ npm run language:register -- --app <app-id>
 - Thread the app ID through client requests, Telegram auth, vocabulary, rounds,
   history, completion/failure, and daily quota queries.
 - Make Telegram `/import` and `/reset` target the current bot's app directly.
-- Keep `scripts/configure-telegram-app.ts` registry-driven; do not add a
-  language switch or duplicate its route/env configuration there.
+- Treat bot webhook and menu-button provisioning as an external release
+  prerequisite owned by the operator. Verify the configured webhook and Mini
+  App URLs before launch.
+- Do not add a local provisioning script that depends on Vercel Sensitive bot
+  tokens; those values are intentionally unavailable outside Vercel builds and
+  Functions.
 - Update `AGENTS.md` and CI change detection when new prompt/starter paths are
   introduced.
 
@@ -147,5 +162,5 @@ Report:
 - current Preview URL and tested language route;
 - English regression and new-language eval results;
 - exact Stage/Production secrets still required;
-- bot provisioning command;
+- Stage/Production bot provisioning and verification status;
 - native QA or launch prerequisites that remain.
