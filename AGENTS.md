@@ -15,6 +15,8 @@ This version has breaking changes — APIs, conventions, and file structure may 
 
 ## Main logic, tests, and evals
 
+- When adding or releasing another learning language, use `.agents/skills/add-memento-language/SKILL.md` and follow its schema-first rollout.
+
 - Run `npm run ci` before committing changes to application logic. It includes lint, type-checking, coverage-gated unit tests, and the production build.
 - Every workflow function and pure helper must have colocated `*.test.ts` coverage. New branches and failure modes require matching tests.
 - OpenAI prompts, schemas, model configuration, starter vocabulary, and generation validation live on the production client path in `src/lib/server/openai.ts`.
