@@ -64,6 +64,9 @@ async function runCase(evalCase: EvalCase) {
       !evaluation.unambiguous ||
       !evaluation.definitionHidden,
   );
+  const failedVocabularyIds = new Set(
+    failedEvaluations.map((evaluation) => evaluation.vocabularyId),
+  );
   return {
     passed:
       structural &&
@@ -76,6 +79,9 @@ async function runCase(evalCase: EvalCase) {
     novel,
     semantic: grade.passed,
     failedEvaluations,
+    failedCards: cards.filter((card) =>
+      failedVocabularyIds.has(card.vocabularyId),
+    ),
   };
 }
 

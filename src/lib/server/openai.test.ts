@@ -44,7 +44,9 @@ describe("quiz generation contract", () => {
     expect(prompt).toContain("target is always Czech");
     expect(prompt).toContain("case, person, number, gender");
     expect(prompt).toContain("reflexive particles se and si");
-    expect(prompt).toContain("Před nádražím ___ kamaráda");
+    expect(prompt).toContain("A particle may be in the visible sentence");
+    expect(prompt).toContain("Jeho číslo si musím ___");
+    expect(prompt).toContain("Mám jen jednu židli");
     expect(prompt).not.toContain("target is always English");
   });
 
