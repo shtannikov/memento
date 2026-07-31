@@ -18,14 +18,19 @@ export const EVAL_CASES: EvalCase[] = [
       "Uses Russian definitions as guidance while keeping targets and exercises in Czech.",
     appId: CZECH_LANGUAGE.id,
     items: [
-      { id: "601", term: "dát si kávu", definition: "Выпить кофе." },
+      { id: "601", term: "zapamatovat si", definition: "Запомнить." },
+      { id: "602", term: "zapomenout", definition: "Забыть." },
+      { id: "603", term: "procházet se", definition: "Прогуливаться." },
       {
-        id: "602",
-        term: "těšit se na něco",
-        definition: "Ждать с нетерпением.",
+        id: "604",
+        term: "čekat na někoho",
+        definition: "Ждать кого-либо.",
       },
-      { id: "603", term: "dávat smysl", definition: "Иметь смысл." },
-      { id: "604", term: "mít pravdu", definition: "Быть правым." },
+      {
+        id: "605",
+        term: "starat se o někoho",
+        definition: "Заботиться о ком-либо.",
+      },
     ],
   },
 ];

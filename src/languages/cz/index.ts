@@ -1,16 +1,16 @@
 import type { LanguageDefinition } from "../types";
 
 const starterVocabulary = [
-  { term: "dát si kávu", definition: "Have a coffee." },
-  { term: "těšit se na něco", definition: "Look forward to something." },
-  { term: "dávat smysl", definition: "Make sense." },
-  { term: "mít pravdu", definition: "Be right." },
-  { term: "záležet na něčem", definition: "Depend on something." },
-  { term: "přijít včas", definition: "Arrive on time." },
-  { term: "mít na něco chuť", definition: "Feel like having something." },
-  { term: "být na cestě", definition: "Be on the way." },
-  { term: "poradit si s něčím", definition: "Cope with something." },
-  { term: "zvyknout si na něco", definition: "Get used to something." },
+  { term: "zapamatovat si", definition: "to remember" },
+  { term: "zapomenout", definition: "to forget" },
+  { term: "víc", definition: "more" },
+  { term: "procházet se", definition: "to take a walk" },
+  { term: "pohovka", definition: "sofa" },
+  { term: "nábytek", definition: "furniture" },
+  { term: "čekat na někoho", definition: "to wait for someone" },
+  { term: "starat se o někoho", definition: "to take care of someone" },
+  { term: "ještě", definition: "still; yet; another" },
+  { term: "už", definition: "already; no longer" },
 ] as const;
 
 export const CZECH_LANGUAGE = {
@@ -34,7 +34,7 @@ export const CZECH_LANGUAGE = {
       "Inflect the canonical target when the sentence requires it. Czech case, person, number, gender, tense, aspect, preposition, and word order must agree with the visible context.",
       "Keep reflexive particles se and si with the expression in their natural position. Do not drop them or duplicate them outside the blank.",
       "Dictionary placeholders such as něco and někdo are semantic slots. Replace them with a concrete complement in the sentence instead of displaying a conflicting placeholder.",
-      "For example, for 'těšit se na něco' use a natural form such as 'Už se ___ víkend' with answer 'těším na'; for 'dát si kávu' use 'Po obědě si ___' with answer 'dám kávu'.",
+      "For example, for 'čekat na někoho' use 'Před nádražím ___ kamaráda' with answer 'čekám na'; for 'starat se o někoho' use 'Každý den se ___ nemocnou babičku' with answer 'starám o'.",
       "Do not replace the supplied target with a more natural synonym. Rewrite the surrounding Czech sentence so a form of the supplied target fits naturally.",
       "The four options must be four distinct displayed forms derived from targets in this input whenever possible.",
       "Substitute all four options into the sentence before returning a card. Exactly one option must be grammatically and semantically best from the visible Czech context.",

@@ -34,8 +34,8 @@ describe("quiz generation contract", () => {
       [
         {
           id: "1",
-          term: "těšit se na něco",
-          definition: "Look forward to something.",
+          term: "čekat na někoho",
+          definition: "to wait for someone",
         },
       ],
       [],
@@ -44,7 +44,7 @@ describe("quiz generation contract", () => {
     expect(prompt).toContain("target is always Czech");
     expect(prompt).toContain("case, person, number, gender");
     expect(prompt).toContain("reflexive particles se and si");
-    expect(prompt).toContain("Už se ___ víkend");
+    expect(prompt).toContain("Před nádražím ___ kamaráda");
     expect(prompt).not.toContain("target is always English");
   });
 
@@ -280,12 +280,24 @@ describe("quiz generation contract", () => {
 
   it("keeps Czech starters independent from the English app", () => {
     expect(CZECH_LANGUAGE.starterVocabulary).toHaveLength(10);
-    expect(CZECH_LANGUAGE.starterVocabulary.map((item) => item.term)).toContain(
-      "těšit se na něco",
-    );
-    expect(ENGLISH_LANGUAGE.starterVocabulary.map((item) => item.term)).not.toContain(
-      "těšit se na něco",
-    );
+    expect(CZECH_LANGUAGE.starterVocabulary).toEqual([
+      { term: "zapamatovat si", definition: "to remember" },
+      { term: "zapomenout", definition: "to forget" },
+      { term: "víc", definition: "more" },
+      { term: "procházet se", definition: "to take a walk" },
+      { term: "pohovka", definition: "sofa" },
+      { term: "nábytek", definition: "furniture" },
+      { term: "čekat na někoho", definition: "to wait for someone" },
+      {
+        term: "starat se o někoho",
+        definition: "to take care of someone",
+      },
+      { term: "ještě", definition: "still; yet; another" },
+      { term: "už", definition: "already; no longer" },
+    ]);
+    expect(
+      ENGLISH_LANGUAGE.starterVocabulary.map((item) => item.term),
+    ).not.toContain("zapamatovat si");
   });
 });
 
