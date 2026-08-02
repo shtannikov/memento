@@ -34,6 +34,15 @@
   vertical-align: baseline;
 }
 
+.command:focus {
+  outline: none;
+}
+
+.command:focus-visible code {
+  outline: 2px solid #a78bfa;
+  outline-offset: 2px;
+}
+
 .hint code {
   padding: 1px 5px;
   color: #7c3aed;

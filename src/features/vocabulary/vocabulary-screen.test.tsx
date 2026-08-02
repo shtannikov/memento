@@ -47,7 +47,7 @@ describe("VocabularyScreen", () => {
     expect(search).toHaveAttribute("placeholder", "Search phrases");
     expect(
       screen.getByText(
-        "Three correct quiz answers move a phrase to Practicing.",
+        "A phrase moves to Practicing after 3 correct answers.",
       ),
     ).toBeInTheDocument();
     expect(

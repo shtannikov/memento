@@ -152,7 +152,7 @@ export function VocabularyScreen({
           {speakingEnabled && activeTab === "learning" && (
             <div className={styles.progressHint}>
               <ChatCommandHint>
-                Three correct quiz answers move a phrase to Practicing.
+                A phrase moves to Practicing after 3 correct answers.
               </ChatCommandHint>
             </div>
           )}
