@@ -45,7 +45,14 @@ describe("VocabularyScreen", () => {
     });
 
     expect(search).toHaveAttribute("placeholder", "Search phrases");
-    expect(screen.getByText("2/3 correct answers")).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        "Get a phrase right in three quizzes to move it to Practicing.",
+      ),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByText("2/3 correct answers"),
+    ).not.toBeInTheDocument();
 
     await user.type(search, "FOLLOW");
 
@@ -199,7 +206,7 @@ describe("VocabularyScreen", () => {
     );
   });
 
-  it("shows speaking mastery progress without a direct completion action", async () => {
+  it("shows speaking mastery guidance without a direct completion action", async () => {
     const user = userEvent.setup();
     const onChangeStatus = vi.fn();
     const practicing: VocabularyItem[] = [
@@ -227,16 +234,18 @@ describe("VocabularyScreen", () => {
 
     await user.click(screen.getByRole("tab", { name: "Practicing" }));
     expect(
-      screen.getByText(/Ready to practice\?/),
+      screen.getByText(/Use a phrase correctly/),
     ).toHaveTextContent(
-      "Ready to practice? Send /speaking in the chat to get your speaking task.",
+      "Use a phrase correctly in three speaking tasks to move it to Learned. Send /speaking in the chat to get your speaking task.",
     );
-    expect(await screen.findByText("2/3 correct uses")).toBeInTheDocument();
+    expect(
+      screen.queryByText("2/3 correct uses"),
+    ).not.toBeInTheDocument();
     expect(
       screen.queryByRole("button", { name: /mark .* learned/i }),
     ).not.toBeInTheDocument();
     await user.click(
-      screen.getByRole("button", {
+      await screen.findByRole("button", {
         name: "Move make up my mind back to learning",
       }),
     );
@@ -304,6 +313,7 @@ describe("VocabularyScreen", () => {
         term: "zapamatovat si",
         definition: "to remember",
         status: "learning",
+        consecutiveCorrect: 2,
       },
     ];
     render(
@@ -324,6 +334,10 @@ describe("VocabularyScreen", () => {
     expect(
       screen.queryByText(/Send \/speaking in the chat/),
     ).not.toBeInTheDocument();
+    expect(
+      screen.queryByText(/move it to Practicing/),
+    ).not.toBeInTheDocument();
+    expect(screen.getByText("2/3 correct answers")).toBeInTheDocument();
     await user.click(
       screen.getByRole("button", { name: "Mark zapamatovat si as learned" }),
     );

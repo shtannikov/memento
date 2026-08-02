@@ -53,14 +53,9 @@ export function VocabularyCard({
       <div className={styles.wordCopy}>
         <h2 title={item.term}>{item.term}</h2>
         <p title={item.definition}>{item.definition}</p>
-        {isLearning && (
+        {isLearning && !speakingEnabled && (
           <span className={styles.learningProgress}>
             {Math.min(item.consecutiveCorrect ?? 0, 3)}/3 correct answers
-          </span>
-        )}
-        {isPracticing && (
-          <span className={styles.practiceProgress}>
-            {Math.min(item.correctUses ?? 0, 3)}/3 correct uses
           </span>
         )}
       </div>

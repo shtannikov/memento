@@ -118,7 +118,10 @@ export function VocabularyScreen({
           />
           <div
             className={`${styles.search} ${
-              activeTab === "practicing" ? styles.searchBeforeHint : ""
+              speakingEnabled &&
+              (activeTab === "learning" || activeTab === "practicing")
+                ? styles.searchBeforeHint
+                : ""
             }`}
           >
             <SearchIcon />
@@ -143,11 +146,20 @@ export function VocabularyScreen({
               </button>
             )}
           </div>
-          {activeTab === "practicing" && (
-            <div className={styles.practicingHint}>
+          {speakingEnabled && activeTab === "learning" && (
+            <div className={styles.progressHint}>
               <ChatCommandHint>
-                Ready to practice? Send <code>/speaking</code> in the
-                chat to get your speaking task.
+                Get a phrase right in three quizzes to move it to
+                Practicing.
+              </ChatCommandHint>
+            </div>
+          )}
+          {activeTab === "practicing" && (
+            <div className={styles.progressHint}>
+              <ChatCommandHint>
+                Use a phrase correctly in three speaking tasks to move
+                it to Learned. Send <code>/speaking</code> in the chat
+                to get your speaking task.
               </ChatCommandHint>
             </div>
           )}

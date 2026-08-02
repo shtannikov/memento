@@ -163,7 +163,7 @@
   margin-bottom: 10px;
 }
 
-.practicingHint {
+.progressHint {
   margin-bottom: 20px;
 }
 
@@ -304,8 +304,7 @@
   white-space: nowrap;
 }
 
-.wordCopy .learningProgress,
-.wordCopy .practiceProgress {
+.wordCopy .learningProgress {
   display: block;
   margin-top: 4px;
   font-size: 10px;
@@ -316,10 +315,6 @@
 
 .wordCopy .learningProgress {
   color: #0f766e;
-}
-
-.wordCopy .practiceProgress {
-  color: #7c3aed;
 }
 
 .wordActions {
