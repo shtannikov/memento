@@ -9,7 +9,10 @@ import {
   setTelegramColor,
 } from "@/lib/client/telegram";
 import type { NewVocabularyItem } from "./vocabulary.types";
-import { ChatCommandHint } from "./chat-command-hint";
+import {
+  ChatCommand,
+  ChatCommandHint,
+} from "./chat-command-hint";
 import {
   DEFINITION_MAX_LENGTH,
   TERM_MAX_LENGTH,
@@ -206,8 +209,8 @@ export function AddPhraseDialog({
           </form>
           <div className={styles.importHint}>
             <ChatCommandHint>
-              Adding several phrases? Send <code>/import</code> in the
-              chat to add them all at once.
+              Want to add several phrases? Send <ChatCommand>/import</ChatCommand>{" "}
+              in the chat to add them all at once.
             </ChatCommandHint>
           </div>
           <button

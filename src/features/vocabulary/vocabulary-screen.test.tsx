@@ -47,7 +47,7 @@ describe("VocabularyScreen", () => {
     expect(search).toHaveAttribute("placeholder", "Search phrases");
     expect(
       screen.getByText(
-        "Get a phrase right in three quizzes to move it to Practicing.",
+        "Three correct quiz answers move a phrase to Practicing.",
       ),
     ).toBeInTheDocument();
     expect(
@@ -244,6 +244,12 @@ describe("VocabularyScreen", () => {
     expect(
       screen.queryByRole("button", { name: /mark .* learned/i }),
     ).not.toBeInTheDocument();
+    await user.click(
+      screen.getByRole("button", {
+        name: "Copy /speaking command",
+      }),
+    );
+    expect(await navigator.clipboard.readText()).toBe("/speaking");
     await user.click(
       await screen.findByRole("button", {
         name: "Move make up my mind back to learning",

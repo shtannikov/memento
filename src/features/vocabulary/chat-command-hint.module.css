@@ -23,6 +23,17 @@
   margin: 0;
 }
 
+.command {
+  display: inline;
+  padding: 0;
+  border: 0;
+  color: inherit;
+  background: transparent;
+  font: inherit;
+  line-height: inherit;
+  vertical-align: baseline;
+}
+
 .hint code {
   padding: 1px 5px;
   color: #7c3aed;

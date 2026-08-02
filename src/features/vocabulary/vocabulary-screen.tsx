@@ -2,7 +2,10 @@ import { useRef, useState } from "react";
 import dynamic from "next/dynamic";
 
 import { AddPhraseDialog } from "./add-phrase-dialog";
-import { ChatCommandHint } from "./chat-command-hint";
+import {
+  ChatCommand,
+  ChatCommandHint,
+} from "./chat-command-hint";
 import { VocabularyCard } from "./vocabulary-card";
 import { VocabularyEmptyState } from "./vocabulary-empty-state";
 import { VocabularyHeader } from "./vocabulary-header";
@@ -149,8 +152,7 @@ export function VocabularyScreen({
           {speakingEnabled && activeTab === "learning" && (
             <div className={styles.progressHint}>
               <ChatCommandHint>
-                Get a phrase right in three quizzes to move it to
-                Practicing.
+                Three correct quiz answers move a phrase to Practicing.
               </ChatCommandHint>
             </div>
           )}
@@ -158,8 +160,8 @@ export function VocabularyScreen({
             <div className={styles.progressHint}>
               <ChatCommandHint>
                 Use a phrase correctly in three speaking tasks to move
-                it to Learned. Send <code>/speaking</code> in the chat
-                to get your speaking task.
+                it to Learned. Send <ChatCommand>/speaking</ChatCommand>{" "}
+                in the chat to get your speaking task.
               </ChatCommandHint>
             </div>
           )}

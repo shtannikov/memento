@@ -24,7 +24,8 @@ afterEach(() => {
 });
 
 describe("AddPhraseDialog", () => {
-  it("points bulk additions to the import chat command", () => {
+  it("points bulk additions to a copyable import chat command", async () => {
+    const user = userEvent.setup();
     render(
       <AddPhraseDialog
         open
@@ -34,10 +35,14 @@ describe("AddPhraseDialog", () => {
     );
 
     expect(
-      screen.getByText(/Adding several phrases\?/),
+      screen.getByText(/Want to add several phrases\?/),
     ).toHaveTextContent(
-      "Adding several phrases? Send /import in the chat to add them all at once.",
+      "Want to add several phrases? Send /import in the chat to add them all at once.",
     );
+    await user.click(
+      screen.getByRole("button", { name: "Copy /import command" }),
+    );
+    expect(await navigator.clipboard.readText()).toBe("/import");
   });
 
   it("stays open after outside taps and Escape", async () => {
