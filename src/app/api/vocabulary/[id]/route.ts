@@ -16,7 +16,7 @@ import {
 } from "@/lib/server/vocabulary";
 
 const ChangeStatusSchema = z.object({
-  action: z.enum(["learn", "practice", "restore"]),
+  action: z.enum(["learn", "practice", "restore", "return"]),
 });
 
 type RouteContext = { params: Promise<{ id: string }> };
@@ -32,7 +32,7 @@ export async function PATCH(request: Request, context: RouteContext) {
     const { action } = await parseJson(request, ChangeStatusSchema);
     const speakingEnabled = Boolean(getLanguage(appId).speaking);
     if (!speakingEnabled) {
-      if (action === "practice") {
+      if (action === "practice" || action === "return") {
         throw new AppError(
           "SPEAKING_UNAVAILABLE",
           "Speaking practice is unavailable for this language.",
@@ -75,7 +75,9 @@ export async function PATCH(request: Request, context: RouteContext) {
     const { data, error } = await getMementoDb().rpc(
       action === "practice"
         ? "promote_vocabulary_to_practicing"
-        : "restore_vocabulary_to_practicing",
+        : action === "restore"
+          ? "restore_vocabulary_to_practicing"
+          : "return_vocabulary_to_learning",
       {
         requested_vocabulary_id: Number(id),
         requested_user_id: user.id,

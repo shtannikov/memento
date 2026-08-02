@@ -31,34 +31,43 @@ export function VocabularyCard({
   onRestore,
   onDelete,
   speakingEnabled,
+  leadingAction,
 }: {
   item: VocabularyItem;
   onLearn: () => void;
   onRestore: () => void;
   onDelete: () => void;
   speakingEnabled: boolean;
+  leadingAction?: React.ReactNode;
 }) {
   const isLearned = item.status === "learned";
   const isLearning = item.status === "learning";
+  const isPracticing = item.status === "practicing";
 
   return (
     <article className={styles.wordCard}>
       {isLearned && (
         <div className={styles.learnedAccent} aria-hidden="true" />
       )}
+      {leadingAction}
       <div className={styles.wordCopy}>
         <h2 title={item.term}>{item.term}</h2>
         <p title={item.definition}>{item.definition}</p>
-        {item.status === "practicing" && (
+        {isLearning && (
+          <span className={styles.learningProgress}>
+            {Math.min(item.consecutiveCorrect ?? 0, 3)}/3 correct answers
+          </span>
+        )}
+        {isPracticing && (
           <span className={styles.practiceProgress}>
-            {item.correctUses ?? 0}/3 correct uses
+            {Math.min(item.correctUses ?? 0, 3)}/3 correct uses
           </span>
         )}
       </div>
       <div className={styles.wordActions}>
-        {isLearned ? (
+        {isLearned || isPracticing ? (
           <IconButton
-            label={`Move ${item.term} back to ${speakingEnabled ? "practicing" : "learning"}`}
+            label={`Move ${item.term} back to ${isPracticing || !speakingEnabled ? "learning" : "practicing"}`}
             tone="restore"
             onClick={onRestore}
           >

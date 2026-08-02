@@ -1,4 +1,4 @@
-import { cleanup, render, screen } from "@testing-library/react";
+import { cleanup, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
@@ -16,6 +16,7 @@ describe("VocabularyScreen", () => {
         term: "Follow up",
         definition: "continue checking",
         status: "learning",
+        consecutiveCorrect: 2,
       },
       {
         id: "2",
@@ -34,6 +35,7 @@ describe("VocabularyScreen", () => {
         onAdd={vi.fn()}
         onRemove={vi.fn()}
         onChangeStatus={vi.fn()}
+        onReorderPracticing={vi.fn()}
         onStartQuiz={vi.fn()}
       />,
     );
@@ -43,6 +45,7 @@ describe("VocabularyScreen", () => {
     });
 
     expect(search).toHaveAttribute("placeholder", "Search phrases");
+    expect(screen.getByText("2/3 correct answers")).toBeInTheDocument();
 
     await user.type(search, "FOLLOW");
 
@@ -109,6 +112,7 @@ describe("VocabularyScreen", () => {
         onAdd={vi.fn()}
         onRemove={vi.fn()}
         onChangeStatus={vi.fn()}
+        onReorderPracticing={vi.fn()}
         onStartQuiz={vi.fn()}
       />,
     );
@@ -161,6 +165,7 @@ describe("VocabularyScreen", () => {
         onAdd={vi.fn()}
         onRemove={vi.fn()}
         onChangeStatus={onChangeStatus}
+        onReorderPracticing={vi.fn()}
         onStartQuiz={vi.fn()}
       />,
     );
@@ -196,6 +201,7 @@ describe("VocabularyScreen", () => {
 
   it("shows speaking mastery progress without a direct completion action", async () => {
     const user = userEvent.setup();
+    const onChangeStatus = vi.fn();
     const practicing: VocabularyItem[] = [
       {
         id: "3",
@@ -213,16 +219,75 @@ describe("VocabularyScreen", () => {
         speakingEnabled
         onAdd={vi.fn()}
         onRemove={vi.fn()}
-        onChangeStatus={vi.fn()}
+        onChangeStatus={onChangeStatus}
+        onReorderPracticing={vi.fn()}
         onStartQuiz={vi.fn()}
       />,
     );
 
     await user.click(screen.getByRole("tab", { name: "Practicing" }));
-    expect(screen.getByText("2/3 correct uses")).toBeInTheDocument();
+    expect(await screen.findByText("2/3 correct uses")).toBeInTheDocument();
     expect(
       screen.queryByRole("button", { name: /mark .* learned/i }),
     ).not.toBeInTheDocument();
+    await user.click(
+      screen.getByRole("button", {
+        name: "Move make up my mind back to learning",
+      }),
+    );
+    expect(onChangeStatus).toHaveBeenCalledWith(practicing[0], "learning");
+  });
+
+  it("highlights the first three practicing phrases as the next speaking task", async () => {
+    const user = userEvent.setup();
+    const practicing: VocabularyItem[] = Array.from({ length: 4 }, (_, index) => ({
+      id: String(index + 1),
+      term: `phrase ${index + 1}`,
+      definition: `definition ${index + 1}`,
+      status: "practicing",
+      correctUses: 0,
+      practiceRank: (index + 1) * 1024,
+    }));
+
+    render(
+      <VocabularyScreen
+        learning={[]}
+        practicing={practicing}
+        learned={[]}
+        speakingEnabled
+        onAdd={vi.fn()}
+        onRemove={vi.fn()}
+        onChangeStatus={vi.fn()}
+        onReorderPracticing={vi.fn()}
+        onStartQuiz={vi.fn()}
+      />,
+    );
+
+    await user.click(screen.getByRole("tab", { name: "Practicing" }));
+    const activePractice = await screen.findByRole("region", {
+      name: "In active practice",
+    });
+    expect(
+      within(activePractice).getByText(
+        "These 3 phrases will come up in your next speaking task.",
+      ),
+    ).toBeInTheDocument();
+    for (const item of practicing.slice(0, 3)) {
+      expect(
+        within(activePractice).getByRole("heading", { name: item.term }),
+      ).toBeInTheDocument();
+      expect(
+        screen.getByRole("button", {
+          name: `Drag ${item.term} to reorder`,
+        }),
+      ).toBeInTheDocument();
+    }
+    expect(
+      within(activePractice).queryByRole("heading", { name: "phrase 4" }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: "phrase 4" }),
+    ).toBeInTheDocument();
   });
 
   it("keeps the two-stage flow when speaking is unavailable", async () => {
@@ -245,6 +310,7 @@ describe("VocabularyScreen", () => {
         onAdd={vi.fn()}
         onRemove={vi.fn()}
         onChangeStatus={onChangeStatus}
+        onReorderPracticing={vi.fn()}
         onStartQuiz={vi.fn()}
       />,
     );

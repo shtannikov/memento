@@ -1,4 +1,5 @@
 import { useRef, useState } from "react";
+import dynamic from "next/dynamic";
 
 import { AddPhraseDialog } from "./add-phrase-dialog";
 import { VocabularyCard } from "./vocabulary-card";
@@ -29,8 +30,14 @@ type VocabularyScreenProps = {
     item: VocabularyItem,
     status: VocabularyStatus,
   ) => void;
+  onReorderPracticing: (items: VocabularyItem[]) => void;
+  reordering?: boolean;
   onStartQuiz: () => void;
 };
+
+const PracticingQueue = dynamic(() =>
+  import("./practicing-queue").then((module) => module.PracticingQueue),
+);
 
 export function VocabularyScreen({
   learning,
@@ -40,6 +47,8 @@ export function VocabularyScreen({
   onAdd,
   onRemove,
   onChangeStatus,
+  onReorderPracticing,
+  reordering = false,
   onStartQuiz,
 }: VocabularyScreenProps) {
   const [activeTab, setActiveTab] =
@@ -141,26 +150,42 @@ export function VocabularyScreen({
             }
             className={styles.list}
           >
-            {filteredItems.map((item) => (
-              <VocabularyCard
-                key={item.id}
-                item={item}
-                speakingEnabled={speakingEnabled}
-                onLearn={() =>
-                  onChangeStatus(
-                    item,
-                    speakingEnabled ? "practicing" : "learned",
-                  )
-                }
-                onRestore={() =>
-                  onChangeStatus(
-                    item,
-                    speakingEnabled ? "practicing" : "learning",
-                  )
-                }
-                onDelete={() => removeItem(item)}
+            {activeTab === "practicing" &&
+            !normalizedQuery &&
+            practicing.length > 0 ? (
+              <PracticingQueue
+                items={practicing}
+                reordering={reordering}
+                onReorder={onReorderPracticing}
+                onRestore={(item) => onChangeStatus(item, "learning")}
+                onDelete={removeItem}
               />
-            ))}
+            ) : (
+              filteredItems.map((item) => (
+                <VocabularyCard
+                  key={item.id}
+                  item={item}
+                  speakingEnabled={speakingEnabled}
+                  onLearn={() =>
+                    onChangeStatus(
+                      item,
+                      speakingEnabled ? "practicing" : "learned",
+                    )
+                  }
+                  onRestore={() =>
+                    onChangeStatus(
+                      item,
+                      item.status === "practicing"
+                        ? "learning"
+                        : speakingEnabled
+                          ? "practicing"
+                          : "learning",
+                    )
+                  }
+                  onDelete={() => removeItem(item)}
+                />
+              ))
+            )}
             {filteredItems.length === 0 && (
               <VocabularyEmptyState
                 title={
@@ -178,7 +203,7 @@ export function VocabularyScreen({
                     : activeTab === "learning"
                     ? "Add a phrase to start your list."
                     : activeTab === "practicing"
-                      ? "Complete a quiz or move a Learning phrase here."
+                      ? "Keep practicing in quizzes, or tap Done on a Learning phrase when it feels ready."
                       : "Phrases used correctly three times will appear here."
                 }
               />

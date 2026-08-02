@@ -43,13 +43,29 @@ export async function changeVocabularyStatus(
       method: "PATCH",
       body: JSON.stringify({
         action:
-          status === "learned"
+          currentStatus === "practicing" && status === "learning"
+            ? "return"
+            : status === "learned"
             ? "learn"
             : currentStatus === "learned"
               ? "restore"
               : "practice",
       }),
     },
+    "vocabulary",
+  );
+}
+
+export async function reorderPracticingVocabulary(
+  initData: string,
+  appId: AppId,
+  ids: string[],
+): Promise<VocabularyData> {
+  return request(
+    initData,
+    appId,
+    "/api/vocabulary/order",
+    { method: "PUT", body: JSON.stringify({ ids }) },
     "vocabulary",
   );
 }

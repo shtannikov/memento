@@ -5,7 +5,9 @@ export type VocabularyItem = {
   term: string;
   definition: string;
   status: VocabularyStatus;
+  consecutiveCorrect?: number;
   correctUses?: number;
+  practiceRank?: number;
 };
 
 export type NewVocabularyItem = Pick<VocabularyItem, "term" | "definition">;

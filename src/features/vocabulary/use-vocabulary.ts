@@ -5,6 +5,7 @@ import {
   changeVocabularyStatus,
   loadVocabulary,
   removeVocabularyItem,
+  reorderPracticingVocabulary,
 } from "@/lib/client/api";
 import type { AppId } from "@/lib/domain/app";
 import type {
@@ -20,6 +21,7 @@ export function useVocabulary(initData: string | null, appId: AppId) {
     learned: [],
   });
   const [loading, setLoading] = useState(Boolean(initData));
+  const [reordering, setReordering] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const refresh = useCallback(async () => {
@@ -70,6 +72,32 @@ export function useVocabulary(initData: string | null, appId: AppId) {
     );
   }
 
+  async function reorderPracticing(items: VocabularyItem[]) {
+    if (!initData || reordering) return;
+    const previous = data;
+    setData((current) => ({ ...current, practicing: items }));
+    setReordering(true);
+    setError(null);
+    try {
+      setData(
+        await reorderPracticingVocabulary(
+          initData,
+          appId,
+          items.map((item) => item.id),
+        ),
+      );
+    } catch (caught) {
+      setData(previous);
+      setError(
+        caught instanceof Error
+          ? caught.message
+          : "Couldn’t reorder your practice phrases.",
+      );
+    } finally {
+      setReordering(false);
+    }
+  }
+
   async function mutate(operation: () => Promise<VocabularyData>) {
     setError(null);
     try {
@@ -86,10 +114,12 @@ export function useVocabulary(initData: string | null, appId: AppId) {
   return {
     ...data,
     loading,
+    reordering,
     error,
     add,
     remove,
     changeStatus,
+    reorderPracticing,
     refresh,
   };
 }

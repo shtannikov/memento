@@ -13,7 +13,9 @@ export type StoredVocabularyItem = {
   term: string;
   definition: string;
   status: "learning" | "practicing" | "learned";
+  consecutiveCorrect?: number;
   correctUses?: number;
+  practiceRank?: number;
 };
 
 export async function ensureUserAndSeed(
@@ -111,17 +113,38 @@ export async function loadVocabulary(
   if (error) throw error;
 
   const itemIds = (data ?? []).map((item) => item.id);
-  const { data: speakingStates, error: speakingError } = itemIds.length
-    ? await getMementoDb()
-        .from("speaking_states")
-        .select("vocabulary_id,correct_uses")
-        .in("vocabulary_id", itemIds)
-    : { data: [], error: null };
+  const [speakingResult, schedulingResult] = itemIds.length
+    ? await Promise.all([
+        getMementoDb()
+          .from("speaking_states")
+          .select("vocabulary_id,correct_uses,practice_rank")
+          .in("vocabulary_id", itemIds),
+        getMementoDb()
+          .from("scheduling_states")
+          .select("vocabulary_id,consecutive_correct")
+          .in("vocabulary_id", itemIds),
+      ])
+    : [
+        { data: [], error: null },
+        { data: [], error: null },
+      ];
+  const { data: speakingStates, error: speakingError } = speakingResult;
+  const { data: schedulingStates, error: schedulingError } = schedulingResult;
   if (speakingError) throw speakingError;
-  const correctUses = new Map(
+  if (schedulingError) throw schedulingError;
+  const speakingProgress = new Map(
     (speakingStates ?? []).map((state) => [
       String(state.vocabulary_id),
-      Number(state.correct_uses),
+      {
+        correctUses: Number(state.correct_uses),
+        practiceRank: Number(state.practice_rank),
+      },
+    ]),
+  );
+  const learningProgress = new Map(
+    (schedulingStates ?? []).map((state) => [
+      String(state.vocabulary_id),
+      Number(state.consecutive_correct),
     ]),
   );
   const items = (data ?? []).map((item) => ({
@@ -129,15 +152,49 @@ export async function loadVocabulary(
     term: item.term,
     definition: item.definition,
     status: item.status as "learning" | "practicing" | "learned",
+    ...(item.status === "learning"
+      ? {
+          consecutiveCorrect:
+            learningProgress.get(String(item.id)) ?? 0,
+        }
+      : {}),
     ...(item.status === "practicing"
-      ? { correctUses: correctUses.get(String(item.id)) ?? 0 }
+      ? {
+          correctUses:
+            speakingProgress.get(String(item.id))?.correctUses ?? 0,
+          practiceRank:
+            speakingProgress.get(String(item.id))?.practiceRank ??
+            Number.MAX_SAFE_INTEGER,
+        }
       : {}),
   }));
   return {
     learning: items.filter((item) => item.status === "learning"),
-    practicing: items.filter((item) => item.status === "practicing"),
+    practicing: items
+      .filter((item) => item.status === "practicing")
+      .sort(
+        (left, right) =>
+          (left.practiceRank ?? Number.MAX_SAFE_INTEGER) -
+          (right.practiceRank ?? Number.MAX_SAFE_INTEGER),
+      ),
     learned: items.filter((item) => item.status === "learned"),
   };
+}
+
+export async function reorderPracticingVocabulary(
+  userId: number,
+  appId: AppId,
+  vocabularyIds: string[],
+): Promise<void> {
+  const { error } = await getMementoDb().rpc(
+    "reorder_practicing_vocabulary",
+    {
+      requested_user_id: userId,
+      requested_app_id: appId,
+      requested_vocabulary_ids: vocabularyIds.map(Number),
+    },
+  );
+  if (error) throw error;
 }
 
 export async function importVocabularyItems(

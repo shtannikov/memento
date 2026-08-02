@@ -137,6 +137,7 @@
 .tabs button:focus-visible,
 .search:focus-within,
 .iconButton:focus-visible,
+.dragHandle:focus-visible,
 .floatingButton:focus-visible {
   outline: 2px solid #8b5cf6;
   outline-offset: 2px;
@@ -225,6 +226,42 @@
   box-shadow: 0 1px 2px rgb(15 23 42 / 5%);
 }
 
+.sortableItem {
+  position: relative;
+  z-index: 0;
+}
+
+.sortableDragging {
+  z-index: 10;
+  opacity: 0.92;
+}
+
+.sortableDragging .wordCard {
+  border-color: #a7f3d0;
+  box-shadow: 0 12px 28px rgb(15 23 42 / 16%);
+}
+
+.dragHandle {
+  display: grid;
+  width: 38px;
+  flex-shrink: 0;
+  padding: 0 0 0 10px;
+  color: #cbd5e1;
+  place-items: center;
+  border: 0;
+  background: transparent;
+  cursor: grab;
+  touch-action: none;
+}
+
+.dragHandle:active {
+  cursor: grabbing;
+}
+
+.dragHandle:disabled {
+  cursor: wait;
+}
+
 .learnedAccent {
   width: 6px;
   flex-shrink: 0;
@@ -259,14 +296,22 @@
   white-space: nowrap;
 }
 
+.wordCopy .learningProgress,
 .wordCopy .practiceProgress {
   display: block;
   margin-top: 4px;
-  color: #7c3aed;
   font-size: 10px;
   line-height: 12px;
   font-weight: 600;
   text-transform: uppercase;
+}
+
+.wordCopy .learningProgress {
+  color: #0f766e;
+}
+
+.wordCopy .practiceProgress {
+  color: #7c3aed;
 }
 
 .wordActions {
@@ -315,6 +360,54 @@
 .restore:hover,
 .restore:active {
   background: #ede9fe;
+}
+
+.activePractice {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 20px 10px 10px;
+  border: 1px solid #34d399;
+  border-radius: 22px;
+  background: linear-gradient(180deg, #f0fdf9 0%, #ffffff 100%);
+  box-shadow: 0 10px 28px rgb(16 185 129 / 8%);
+}
+
+.activePracticeTitle {
+  position: absolute;
+  top: 0;
+  left: 18px;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 0 8px;
+  color: #047857;
+  background: #ffffff;
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 700;
+  transform: translateY(-50%);
+}
+
+.activePracticeTitle span {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: #10b981;
+}
+
+.activePracticeDescription {
+  margin: 2px 4px 0;
+  color: #0f766e;
+  font-size: 12px;
+  line-height: 18px;
+}
+
+.activePracticeItems {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
 .emptyState {
