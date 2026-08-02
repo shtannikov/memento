@@ -226,6 +226,11 @@ describe("VocabularyScreen", () => {
     );
 
     await user.click(screen.getByRole("tab", { name: "Practicing" }));
+    expect(
+      screen.getByText(/Ready to practice\?/),
+    ).toHaveTextContent(
+      "Ready to practice? Send /speaking in the chat to get your speaking task.",
+    );
     expect(await screen.findByText("2/3 correct uses")).toBeInTheDocument();
     expect(
       screen.queryByRole("button", { name: /mark .* learned/i }),
@@ -316,6 +321,9 @@ describe("VocabularyScreen", () => {
     );
 
     expect(screen.queryByRole("tab", { name: "Practicing" })).not.toBeInTheDocument();
+    expect(
+      screen.queryByText(/Send \/speaking in the chat/),
+    ).not.toBeInTheDocument();
     await user.click(
       screen.getByRole("button", { name: "Mark zapamatovat si as learned" }),
     );

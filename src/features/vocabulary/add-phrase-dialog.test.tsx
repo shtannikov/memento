@@ -24,6 +24,22 @@ afterEach(() => {
 });
 
 describe("AddPhraseDialog", () => {
+  it("points bulk additions to the import chat command", () => {
+    render(
+      <AddPhraseDialog
+        open
+        onOpenChange={vi.fn()}
+        onAdd={vi.fn()}
+      />,
+    );
+
+    expect(
+      screen.getByText(/Adding several phrases\?/),
+    ).toHaveTextContent(
+      "Adding several phrases? Send /import in the chat to add them all at once.",
+    );
+  });
+
   it("stays open after outside taps and Escape", async () => {
     const user = userEvent.setup();
     const onOpenChange = vi.fn();

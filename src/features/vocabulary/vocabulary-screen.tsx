@@ -2,6 +2,7 @@ import { useRef, useState } from "react";
 import dynamic from "next/dynamic";
 
 import { AddPhraseDialog } from "./add-phrase-dialog";
+import { ChatCommandHint } from "./chat-command-hint";
 import { VocabularyCard } from "./vocabulary-card";
 import { VocabularyEmptyState } from "./vocabulary-empty-state";
 import { VocabularyHeader } from "./vocabulary-header";
@@ -115,7 +116,11 @@ export function VocabularyScreen({
             onChange={changeTab}
             speakingEnabled={speakingEnabled}
           />
-          <div className={styles.search}>
+          <div
+            className={`${styles.search} ${
+              activeTab === "practicing" ? styles.searchBeforeHint : ""
+            }`}
+          >
             <SearchIcon />
             <input
               ref={searchInputRef}
@@ -138,6 +143,14 @@ export function VocabularyScreen({
               </button>
             )}
           </div>
+          {activeTab === "practicing" && (
+            <div className={styles.practicingHint}>
+              <ChatCommandHint>
+                Ready to practice? Send <code>/speaking</code> in the
+                chat to get your speaking task.
+              </ChatCommandHint>
+            </div>
+          )}
           <section
             id={`${activeTab}-panel`}
             role="tabpanel"

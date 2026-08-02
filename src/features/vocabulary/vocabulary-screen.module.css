@@ -159,6 +159,14 @@
     box-shadow 160ms ease;
 }
 
+.searchBeforeHint {
+  margin-bottom: 10px;
+}
+
+.practicingHint {
+  margin-bottom: 20px;
+}
+
 .search:focus-within {
   color: #7c3aed;
   border-color: #c4b5fd;
