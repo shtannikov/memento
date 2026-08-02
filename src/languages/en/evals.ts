@@ -1,4 +1,4 @@
-import type { EvalCase } from "../../../evals/types";
+import type { EvalCase, SpeakingEvalCase } from "../../../evals/types";
 import { ENGLISH_LANGUAGE } from ".";
 
 const russianDefinitions = [
@@ -109,5 +109,55 @@ export const EVAL_CASES: EvalCase[] = [
       },
       { id: "404", term: "yawn", definition: "Зевнуть." },
     ],
+  },
+];
+
+const speakingTask = {
+  id: "00000000-0000-0000-0000-000000000001",
+  topic: "Changing a team plan",
+  domain: "work and collaboration",
+  grammarFocus: "polite requests and indirect questions",
+  prompt:
+    "Tell a teammate why the plan must change, ask for their input, and agree on the next step.",
+  items: [
+    { vocabularyId: "701", term: "take into account", definition: "consider" },
+    { vocabularyId: "702", term: "be responsible for", definition: "have responsibility" },
+    { vocabularyId: "703", term: "wrap up", definition: "finish" },
+  ],
+};
+
+export const SPEAKING_EVAL_CASES: SpeakingEvalCase[] = [
+  {
+    kind: "topic",
+    id: "speaking-topic-coherence",
+    description:
+      "Creates one coherent public-service scenario around the selected domain, grammar focus, and required phrases.",
+    appId: "en",
+    input: {
+      targetDomain: "public services and civic life",
+      targetGrammarFocus: "polite requests and indirect questions",
+      recentTopics: [
+        { topic: "Returning a purchase", domain: "shopping", grammarFocus: null },
+      ],
+      recentLearnerExcerpts: [
+        "I had to explain why the appointment time did not work for me.",
+      ],
+      requiredPhrases: ["take into account", "be responsible for", "wrap up"],
+    },
+  },
+  {
+    kind: "answer",
+    id: "speaking-answer-required-phrase-statuses",
+    description:
+      "Distinguishes correct, incorrect, and missing required-phrase usage without generating recommendations.",
+    appId: "en",
+    task: speakingTask,
+    transcript:
+      "Could you tell me whether we can change the plan? We need to take into account the new deadline. I am responsible of the final report, so I would value your input.",
+    expectedUsage: {
+      "701": "used_correctly",
+      "702": "used_incorrectly",
+      "703": "missed",
+    },
   },
 ];

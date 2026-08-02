@@ -1,4 +1,5 @@
 import type { LanguageDefinition } from "../types";
+import { ENGLISH_SPEAKING } from "./speaking";
 
 const starterVocabulary = [
   { term: "sedentary", definition: "Involving little activity." },
@@ -29,6 +30,7 @@ export const ENGLISH_LANGUAGE = {
   botTokenEnv: "TELEGRAM_BOT_TOKEN",
   webhookSecretEnv: "TELEGRAM_WEBHOOK_SECRET",
   starterVocabulary,
+  speaking: ENGLISH_SPEAKING,
   quizSystemPrompt:
     "You create unambiguous English vocabulary exercises and follow the output schema exactly.",
   graderPrompt:

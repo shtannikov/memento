@@ -32,6 +32,7 @@ export async function changeVocabularyStatus(
   initData: string,
   appId: AppId,
   id: string,
+  currentStatus: VocabularyStatus,
   status: VocabularyStatus,
 ): Promise<VocabularyData> {
   return request(
@@ -41,7 +42,12 @@ export async function changeVocabularyStatus(
     {
       method: "PATCH",
       body: JSON.stringify({
-        action: status === "learned" ? "learn" : "restore",
+        action:
+          status === "learned"
+            ? "learn"
+            : currentStatus === "learned"
+              ? "restore"
+              : "practice",
       }),
     },
     "vocabulary",

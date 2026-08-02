@@ -8,6 +8,9 @@ import {
 const IMPORT_COMMAND = /^\/import(?:@[a-z0-9_]+)?$/i;
 const IMPORT_COMMAND_PREFIX = /^\/import(?:@[a-z0-9_]+)?(?=$|\s)/i;
 const RESET_COMMAND = /^\/reset(?:@[a-z0-9_]+)?$/i;
+const RESET_CONFIRM_COMMAND = /^\/reset(?:@[a-z0-9_]+)?\s+confirm$/i;
+const HELP_COMMAND = /^\/help(?:@[a-z0-9_]+)?$/i;
+const SPEAKING_COMMAND = /^\/speaking(?:@[a-z0-9_]+)?$/i;
 const START_COMMAND = /^\/start(?:@[a-z0-9_]+)?(?:\s.*)?$/i;
 const LIST_MARKER =
   /^(?:(?:[-*+•◦‣⁃∙·▪▫●○■□◆◇▶▷►▸➤➜–—]|[☐☑☒]|\[(?: |x|X)\])[ \t]?|(?:\d{1,3}[.)]|\(\d{1,3}\))[ \t])/u;
@@ -28,13 +31,26 @@ export type ImportParseResult =
   | { ok: true; items: VocabularyInput[] }
   | { ok: false; message: string; formatHelp?: true };
 
-export type VocabularyCommand = "import" | "reset" | "start";
+export type VocabularyCommand =
+  | "help"
+  | "import"
+  | "reset"
+  | "reset_confirm"
+  | "start"
+  | "speaking";
 
 export function readVocabularyCommand(text: string): VocabularyCommand | null {
   const lines = normalizeLines(text);
   const firstLine = lines[0]?.trim() ?? "";
 
   if (IMPORT_COMMAND_PREFIX.test(firstLine)) return "import";
+  if (lines.length === 1 && HELP_COMMAND.test(firstLine)) return "help";
+  if (lines.length === 1 && SPEAKING_COMMAND.test(firstLine)) {
+    return "speaking";
+  }
+  if (lines.length === 1 && RESET_CONFIRM_COMMAND.test(firstLine)) {
+    return "reset_confirm";
+  }
   if (lines.length === 1 && RESET_COMMAND.test(firstLine)) return "reset";
   if (lines.length === 1 && START_COMMAND.test(firstLine)) return "start";
   return null;

@@ -28,7 +28,9 @@ describe("VocabularyScreen", () => {
     render(
       <VocabularyScreen
         learning={learning}
+        practicing={[]}
         learned={[]}
+        speakingEnabled
         onAdd={vi.fn()}
         onRemove={vi.fn()}
         onChangeStatus={vi.fn()}
@@ -101,7 +103,9 @@ describe("VocabularyScreen", () => {
     render(
       <VocabularyScreen
         learning={learning}
+        practicing={[]}
         learned={learned}
+        speakingEnabled
         onAdd={vi.fn()}
         onRemove={vi.fn()}
         onChangeStatus={vi.fn()}
@@ -151,7 +155,9 @@ describe("VocabularyScreen", () => {
     render(
       <VocabularyScreen
         learning={[]}
+        practicing={[]}
         learned={learned}
+        speakingEnabled
         onAdd={vi.fn()}
         onRemove={vi.fn()}
         onChangeStatus={onChangeStatus}
@@ -162,7 +168,7 @@ describe("VocabularyScreen", () => {
     await user.click(screen.getByRole("tab", { name: "Learned" }));
     await user.click(
       screen.getByRole("button", {
-        name: "Move follow up back to learning",
+        name: "Move follow up back to practicing",
       }),
     );
 
@@ -172,19 +178,81 @@ describe("VocabularyScreen", () => {
 
     await user.click(
       screen.getByRole("button", {
-        name: "Move take into account back to learning",
+        name: "Move take into account back to practicing",
       }),
     );
 
     expect(onChangeStatus).toHaveBeenNthCalledWith(
       1,
       learned[0],
-      "learning",
+      "practicing",
     );
     expect(onChangeStatus).toHaveBeenNthCalledWith(
       2,
       learned[1],
-      "learning",
+      "practicing",
     );
+  });
+
+  it("shows speaking mastery progress without a direct completion action", async () => {
+    const user = userEvent.setup();
+    const practicing: VocabularyItem[] = [
+      {
+        id: "3",
+        term: "make up my mind",
+        definition: "decide",
+        status: "practicing",
+        correctUses: 2,
+      },
+    ];
+    render(
+      <VocabularyScreen
+        learning={[]}
+        practicing={practicing}
+        learned={[]}
+        speakingEnabled
+        onAdd={vi.fn()}
+        onRemove={vi.fn()}
+        onChangeStatus={vi.fn()}
+        onStartQuiz={vi.fn()}
+      />,
+    );
+
+    await user.click(screen.getByRole("tab", { name: "Practicing" }));
+    expect(screen.getByText("2/3 correct uses")).toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: /mark .* learned/i }),
+    ).not.toBeInTheDocument();
+  });
+
+  it("keeps the two-stage flow when speaking is unavailable", async () => {
+    const user = userEvent.setup();
+    const onChangeStatus = vi.fn();
+    const learning: VocabularyItem[] = [
+      {
+        id: "4",
+        term: "zapamatovat si",
+        definition: "to remember",
+        status: "learning",
+      },
+    ];
+    render(
+      <VocabularyScreen
+        learning={learning}
+        practicing={[]}
+        learned={[]}
+        speakingEnabled={false}
+        onAdd={vi.fn()}
+        onRemove={vi.fn()}
+        onChangeStatus={onChangeStatus}
+        onStartQuiz={vi.fn()}
+      />,
+    );
+
+    expect(screen.queryByRole("tab", { name: "Practicing" })).not.toBeInTheDocument();
+    await user.click(
+      screen.getByRole("button", { name: "Mark zapamatovat si as learned" }),
+    );
+    expect(onChangeStatus).toHaveBeenCalledWith(learning[0], "learned");
   });
 });

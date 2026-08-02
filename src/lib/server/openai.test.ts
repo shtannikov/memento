@@ -1,11 +1,13 @@
 import type OpenAI from "openai";
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { CZECH_LANGUAGE } from "@/languages/cz";
 import { ENGLISH_LANGUAGE } from "@/languages/en";
 import {
   areQuizSentencesTooSimilar,
   buildQuizPrompt,
+  evaluateSpeakingAnswer,
+  generateSpeakingTopic,
   generateQuizCards,
   gradeQuizCards,
   normalizeQuizSentence,
@@ -20,6 +22,18 @@ const items: GenerationVocabularyItem[] = [
   { id: "3", term: "leisurely", definition: "Неторопливый." },
   { id: "4", term: "savoury", definition: "Несладкий." },
 ];
+
+const originalSpeakingEvaluationModel =
+  process.env.OPENAI_SPEAKING_EVALUATION_MODEL;
+
+afterEach(() => {
+  if (originalSpeakingEvaluationModel === undefined) {
+    delete process.env.OPENAI_SPEAKING_EVALUATION_MODEL;
+  } else {
+    process.env.OPENAI_SPEAKING_EVALUATION_MODEL =
+      originalSpeakingEvaluationModel;
+  }
+});
 
 describe("quiz generation contract", () => {
   it("keeps multilingual definitions in the prompt as semantic guidance", () => {
@@ -300,6 +314,96 @@ describe("quiz generation contract", () => {
     expect(
       ENGLISH_LANGUAGE.starterVocabulary.map((item) => item.term),
     ).not.toContain("zapamatovat si");
+  });
+
+  it("generates speaking topics from rotation and recent-history context", async () => {
+    const parse = vi.fn().mockResolvedValue({
+      status: "completed",
+      output_parsed: {
+        title: "A delayed appointment",
+        speakingPrompt: "Ask the receptionist to find a practical alternative.",
+      },
+    });
+    const openai = { responses: { parse } } as unknown as OpenAI;
+    const input = {
+      targetDomain: "public services and appointments",
+      targetGrammarFocus: "polite requests and indirect questions",
+      recentTopics: [{ topic: "A cancelled train", domain: "travel", grammarFocus: null }],
+      recentLearnerExcerpts: ["I needed to change the time."],
+      requiredPhrases: ["take into account"],
+    };
+
+    await expect(generateSpeakingTopic(input, 42, "en", openai)).resolves.toEqual({
+      title: "A delayed appointment",
+      speakingPrompt: "Ask the receptionist to find a practical alternative.",
+      domain: input.targetDomain,
+      grammarFocus: input.targetGrammarFocus,
+    });
+    expect(parse.mock.calls[0][0]).toMatchObject({ store: false });
+    expect(JSON.stringify(parse.mock.calls[0][0].input)).toContain(
+      "I needed to change the time.",
+    );
+  });
+
+  it("evaluates only required phrases and rejects invented vocabulary references", async () => {
+    process.env.OPENAI_SPEAKING_EVALUATION_MODEL = "voice-evaluation-model";
+    const output = {
+      coverageScore: 80,
+      taskRelevance: "on_topic",
+      corrections: [],
+      requiredPhraseUsage: [
+        {
+          vocabularyId: "701",
+          phrase: "take into account",
+          status: "used_correctly",
+          evidence: "take into account the deadline",
+        },
+      ],
+      rubric: {
+        fluencyAndCoherence: 3,
+        lexicalResource: 3,
+        grammaticalRange: 3,
+        grammaticalAccuracy: 3,
+      },
+      grammarPriority: null,
+      telegramFeedback: "Clear and well structured.",
+    };
+    const parse = vi.fn().mockResolvedValue({
+      status: "completed",
+      output_parsed: output,
+    });
+    const openai = { responses: { parse } } as unknown as OpenAI;
+    const task = {
+      id: "task-1",
+      topic: "A deadline",
+      domain: "work and career",
+      grammarFocus: "polite requests and indirect questions",
+      prompt: "Explain the change and ask for input.",
+      items: [
+        { vocabularyId: "701", term: "take into account", definition: "consider" },
+      ],
+    };
+
+    await expect(
+      evaluateSpeakingAnswer("We should take into account the deadline.", task, 42, "en", openai),
+    ).resolves.toEqual(output);
+    expect(parse.mock.calls[0][0].model).toBe("voice-evaluation-model");
+    expect(ENGLISH_LANGUAGE.speaking?.answerEvaluationPrompt).toContain(
+      "Do not generate vocabulary candidates, phrase recommendations",
+    );
+
+    parse.mockResolvedValueOnce({
+      status: "completed",
+      output_parsed: {
+        ...output,
+        requiredPhraseUsage: [
+          { ...output.requiredPhraseUsage[0], vocabularyId: "invented" },
+        ],
+      },
+    });
+    await expect(
+      evaluateSpeakingAnswer("We should take it into account.", task, 42, "en", openai),
+    ).rejects.toThrow("invalid vocabulary references");
   });
 });
 

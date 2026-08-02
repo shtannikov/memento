@@ -23,7 +23,7 @@ describe("Telegram bot client", () => {
   it("sends a reply with reply parameters", async () => {
     process.env.TELEGRAM_BOT_TOKEN = "123:test";
     const fetchMock = vi.fn().mockResolvedValue(
-      new Response(JSON.stringify({ ok: true }), { status: 200 }),
+      new Response(JSON.stringify({ ok: true, result: { message_id: 99 } }), { status: 200 }),
     );
     vi.stubGlobal("fetch", fetchMock);
 
@@ -48,7 +48,7 @@ describe("Telegram bot client", () => {
   it("sends HTML formatting when requested", async () => {
     process.env.TELEGRAM_BOT_TOKEN = "123:test";
     const fetchMock = vi.fn().mockResolvedValue(
-      new Response(JSON.stringify({ ok: true }), { status: 200 }),
+      new Response(JSON.stringify({ ok: true, result: { message_id: 99 } }), { status: 200 }),
     );
     vi.stubGlobal("fetch", fetchMock);
 
@@ -99,7 +99,7 @@ describe("Telegram bot client", () => {
   it("sends Czech replies through the Czech bot", async () => {
     process.env.TELEGRAM_CZ_BOT_TOKEN = "456:czech";
     const fetchMock = vi.fn().mockResolvedValue(
-      new Response(JSON.stringify({ ok: true }), { status: 200 }),
+      new Response(JSON.stringify({ ok: true, result: { message_id: 99 } }), { status: 200 }),
     );
     vi.stubGlobal("fetch", fetchMock);
 

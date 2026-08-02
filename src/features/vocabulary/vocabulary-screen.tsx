@@ -20,7 +20,9 @@ import type {
 
 type VocabularyScreenProps = {
   learning: VocabularyItem[];
+  practicing: VocabularyItem[];
   learned: VocabularyItem[];
+  speakingEnabled: boolean;
   onAdd: (item: NewVocabularyItem) => void;
   onRemove: (item: VocabularyItem) => void;
   onChangeStatus: (
@@ -32,7 +34,9 @@ type VocabularyScreenProps = {
 
 export function VocabularyScreen({
   learning,
+  practicing,
   learned,
+  speakingEnabled,
   onAdd,
   onRemove,
   onChangeStatus,
@@ -43,7 +47,12 @@ export function VocabularyScreen({
   const [addOpen, setAddOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const searchInputRef = useRef<HTMLInputElement>(null);
-  const visibleItems = activeTab === "learning" ? learning : learned;
+  const visibleItems =
+    activeTab === "learning"
+      ? learning
+      : activeTab === "practicing"
+        ? practicing
+        : learned;
   const normalizedQuery = searchQuery.trim().toLocaleLowerCase();
   const filteredItems = normalizedQuery
     ? visibleItems.filter(
@@ -80,7 +89,9 @@ export function VocabularyScreen({
       <div className={styles.screen}>
         <VocabularyHeader
           learningCount={learning.length}
+          practicingCount={practicing.length}
           learnedCount={learned.length}
+          speakingEnabled={speakingEnabled}
         />
 
         <div
@@ -93,6 +104,7 @@ export function VocabularyScreen({
           <VocabularyTabs
             activeTab={activeTab}
             onChange={changeTab}
+            speakingEnabled={speakingEnabled}
           />
           <div className={styles.search}>
             <SearchIcon />
@@ -121,7 +133,11 @@ export function VocabularyScreen({
             id={`${activeTab}-panel`}
             role="tabpanel"
             aria-label={
-              activeTab === "learning" ? "Learning" : "Learned"
+              activeTab === "learning"
+                ? "Learning"
+                : activeTab === "practicing"
+                  ? "Practicing"
+                  : "Learned"
             }
             className={styles.list}
           >
@@ -129,8 +145,19 @@ export function VocabularyScreen({
               <VocabularyCard
                 key={item.id}
                 item={item}
-                onLearn={() => onChangeStatus(item, "learned")}
-                onRestore={() => onChangeStatus(item, "learning")}
+                speakingEnabled={speakingEnabled}
+                onLearn={() =>
+                  onChangeStatus(
+                    item,
+                    speakingEnabled ? "practicing" : "learned",
+                  )
+                }
+                onRestore={() =>
+                  onChangeStatus(
+                    item,
+                    speakingEnabled ? "practicing" : "learning",
+                  )
+                }
                 onDelete={() => removeItem(item)}
               />
             ))}
@@ -141,14 +168,18 @@ export function VocabularyScreen({
                     ? "No matches found"
                     : activeTab === "learning"
                     ? "Nothing to learn yet"
-                    : "No learned words yet"
+                    : activeTab === "practicing"
+                      ? "Nothing to practice yet"
+                      : "No learned phrases yet"
                 }
                 text={
                   normalizedQuery
                     ? "Try a different word or definition."
                     : activeTab === "learning"
                     ? "Add a phrase to start your list."
-                    : "Phrases you master will appear here."
+                    : activeTab === "practicing"
+                      ? "Complete a quiz or move a Learning phrase here."
+                      : "Phrases used correctly three times will appear here."
                 }
               />
             )}

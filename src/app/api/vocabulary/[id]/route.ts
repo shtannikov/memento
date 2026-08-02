@@ -8,6 +8,7 @@ import {
   parseJson,
 } from "@/lib/server/api";
 import { getMementoDb } from "@/lib/server/supabase";
+import { getLanguage } from "@/languages/registry";
 import {
   ensureUserAndSeed,
   loadVocabulary,
@@ -15,7 +16,7 @@ import {
 } from "@/lib/server/vocabulary";
 
 const ChangeStatusSchema = z.object({
-  action: z.enum(["learn", "restore"]),
+  action: z.enum(["learn", "practice", "restore"]),
 });
 
 type RouteContext = { params: Promise<{ id: string }> };
@@ -29,23 +30,66 @@ export async function PATCH(request: Request, context: RouteContext) {
       throw new AppError("INVALID_REQUEST", "Invalid vocabulary item.", 400);
     }
     const { action } = await parseJson(request, ChangeStatusSchema);
-    const { data, error } = await getMementoDb()
-      .from("vocabulary_items")
-      .update({
-        status: action === "learn" ? "learned" : "learning",
-        updated_at: new Date().toISOString(),
-      })
-      .eq("id", id)
-      .eq("user_id", user.id)
-      .eq("app_id", appId)
-      .eq("is_removed", false)
-      .select("id")
-      .maybeSingle();
+    const speakingEnabled = Boolean(getLanguage(appId).speaking);
+    if (!speakingEnabled) {
+      if (action === "practice") {
+        throw new AppError(
+          "SPEAKING_UNAVAILABLE",
+          "Speaking practice is unavailable for this language.",
+          409,
+        );
+      }
+      const { data, error } = await getMementoDb()
+        .from("vocabulary_items")
+        .update({
+          status: action === "learn" ? "learned" : "learning",
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", id)
+        .eq("user_id", user.id)
+        .eq("app_id", appId)
+        .eq("status", action === "learn" ? "learning" : "learned")
+        .eq("is_removed", false)
+        .select("id")
+        .maybeSingle();
+      if (error) throw error;
+      if (!data) {
+        throw new AppError(
+          "INVALID_STATUS_CHANGE",
+          "That phrase cannot be moved from its current stage.",
+          409,
+        );
+      }
+      if (action === "restore") await resetSchedule(id);
+      return NextResponse.json({
+        vocabulary: await loadVocabulary(user.id, appId),
+      });
+    }
+    if (action === "learn") {
+      throw new AppError(
+        "INVALID_STATUS_CHANGE",
+        "Phrases become Learned after speaking practice.",
+        409,
+      );
+    }
+    const { data, error } = await getMementoDb().rpc(
+      action === "practice"
+        ? "promote_vocabulary_to_practicing"
+        : "restore_vocabulary_to_practicing",
+      {
+        requested_vocabulary_id: Number(id),
+        requested_user_id: user.id,
+        requested_app_id: appId,
+      },
+    );
     if (error) throw error;
     if (!data) {
-      throw new AppError("NOT_FOUND", "Vocabulary item not found.", 404);
+      throw new AppError(
+        "INVALID_STATUS_CHANGE",
+        "That phrase cannot be moved from its current stage.",
+        409,
+      );
     }
-    if (action === "restore") await resetSchedule(id);
 
     return NextResponse.json({
       vocabulary: await loadVocabulary(user.id, appId),

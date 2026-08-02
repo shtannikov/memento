@@ -30,13 +30,16 @@ export function VocabularyCard({
   onLearn,
   onRestore,
   onDelete,
+  speakingEnabled,
 }: {
   item: VocabularyItem;
   onLearn: () => void;
   onRestore: () => void;
   onDelete: () => void;
+  speakingEnabled: boolean;
 }) {
   const isLearned = item.status === "learned";
+  const isLearning = item.status === "learning";
 
   return (
     <article className={styles.wordCard}>
@@ -46,25 +49,34 @@ export function VocabularyCard({
       <div className={styles.wordCopy}>
         <h2 title={item.term}>{item.term}</h2>
         <p title={item.definition}>{item.definition}</p>
+        {item.status === "practicing" && (
+          <span className={styles.practiceProgress}>
+            {item.correctUses ?? 0}/3 correct uses
+          </span>
+        )}
       </div>
       <div className={styles.wordActions}>
         {isLearned ? (
           <IconButton
-            label={`Move ${item.term} back to learning`}
+            label={`Move ${item.term} back to ${speakingEnabled ? "practicing" : "learning"}`}
             tone="restore"
             onClick={onRestore}
           >
             <UndoIcon />
           </IconButton>
-        ) : (
+        ) : isLearning ? (
           <IconButton
-            label={`Mark ${item.term} as learned`}
+            label={
+              speakingEnabled
+                ? `Move ${item.term} to practicing`
+                : `Mark ${item.term} as learned`
+            }
             tone="success"
             onClick={onLearn}
           >
             <CheckIcon />
           </IconButton>
-        )}
+        ) : null}
         <IconButton
           label={`Delete ${item.term}`}
           tone="danger"

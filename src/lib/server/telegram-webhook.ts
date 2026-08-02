@@ -18,8 +18,12 @@ import { AppError } from "./api";
 import type { TelegramUser } from "./telegram-auth";
 import {
   importVocabularyItems,
-  resetVocabulary,
+  confirmLearningReset,
+  ensureUserAndSeed,
+  prepareLearningReset,
 } from "./vocabulary";
+import { processSpeakingVoiceAnswer } from "./speaking/answers";
+import { runSpeakingTaskCommand } from "./speaking/tasks";
 
 const TelegramUpdateSchema = z.object({
   update_id: z.number().int(),
@@ -27,6 +31,15 @@ const TelegramUpdateSchema = z.object({
     .object({
       message_id: z.number().int().positive(),
       text: z.string().optional(),
+      voice: z
+        .object({
+          file_id: z.string().min(1),
+          duration: z.number().int().nonnegative(),
+        })
+        .optional(),
+      reply_to_message: z
+        .object({ message_id: z.number().int().positive() })
+        .optional(),
       chat: z.object({
         id: z.number().int(),
         type: z.string(),
@@ -58,20 +71,21 @@ export type TelegramReply = {
 
 type TelegramCommandDependencies = {
   importItems: typeof importVocabularyItems;
-  resetItems: typeof resetVocabulary;
+  prepareReset: typeof prepareLearningReset;
+  confirmReset: typeof confirmLearningReset;
+  ensureUser: typeof ensureUserAndSeed;
+  runSpeaking: typeof runSpeakingTaskCommand;
+  processVoice: typeof processSpeakingVoiceAnswer;
 };
 
 const defaultDependencies: TelegramCommandDependencies = {
   importItems: importVocabularyItems,
-  resetItems: resetVocabulary,
+  prepareReset: prepareLearningReset,
+  confirmReset: confirmLearningReset,
+  ensureUser: ensureUserAndSeed,
+  runSpeaking: runSpeakingTaskCommand,
+  processVoice: processSpeakingVoiceAnswer,
 };
-
-const FALLBACK_MESSAGE =
-  "👋 Hey there.\n\n" +
-  "Looking for the main app? Tap the <b>App</b> button below.\n\n" +
-  "Here’s what I can help with right here in chat:\n" +
-  "📥 /import — Add phrases to your vocabulary\n" +
-  "🧹 /reset — Delete all phrases from your vocabulary";
 
 const IMPORT_HELP_MESSAGE =
   "<b>How to import</b>\n\n" +
@@ -97,7 +111,7 @@ export async function processTelegramUpdate(
 ): Promise<TelegramReply | null> {
   const message = update.message;
   if (
-    !message?.text ||
+    !message ||
     message.chat.type !== "private" ||
     !message.from ||
     message.from.id !== message.chat.id
@@ -111,10 +125,39 @@ export async function processTelegramUpdate(
     text,
     ...(parseMode ? { parseMode } : {}),
   });
+  const user: TelegramUser = {
+    id: message.from.id,
+    first_name: message.from.first_name,
+    last_name: message.from.last_name,
+    username: message.from.username,
+  };
+
+  if (message.voice) {
+    try {
+      await dependencies.ensureUser(user, appId);
+      await dependencies.processVoice(
+        {
+          chatId: message.chat.id,
+          userId: user.id,
+          messageId: message.message_id,
+          replyToMessageId: message.reply_to_message?.message_id,
+          fileId: message.voice.file_id,
+          durationSeconds: message.voice.duration,
+        },
+        appId,
+      );
+      return null;
+    } catch (error) {
+      if (error instanceof AppError) return reply(error.message);
+      throw error;
+    }
+  }
+  if (!message.text) return null;
   const command = readVocabularyCommand(message.text);
+  const fallbackMessage = buildFallbackMessage(appId);
   if (!command) {
     return {
-      ...reply(FALLBACK_MESSAGE, "HTML"),
+      ...reply(fallbackMessage, "HTML"),
       followUps: [{ text: IMPORT_HELP_MESSAGE, parseMode: "HTML" }],
     };
   }
@@ -126,16 +169,45 @@ export async function processTelegramUpdate(
     );
   }
 
-  const user: TelegramUser = {
-    id: message.from.id,
-    first_name: message.from.first_name,
-    last_name: message.from.last_name,
-    username: message.from.username,
-  };
-
   if (command === "reset") {
-    await dependencies.resetItems(user, appId);
-    return reply("🧹 Done! Your vocabulary has been reset.");
+    const preview = await dependencies.prepareReset(user, appId);
+    const taskLine = preview.hasOpenTask
+      ? " Your current unfinished speaking task will also be cancelled."
+      : "";
+    return reply(
+      `This will remove ${preview.learningCount} Learning ${preview.learningCount === 1 ? "phrase" : "phrases"}.${taskLine} ` +
+        "Practicing, Learned, and completed speaking history will stay.\n\n" +
+        "Send /reset confirm within 10 minutes to continue.",
+    );
+  }
+  if (command === "reset_confirm") {
+    try {
+      const result = await dependencies.confirmReset(user, appId);
+      return reply(
+        `🧹 Done! Removed ${result.learningCount} Learning ${result.learningCount === 1 ? "phrase" : "phrases"}` +
+          `${result.taskCancelled ? " and cancelled the unfinished speaking task" : ""}.`,
+      );
+    } catch (error) {
+      if (error instanceof AppError) return reply(error.message);
+      throw error;
+    }
+  }
+  if (command === "speaking") {
+    try {
+      await dependencies.ensureUser(user, appId);
+      await dependencies.runSpeaking(user.id, appId, message.chat.id);
+      return null;
+    } catch (error) {
+      if (error instanceof AppError) return reply(error.message);
+      throw error;
+    }
+  }
+
+  if (command === "help") {
+    return {
+      ...reply(fallbackMessage, "HTML"),
+      followUps: [{ text: IMPORT_HELP_MESSAGE, parseMode: "HTML" }],
+    };
   }
 
   const parsedImport = parseImportCommand(message.text);
@@ -167,4 +239,22 @@ export async function processTelegramUpdate(
     }
     throw error;
   }
+}
+
+function buildFallbackMessage(appId: AppId): string {
+  const hasSpeaking = Boolean(getLanguage(appId).speaking);
+  const taskLine = hasSpeaking
+    ? "\n🎙 /speaking — Get or resend your speaking task"
+    : "";
+  const resetLabel = hasSpeaking
+    ? "Reset Learning and cancel the open task"
+    : "Reset Learning phrases";
+  return (
+    "👋 Hey there.\n\n" +
+    "Looking for the main app? Tap the <b>App</b> button below.\n\n" +
+    "Here’s what I can help with right here in chat:\n" +
+    "📥 /import — Add phrases to your vocabulary" +
+    taskLine +
+    `\n🧹 /reset — ${resetLabel}`
+  );
 }

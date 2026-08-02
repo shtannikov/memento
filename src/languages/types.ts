@@ -9,6 +9,13 @@ export type LanguageRecentSentence = {
   sentence: string;
 };
 
+export type SpeakingLanguageDefinition = {
+  lifeDomains: readonly string[];
+  grammarFocuses: readonly string[];
+  topicSystemPrompt: string;
+  answerEvaluationPrompt: string;
+};
+
 export type LanguageDefinition<Id extends string = string> = {
   id: Id;
   appName: string;
@@ -21,6 +28,7 @@ export type LanguageDefinition<Id extends string = string> = {
   starterVocabulary: readonly { term: string; definition: string }[];
   quizSystemPrompt: string;
   graderPrompt: string;
+  speaking?: SpeakingLanguageDefinition;
   buildQuizPrompt: (
     items: LanguageVocabularyItem[],
     recentSentences: LanguageRecentSentence[],

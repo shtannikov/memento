@@ -14,9 +14,11 @@ type Destination = "vocabulary" | "quiz";
 export function MementoApp({
   appId,
   appName,
+  speakingEnabled,
 }: {
   appId: AppId;
   appName: string;
+  speakingEnabled: boolean;
 }) {
   const [destination, setDestination] = useState<Destination>("vocabulary");
   const [initData, setInitData] = useState<string | null>(null);
@@ -96,7 +98,9 @@ export function MementoApp({
           destination === "vocabulary" && (
             <VocabularyScreen
               learning={vocabulary.learning}
+              practicing={vocabulary.practicing}
               learned={vocabulary.learned}
+              speakingEnabled={speakingEnabled}
               onAdd={vocabulary.add}
               onRemove={vocabulary.remove}
               onChangeStatus={vocabulary.changeStatus}

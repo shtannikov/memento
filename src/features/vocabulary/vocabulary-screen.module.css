@@ -22,8 +22,8 @@
 
 .headerRow {
   display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
+  flex-direction: column;
+  gap: 14px;
 }
 
 .header h1 {
@@ -38,11 +38,12 @@
   display: flex;
   align-items: stretch;
   gap: 12px;
-  margin-bottom: 4px;
 }
 
 .total {
-  text-align: right;
+  min-width: 0;
+  flex: 1;
+  text-align: center;
 }
 
 .total p {
@@ -55,6 +56,10 @@
 
 .total p.learnedTotal {
   color: #10b981;
+}
+
+.total p.practicingTotal {
+  color: #7c3aed;
 }
 
 .total span {
@@ -252,6 +257,16 @@
   line-height: 16px;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.wordCopy .practiceProgress {
+  display: block;
+  margin-top: 4px;
+  color: #7c3aed;
+  font-size: 10px;
+  line-height: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
 }
 
 .wordActions {

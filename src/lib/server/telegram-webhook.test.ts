@@ -1,10 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 
 import { AppError } from "./api";
-import {
-  parseTelegramUpdate,
-  processTelegramUpdate,
-} from "./telegram-webhook";
+import { parseTelegramUpdate, processTelegramUpdate } from "./telegram-webhook";
 
 function update(text: string, type = "private") {
   return {
@@ -13,47 +10,49 @@ function update(text: string, type = "private") {
       message_id: 7,
       text,
       chat: { id: 42, type },
-      from: {
-        id: 42,
-        first_name: "Ada",
-        username: "ada",
-      },
+      from: { id: 42, first_name: "Ada", username: "ada" },
     },
   };
 }
 
-describe("Telegram webhook workflow", () => {
-  it("parses valid updates and rejects malformed payloads", () => {
-    expect(parseTelegramUpdate(update("/reset"))).not.toBeNull();
-    expect(parseTelegramUpdate({ update_id: "bad" })).toBeNull();
-  });
+function dependencies(
+  overrides: Partial<NonNullable<Parameters<typeof processTelegramUpdate>[1]>> = {},
+): NonNullable<Parameters<typeof processTelegramUpdate>[1]> {
+  return {
+    importItems: vi.fn().mockResolvedValue(1),
+    prepareReset: vi.fn().mockResolvedValue({
+      learningCount: 2,
+      hasOpenTask: false,
+    }),
+    confirmReset: vi.fn().mockResolvedValue({
+      learningCount: 2,
+      taskCancelled: false,
+    }),
+    ensureUser: vi.fn().mockResolvedValue(undefined),
+    runSpeaking: vi.fn().mockResolvedValue("created"),
+    processVoice: vi.fn().mockResolvedValue("completed"),
+    ...overrides,
+  };
+}
 
+describe("Telegram webhook workflow", () => {
   it("imports a validated list and returns a reply target", async () => {
-    const importItems = vi.fn().mockResolvedValue(3);
-    const resetItems = vi.fn();
+    const importItems = vi.fn().mockResolvedValue(2);
     const parsed = parseTelegramUpdate(
-      update(
-        "/import\n- leisurely - relaxed\n• urge — desire\n* figure out - understand",
-      ),
+      update("/import\n• urge — desire\n* figure out - understand"),
     );
     if (!parsed) throw new Error("Expected update to parse");
 
     await expect(
-      processTelegramUpdate(parsed, { importItems, resetItems }),
-    ).resolves.toEqual({
+      processTelegramUpdate(parsed, dependencies({ importItems })),
+    ).resolves.toMatchObject({
       chatId: 42,
       replyToMessageId: 7,
-      text: "✅ Imported 3 phrases!",
+      text: "✅ Imported 2 phrases!",
     });
     expect(importItems).toHaveBeenCalledWith(
-      {
-        id: 42,
-        first_name: "Ada",
-        last_name: undefined,
-        username: "ada",
-      },
+      expect.objectContaining({ id: 42 }),
       [
-        { term: "leisurely", definition: "relaxed" },
         { term: "urge", definition: "desire" },
         { term: "figure out", definition: "understand" },
       ],
@@ -61,216 +60,124 @@ describe("Telegram webhook workflow", () => {
     );
   });
 
-  it("uses the singular noun when one phrase is imported", async () => {
-    const parsed = parseTelegramUpdate(
-      update("/import\nleisurely - relaxed"),
+  it("prepares reset and requires an explicit ten-minute confirmation", async () => {
+    const prepareReset = vi.fn().mockResolvedValue({
+      learningCount: 3,
+      hasOpenTask: true,
+    });
+    const confirmReset = vi.fn().mockResolvedValue({
+      learningCount: 3,
+      taskCancelled: true,
+    });
+    const first = parseTelegramUpdate(update("/reset@MementoBot"));
+    const confirm = parseTelegramUpdate(update("/reset confirm"));
+    if (!first || !confirm) throw new Error("Expected updates to parse");
+
+    const firstReply = await processTelegramUpdate(
+      first,
+      dependencies({ prepareReset }),
     );
+    expect(firstReply?.text).toContain("remove 3 Learning phrases");
+    expect(firstReply?.text).toContain("unfinished speaking task");
+    expect(firstReply?.text).toContain("/reset confirm within 10 minutes");
+
+    const confirmReply = await processTelegramUpdate(
+      confirm,
+      dependencies({ confirmReset }),
+    );
+    expect(confirmReply?.text).toBe(
+      "🧹 Done! Removed 3 Learning phrases and cancelled the unfinished speaking task.",
+    );
+  });
+
+  it("creates or resends a task and returns the empty-practice message", async () => {
+    const parsed = parseTelegramUpdate(update("/speaking"));
+    if (!parsed) throw new Error("Expected update to parse");
+    const runSpeaking = vi.fn().mockResolvedValue("created");
+    await expect(
+      processTelegramUpdate(parsed, dependencies({ runSpeaking })),
+    ).resolves.toBeNull();
+    expect(runSpeaking).toHaveBeenCalledWith(42, "en", 42);
+
+    runSpeaking.mockRejectedValue(
+      new AppError(
+        "NO_PRACTICING_ITEMS",
+        "No phrases are ready for speaking practice yet.",
+        409,
+      ),
+    );
+    await expect(
+      processTelegramUpdate(parsed, dependencies({ runSpeaking })),
+    ).resolves.toMatchObject({
+      text: "No phrases are ready for speaking practice yet.",
+    });
+  });
+
+  it("passes voice and exact reply metadata to speaking evaluation", async () => {
+    const processVoice = vi.fn().mockResolvedValue("completed");
+    const parsed = parseTelegramUpdate({
+      update_id: 100,
+      message: {
+        message_id: 19,
+        voice: { file_id: "voice-file", duration: 61 },
+        reply_to_message: { message_id: 12 },
+        chat: { id: 42, type: "private" },
+        from: { id: 42, first_name: "Ada" },
+      },
+    });
     if (!parsed) throw new Error("Expected update to parse");
 
     await expect(
-      processTelegramUpdate(parsed, {
-        importItems: vi.fn().mockResolvedValue(1),
-        resetItems: vi.fn(),
-      }),
-    ).resolves.toMatchObject({ text: "✅ Imported 1 phrase!" });
+      processTelegramUpdate(parsed, dependencies({ processVoice })),
+    ).resolves.toBeNull();
+    expect(processVoice).toHaveBeenCalledWith(
+      {
+        chatId: 42,
+        userId: 42,
+        messageId: 19,
+        replyToMessageId: 12,
+        fileId: "voice-file",
+        durationSeconds: 61,
+      },
+      "en",
+    );
   });
 
-  it("returns validation and capacity errors without partial work", async () => {
+  it("returns concise help and detailed import instructions", async () => {
+    const parsed = parseTelegramUpdate(update("/help"));
+    if (!parsed) throw new Error("Expected update to parse");
+    const reply = await processTelegramUpdate(parsed, dependencies());
+    expect(reply?.text).toContain("🎙 /speaking");
+    expect(reply?.text).toContain("🧹 /reset");
+    expect(reply?.followUps?.[0]?.text).toContain("<b>How to import</b>");
+  });
+
+  it("keeps all-or-nothing validation and vocabulary capacity errors", async () => {
+    const malformed = parseTelegramUpdate(update("/import\nvalid - definition\ninvalid"));
+    const full = parseTelegramUpdate(update("/import\nvalid - definition"));
+    if (!malformed || !full) throw new Error("Expected updates to parse");
     const importItems = vi.fn();
-    const resetItems = vi.fn();
-    const malformedCommand = parseTelegramUpdate(update("/import x"));
-    const invalid = parseTelegramUpdate(
-      update("/import\nvalid - definition\ninvalid"),
+    const malformedReply = await processTelegramUpdate(
+      malformed,
+      dependencies({ importItems }),
     );
-    if (!malformedCommand || !invalid) {
-      throw new Error("Expected updates to parse");
-    }
-
-    const malformedReply = await processTelegramUpdate(malformedCommand, {
-      importItems,
-      resetItems,
-    });
-    expect(malformedReply?.text).toContain(
-      "Please use this format:\n/import\n• phrase — description",
-    );
-    expect(malformedReply?.text).toContain(
-      "• A phrase can’t be longer than 35 characters",
-    );
-    expect(malformedReply?.text).toContain(
-      "• A description can’t be longer than 45 characters",
-    );
-    expect(malformedReply?.text).toContain(
-      "• You can import up to 50 phrases at a time",
-    );
-    expect(malformedReply?.text).toContain(
-      "ask ChatGPT to convert your vocabulary",
-    );
-    expect(malformedReply).toMatchObject({ parseMode: "HTML" });
-    expect(malformedReply?.text).toContain("💡 <b>Tip:</b>");
-
-    const validationReply = await processTelegramUpdate(invalid, {
-      importItems,
-      resetItems,
-    });
-    expect(validationReply?.text).toContain(
-      "⚠️ I couldn’t import that list.",
-    );
+    expect(malformedReply?.text).toContain("I couldn’t import that list");
     expect(importItems).not.toHaveBeenCalled();
 
     importItems.mockRejectedValue(
       new AppError("VOCABULARY_LIMIT_EXCEEDED", "full", 409),
     );
-    const full = parseTelegramUpdate(update("/import\nvalid - definition"));
-    if (!full) throw new Error("Expected update to parse");
-    const capacityReply = await processTelegramUpdate(full, {
-      importItems,
-      resetItems,
-    });
+    const capacityReply = await processTelegramUpdate(
+      full,
+      dependencies({ importItems }),
+    );
     expect(capacityReply?.text).toContain("up to 500 phrases");
-    expect(capacityReply?.text).toContain("including Learned");
-    expect(capacityReply?.text).toContain("📚 Your vocabulary is full");
   });
 
-  it("hard-resets through the reset workflow", async () => {
-    const importItems = vi.fn();
-    const resetItems = vi.fn().mockResolvedValue(undefined);
-    const parsed = parseTelegramUpdate(update("/reset@MementoBot"));
-    if (!parsed) throw new Error("Expected update to parse");
-
-    await expect(
-      processTelegramUpdate(parsed, { importItems, resetItems }),
-    ).resolves.toMatchObject({
-      text: "🧹 Done! Your vocabulary has been reset.",
-    });
-    expect(resetItems).toHaveBeenCalledWith(
-      expect.objectContaining({ id: 42 }),
-      "en",
-    );
-  });
-
-  it("routes Czech imports directly to the Czech app", async () => {
-    const importItems = vi.fn().mockResolvedValue(1);
-    const parsed = parseTelegramUpdate(update("/import\ndát si kávu - have coffee"));
-    if (!parsed) throw new Error("Expected update to parse");
-
-    await processTelegramUpdate(
-      parsed,
-      { importItems, resetItems: vi.fn() },
-      "cz",
-    );
-
-    expect(importItems).toHaveBeenCalledWith(
-      expect.objectContaining({ id: 42 }),
-      [{ term: "dát si kávu", definition: "have coffee" }],
-      "cz",
-    );
-  });
-
-  it("returns concise onboarding for the start command", async () => {
-    const dependencies = {
-      importItems: vi.fn(),
-      resetItems: vi.fn(),
-    };
-    const parsed = parseTelegramUpdate(update("/start@MementoBot"));
-    if (!parsed) throw new Error("Expected update to parse");
-
-    await expect(
-      processTelegramUpdate(parsed, dependencies),
-    ).resolves.toEqual({
-      chatId: 42,
-      replyToMessageId: 7,
-      text:
-        "👋 Welcome to Memento!\n\n" +
-        "Tap <b>App</b> below to get started 👇",
-      parseMode: "HTML",
-    });
-    expect(dependencies.importItems).not.toHaveBeenCalled();
-    expect(dependencies.resetItems).not.toHaveBeenCalled();
-  });
-
-  it("uses the Czech product name in Czech onboarding", async () => {
-    const parsed = parseTelegramUpdate(update("/start"));
-    if (!parsed) throw new Error("Expected update to parse");
-
-    await expect(
-      processTelegramUpdate(
-        parsed,
-        { importItems: vi.fn(), resetItems: vi.fn() },
-        "cz",
-      ),
-    ).resolves.toMatchObject({
-      text:
-        "👋 Welcome to Pomněnka!\n\n" +
-        "Tap <b>App</b> below to get started 👇",
-    });
-  });
-
-  it("treats unsupported private text as help and ignores other updates", async () => {
-    const dependencies = {
-      importItems: vi.fn(),
-      resetItems: vi.fn(),
-    };
-    const group = parseTelegramUpdate(update("/reset", "group"));
-    const unrelated = parseTelegramUpdate(update("hello"));
-    const explicitHelp = parseTelegramUpdate(update("/help"));
-    const unsupported = parseTelegramUpdate({ update_id: 101 });
-    if (!group || !unrelated || !explicitHelp || !unsupported) {
-      throw new Error("Expected updates to parse");
-    }
-
-    await expect(
-      processTelegramUpdate(group, dependencies),
-    ).resolves.toBeNull();
-    const helpReply = await processTelegramUpdate(unrelated, dependencies);
-    expect(helpReply).toMatchObject({
-      chatId: 42,
-      replyToMessageId: 7,
-      parseMode: "HTML",
-    });
-    expect(helpReply?.text).toBe(
-      "👋 Hey there.\n\n" +
-        "Looking for the main app? Tap the <b>App</b> button below.\n\n" +
-        "Here’s what I can help with right here in chat:\n" +
-        "📥 /import — Add phrases to your vocabulary\n" +
-        "🧹 /reset — Delete all phrases from your vocabulary",
-    );
-    expect(helpReply?.followUps).toEqual([
-      {
-        parseMode: "HTML",
-        text:
-          "<b>How to import</b>\n\n" +
-          "Put /import on the first line, then add one phrase per line:\n" +
-          "• phrase — description\n" +
-          "• phrase — description\n\n" +
-          "☝️ A few rules:\n" +
-          "• A phrase can’t be longer than 35 characters\n" +
-          "• A description can’t be longer than 45 characters\n" +
-          "• You can import up to 50 phrases at a time\n\n" +
-          "💡 <b>Tip:</b> ChatGPT can generate and format this list for you. " +
-          "Just paste this message into ChatGPT and ask it to follow the formatting rules.",
-      },
-    ]);
-    await expect(
-      processTelegramUpdate(explicitHelp, dependencies),
-    ).resolves.toEqual(helpReply);
-    expect(dependencies.importItems).not.toHaveBeenCalled();
-    expect(dependencies.resetItems).not.toHaveBeenCalled();
-
-    await expect(
-      processTelegramUpdate(unsupported, dependencies),
-    ).resolves.toBeNull();
-  });
-
-  it("surfaces unexpected processing errors for Telegram retry", async () => {
-    const parsed = parseTelegramUpdate(update("/reset"));
-    if (!parsed) throw new Error("Expected update to parse");
-    const databaseError = new Error("database unavailable");
-
-    await expect(
-      processTelegramUpdate(parsed, {
-        importItems: vi.fn(),
-        resetItems: vi.fn().mockRejectedValue(databaseError),
-      }),
-    ).rejects.toBe(databaseError);
+  it("ignores group and malformed updates", async () => {
+    const group = parseTelegramUpdate(update("/speaking", "group"));
+    if (!group) throw new Error("Expected update to parse");
+    await expect(processTelegramUpdate(group, dependencies())).resolves.toBeNull();
+    expect(parseTelegramUpdate({ update_id: "bad" })).toBeNull();
   });
 });

@@ -16,6 +16,7 @@ import type {
 export function useVocabulary(initData: string | null, appId: AppId) {
   const [data, setData] = useState<VocabularyData>({
     learning: [],
+    practicing: [],
     learned: [],
   });
   const [loading, setLoading] = useState(Boolean(initData));
@@ -59,7 +60,13 @@ export function useVocabulary(initData: string | null, appId: AppId) {
   ) {
     if (!initData) return;
     await mutate(() =>
-      changeVocabularyStatus(initData, appId, item.id, status),
+      changeVocabularyStatus(
+        initData,
+        appId,
+        item.id,
+        item.status,
+        status,
+      ),
     );
   }
 

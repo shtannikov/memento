@@ -11,6 +11,12 @@ import type {
   LanguageRecentSentence,
   LanguageVocabularyItem,
 } from "@/languages/types";
+import type {
+  AnswerEvaluation,
+  GeneratedTopic,
+  SpeakingTask,
+  TopicGenerationInput,
+} from "@/lib/domain/speaking";
 import { AppError } from "./api";
 
 export type GenerationVocabularyItem = LanguageVocabularyItem;
@@ -46,6 +52,41 @@ const QuizGradeSchema = z.object({
     }),
   ),
   passed: z.boolean(),
+});
+
+const SpeakingTopicSchema = z.object({
+  title: z.string().trim().min(1).max(70),
+  speakingPrompt: z.string().trim().min(1).max(280),
+});
+
+const SpeakingEvaluationSchema = z.object({
+  coverageScore: z.number().min(0).max(100),
+  taskRelevance: z.enum(["on_topic", "off_topic"]),
+  corrections: z.array(z.object({
+    category: z.string().max(80),
+    original: z.string().max(400),
+    corrected: z.string().max(400),
+    why: z.string().max(500),
+    severity: z.number().min(1).max(5),
+  })).max(8),
+  requiredPhraseUsage: z.array(z.object({
+    vocabularyId: z.string(),
+    phrase: z.string().max(200),
+    status: z.enum(["used_correctly", "used_incorrectly", "missed"]),
+    evidence: z.string().max(400),
+  })).max(3),
+  rubric: z.object({
+    fluencyAndCoherence: z.number().min(1).max(5),
+    lexicalResource: z.number().min(1).max(5),
+    grammaticalRange: z.number().min(1).max(5),
+    grammaticalAccuracy: z.number().min(1).max(5),
+  }),
+  grammarPriority: z.object({
+    issue: z.string().max(200),
+    rule: z.string().max(500),
+    example: z.string().max(400),
+  }).nullable(),
+  telegramFeedback: z.string().max(1200),
 });
 
 let client: OpenAI | null = null;
@@ -183,6 +224,109 @@ export function normalizeQuizSentence(sentence: string): string {
     .replace(/[^\p{L}\p{N}]+/gu, " ")
     .trim()
     .replace(/\s+/g, " ");
+}
+
+export async function transcribeVoice(
+  input: { bytes: Uint8Array; filename: string; mimeType?: string },
+  openai = getOpenAIClient(),
+): Promise<string> {
+  const filename = normalizeVoiceFilename(input.filename);
+  const file = new File([input.bytes as Uint8Array<ArrayBuffer>], filename, {
+    type: input.mimeType ?? "audio/ogg",
+  });
+  const result = await openai.audio.transcriptions.create({
+    file,
+    model: process.env.OPENAI_STT_MODEL ?? "whisper-1",
+  });
+  const transcript = result.text.trim();
+  if (!transcript) throw new Error("Voice transcription was empty");
+  return transcript;
+}
+
+export async function generateSpeakingTopic(
+  input: TopicGenerationInput,
+  userId: number,
+  appId: AppId,
+  openai = getOpenAIClient(),
+): Promise<GeneratedTopic> {
+  const speaking = getLanguage(appId).speaking;
+  if (!speaking) throw new AppError("SPEAKING_UNAVAILABLE", "Speaking practice is unavailable.", 409);
+  const response = await openai.responses.parse({
+    model: process.env.OPENAI_CHAT_MODEL ?? "gpt-5.6-luna",
+    reasoning: { effort: "medium" },
+    store: false,
+    max_output_tokens: 1200,
+    safety_identifier: createHash("sha256")
+      .update(`memento-speaking-topic:${appId}:${userId}`)
+      .digest("hex"),
+    input: [
+      { role: "system", content: speaking.topicSystemPrompt },
+      { role: "user", content: JSON.stringify(input) },
+    ],
+    text: { format: zodTextFormat(SpeakingTopicSchema, "memento_speaking_topic") },
+  });
+  if (response.status !== "completed" || !response.output_parsed) {
+    throw new Error("Speaking topic generation failed");
+  }
+  return {
+    title: response.output_parsed.title,
+    speakingPrompt: response.output_parsed.speakingPrompt,
+    domain: input.targetDomain,
+    grammarFocus: input.targetGrammarFocus,
+  };
+}
+
+export async function evaluateSpeakingAnswer(
+  transcript: string,
+  task: SpeakingTask,
+  userId: number,
+  appId: AppId,
+  openai = getOpenAIClient(),
+): Promise<AnswerEvaluation> {
+  const speaking = getLanguage(appId).speaking;
+  if (!speaking) throw new AppError("SPEAKING_UNAVAILABLE", "Speaking practice is unavailable.", 409);
+  const response = await openai.responses.parse({
+    model:
+      process.env.OPENAI_SPEAKING_EVALUATION_MODEL ??
+      process.env.OPENAI_CHAT_MODEL ??
+      "gpt-5.6-luna",
+    reasoning: { effort: "medium" },
+    store: false,
+    max_output_tokens: 8000,
+    safety_identifier: createHash("sha256")
+      .update(`memento-speaking-answer:${appId}:${userId}`)
+      .digest("hex"),
+    input: [
+      { role: "system", content: speaking.answerEvaluationPrompt },
+      { role: "user", content: JSON.stringify({ transcript, task }) },
+    ],
+    text: {
+      format: zodTextFormat(
+        SpeakingEvaluationSchema,
+        "memento_speaking_evaluation",
+      ),
+    },
+  });
+  if (response.status !== "completed" || !response.output_parsed) {
+    throw new Error("Speaking answer evaluation failed");
+  }
+  const evaluation = response.output_parsed;
+  const expected = new Map(task.items.map((item) => [item.vocabularyId, item.term]));
+  if (
+    evaluation.requiredPhraseUsage.length !== task.items.length ||
+    new Set(evaluation.requiredPhraseUsage.map((item) => item.vocabularyId)).size !== task.items.length ||
+    evaluation.requiredPhraseUsage.some(
+      (item) => expected.get(item.vocabularyId)?.toLocaleLowerCase() !== item.phrase.toLocaleLowerCase(),
+    )
+  ) {
+    throw new Error("Speaking evaluation returned invalid vocabulary references");
+  }
+  return evaluation;
+}
+
+function normalizeVoiceFilename(value: string): string {
+  const basename = value.split("/").pop()?.trim() || "voice.ogg";
+  return basename.replace(/\.[^./\\]+$/, "") + ".ogg";
 }
 
 export function areQuizSentencesTooSimilar(
