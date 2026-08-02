@@ -10,6 +10,7 @@ import {
   generateSpeakingTopic,
   generateQuizCards,
   gradeQuizCards,
+  gradeSpeakingTopic,
   normalizeQuizSentence,
   validateGeneratedCards,
   type GenerationVocabularyItem,
@@ -365,6 +366,53 @@ describe("quiz generation contract", () => {
     expect(JSON.stringify(parse.mock.calls[0][0].input)).toContain(
       "I needed to change the time.",
     );
+    expect(ENGLISH_LANGUAGE.speaking?.topicSystemPrompt).toContain(
+      "they do not all need to fit the scene",
+    );
+    expect(ENGLISH_LANGUAGE.speaking?.topicSystemPrompt).toContain(
+      "form a realistic causal chain",
+    );
+  });
+
+  it("grades forced combinations of unrelated practice phrases as incoherent", async () => {
+    const parse = vi.fn().mockResolvedValue({
+      status: "completed",
+      output_parsed: {
+        coherentScenario: false,
+        oneClearMission: true,
+        missionRelevantDetails: false,
+        requiredPhrasesNotForced: false,
+        naturalAndConcrete: true,
+        reason: "The job offer is unrelated to the neighbourhood repair mission.",
+      },
+    });
+    const openai = { responses: { parse } } as unknown as OpenAI;
+    const input = {
+      targetDomain: "housing and neighbourhood",
+      targetGrammarFocus: "first conditional for realistic consequences",
+      recentTopics: [],
+      recentLearnerExcerpts: [],
+      requiredPhrases: ["a splinter", "a dead-end job"],
+    };
+    const topic = {
+      title: "A Better Block, A Better Future",
+      speakingPrompt:
+        "Welcome a neighbour, discuss hazards and a job offer, and make a plan.",
+      domain: input.targetDomain,
+      grammarFocus: input.targetGrammarFocus,
+    };
+
+    await expect(
+      gradeSpeakingTopic(input, topic, 42, "en", openai),
+    ).resolves.toMatchObject({
+      coherentScenario: false,
+      requiredPhrasesNotForced: false,
+      passed: false,
+    });
+    expect(parse.mock.calls[0][0]).toMatchObject({
+      store: false,
+      reasoning: { effort: "low" },
+    });
   });
 
   it("evaluates only required phrases and rejects invented vocabulary references", async () => {

@@ -102,19 +102,30 @@ async function runWithTransientRetries(evalCase: EvalCase) {
 }
 
 async function runSpeakingCase(evalCase: SpeakingEvalCase) {
-  const { evaluateSpeakingAnswer, generateSpeakingTopic } = await openaiClient;
+  const {
+    evaluateSpeakingAnswer,
+    generateSpeakingTopic,
+    gradeSpeakingTopic,
+  } = await openaiClient;
   if (evalCase.kind === "topic") {
     const topic = await generateSpeakingTopic(evalCase.input, 1, evalCase.appId);
     const recentTitles = new Set(
       evalCase.input.recentTopics.map((item) => item.topic.toLowerCase()),
+    );
+    const grade = await gradeSpeakingTopic(
+      evalCase.input,
+      topic,
+      1,
+      evalCase.appId,
     );
     const passed =
       topic.domain === evalCase.input.targetDomain &&
       topic.grammarFocus === evalCase.input.targetGrammarFocus &&
       topic.title.length > 0 &&
       topic.speakingPrompt.length > 0 &&
-      !recentTitles.has(topic.title.toLowerCase());
-    return { passed, topic };
+      !recentTitles.has(topic.title.toLowerCase()) &&
+      grade.passed;
+    return { passed, topic, grade };
   }
   const evaluation = await evaluateSpeakingAnswer(
     evalCase.transcript,

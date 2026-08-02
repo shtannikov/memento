@@ -13,6 +13,7 @@ export type SpeakingLanguageDefinition = {
   lifeDomains: readonly string[];
   grammarFocuses: readonly string[];
   topicSystemPrompt: string;
+  topicGraderPrompt: string;
   answerEvaluationPrompt: string;
 };
 

@@ -59,6 +59,15 @@ const SpeakingTopicSchema = z.object({
   speakingPrompt: z.string().trim().min(1).max(280),
 });
 
+const SpeakingTopicGradeSchema = z.object({
+  coherentScenario: z.boolean(),
+  oneClearMission: z.boolean(),
+  missionRelevantDetails: z.boolean(),
+  requiredPhrasesNotForced: z.boolean(),
+  naturalAndConcrete: z.boolean(),
+  reason: z.string().trim().min(1).max(500),
+});
+
 const SpeakingEvaluationSchema = z.object({
   coverageScore: z.number().min(0).max(100),
   taskRelevance: z.enum(["on_topic", "off_topic"]),
@@ -273,6 +282,55 @@ export async function generateSpeakingTopic(
     speakingPrompt: response.output_parsed.speakingPrompt,
     domain: input.targetDomain,
     grammarFocus: input.targetGrammarFocus,
+  };
+}
+
+export async function gradeSpeakingTopic(
+  input: TopicGenerationInput,
+  topic: GeneratedTopic,
+  userId: number,
+  appId: AppId,
+  openai = getOpenAIClient(),
+): Promise<z.infer<typeof SpeakingTopicGradeSchema> & { passed: boolean }> {
+  const speaking = getLanguage(appId).speaking;
+  if (!speaking) {
+    throw new AppError(
+      "SPEAKING_UNAVAILABLE",
+      "Speaking practice is unavailable.",
+      409,
+    );
+  }
+  const response = await openai.responses.parse({
+    model: process.env.OPENAI_CHAT_MODEL ?? "gpt-5.6-luna",
+    reasoning: { effort: "low" },
+    store: false,
+    max_output_tokens: 1200,
+    safety_identifier: createHash("sha256")
+      .update(`memento-speaking-topic-grade:${appId}:${userId}`)
+      .digest("hex"),
+    input: [
+      { role: "system", content: speaking.topicGraderPrompt },
+      { role: "user", content: JSON.stringify({ input, topic }) },
+    ],
+    text: {
+      format: zodTextFormat(
+        SpeakingTopicGradeSchema,
+        "memento_speaking_topic_grade",
+      ),
+    },
+  });
+  if (response.status !== "completed" || !response.output_parsed) {
+    throw new Error("Speaking topic grader did not return a complete result");
+  }
+  const grade = response.output_parsed;
+  return {
+    ...grade,
+    passed:
+      grade.coherentScenario &&
+      grade.oneClearMission &&
+      grade.missionRelevantDetails &&
+      grade.requiredPhrasesNotForced &&
+      grade.naturalAndConcrete,
   };
 }
 

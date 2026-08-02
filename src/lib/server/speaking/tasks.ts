@@ -14,6 +14,7 @@ import { generateSpeakingTopic } from "../openai";
 import { getMementoDb } from "../supabase";
 import { sendTelegramMessage } from "../telegram-bot";
 import { buildSpeakingTaskMessage } from "./messages";
+import { runWithTelegramTyping } from "./typing-indicator";
 
 export type StoredTaskRow = {
   id: string;
@@ -30,9 +31,11 @@ export async function runSpeakingTaskCommand(
   appId: AppId,
   chatId: number,
 ): Promise<"created" | "resent"> {
-  const { task, existing } = await getOrCreateSpeakingTask(userId, appId);
-  await deliverSpeakingTask(task, chatId, appId);
-  return existing ? "resent" : "created";
+  return runWithTelegramTyping(chatId, appId, async () => {
+    const { task, existing } = await getOrCreateSpeakingTask(userId, appId);
+    await deliverSpeakingTask(task, chatId, appId);
+    return existing ? "resent" : "created";
+  });
 }
 
 export async function getOrCreateSpeakingTask(
@@ -222,10 +225,17 @@ export async function dispatchDailySpeakingTasks(appId: AppId): Promise<{
   let failed = 0;
   for (const userId of userIds) {
     try {
-      const result = await getOrCreateSpeakingTask(userId, appId);
-      if (!result.needsDelivery) continue;
-      await deliverSpeakingTask(result.task, userId, appId);
-      delivered += 1;
+      const didDeliver = await runWithTelegramTyping(
+        userId,
+        appId,
+        async () => {
+          const result = await getOrCreateSpeakingTask(userId, appId);
+          if (!result.needsDelivery) return false;
+          await deliverSpeakingTask(result.task, userId, appId);
+          return true;
+        },
+      );
+      if (didDeliver) delivered += 1;
     } catch {
       failed += 1;
     }

@@ -13,10 +13,10 @@ import {
   downloadTelegramFile,
   getTelegramFile,
   sendTelegramMessage,
-  sendTelegramTyping,
 } from "../telegram-bot";
 import { buildSpeakingFeedbackMessage } from "./messages";
 import { loadSpeakingTask, type StoredTaskRow } from "./tasks";
+import { runWithTelegramTyping } from "./typing-indicator";
 
 export type SpeakingVoiceInput = {
   chatId: number;
@@ -44,52 +44,53 @@ export async function processSpeakingVoiceAnswer(
 
   const taskRow = await resolveAnswerTask(input, appId);
   const task = await loadSpeakingTask(taskRow);
-  await sendTelegramTyping(input.chatId, appId);
-  const { filePath } = await getTelegramFile(input.fileId, appId);
-  const bytes = await downloadTelegramFile(filePath, appId);
-  const transcript = await transcribeVoice({
-    bytes,
-    filename: filePath,
-    mimeType: "audio/ogg",
+  return runWithTelegramTyping(input.chatId, appId, async () => {
+    const { filePath } = await getTelegramFile(input.fileId, appId);
+    const bytes = await downloadTelegramFile(filePath, appId);
+    const transcript = await transcribeVoice({
+      bytes,
+      filename: filePath,
+      mimeType: "audio/ogg",
+    });
+    const speechStats = computeSpeechStats(transcript, input.durationSeconds);
+    const evaluation = await evaluateSpeakingAnswer(
+      transcript,
+      task,
+      input.userId,
+      appId,
+    );
+    const feedbackHtml = buildSpeakingFeedbackMessage(
+      transcript,
+      evaluation,
+      speechStats,
+    );
+    const { data: completion, error: completionError } = await db.rpc(
+      "complete_speaking_task",
+      {
+        requested_task_id: task.id,
+        requested_user_id: input.userId,
+        requested_app_id: appId,
+        incoming_chat_id: input.chatId,
+        incoming_message_id: input.messageId,
+        requested_transcript: transcript,
+        requested_speech_stats: speechStats,
+        requested_evaluation: evaluation,
+        requested_feedback_html: feedbackHtml,
+      },
+    );
+    if (completionError) throw completionError;
+    if ((completion as { alreadyCompleted?: boolean } | null)?.alreadyCompleted) {
+      return "duplicate";
+    }
+    await sendTelegramMessage(
+      input.chatId,
+      feedbackHtml,
+      input.messageId,
+      "HTML",
+      appId,
+    );
+    return "completed";
   });
-  const speechStats = computeSpeechStats(transcript, input.durationSeconds);
-  const evaluation = await evaluateSpeakingAnswer(
-    transcript,
-    task,
-    input.userId,
-    appId,
-  );
-  const feedbackHtml = buildSpeakingFeedbackMessage(
-    transcript,
-    evaluation,
-    speechStats,
-  );
-  const { data: completion, error: completionError } = await db.rpc(
-    "complete_speaking_task",
-    {
-      requested_task_id: task.id,
-      requested_user_id: input.userId,
-      requested_app_id: appId,
-      incoming_chat_id: input.chatId,
-      incoming_message_id: input.messageId,
-      requested_transcript: transcript,
-      requested_speech_stats: speechStats,
-      requested_evaluation: evaluation,
-      requested_feedback_html: feedbackHtml,
-    },
-  );
-  if (completionError) throw completionError;
-  if ((completion as { alreadyCompleted?: boolean } | null)?.alreadyCompleted) {
-    return "duplicate";
-  }
-  await sendTelegramMessage(
-    input.chatId,
-    feedbackHtml,
-    input.messageId,
-    "HTML",
-    appId,
-  );
-  return "completed";
 }
 
 export function validateVoiceDuration(durationSeconds: number): void {

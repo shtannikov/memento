@@ -9,7 +9,7 @@ export function buildSpeakingTaskMessage(task: SpeakingTask): string {
     .map((item) => `• <i>${escapeHtml(item.term)}</i>`)
     .join("\n");
   return [
-    "🎯 <b>Your next speaking task</b>",
+    "🎯 <b>Your new speaking task</b>",
     "",
     `✨ <b>${escapeHtml(task.topic)}</b>`,
     "",
@@ -22,7 +22,7 @@ export function buildSpeakingTaskMessage(task: SpeakingTask): string {
     "💬 <b>Try these phrases</b>",
     phrases,
     "",
-    "🚀 <b>Hit reply and send a 30-second–3-minute voice note.</b>",
+    "🚀 <b>Hit reply and send a 1–3 minute voice note.</b>",
   ].join("\n");
 }
 

@@ -20,8 +20,9 @@ const task: SpeakingTask = {
 describe("speaking messages", () => {
   it("renders an HTML task card with target phrases", () => {
     const message = buildSpeakingTaskMessage(task);
-    expect(message).toContain("Your next speaking task");
+    expect(message).toContain("Your new speaking task");
     expect(message).toContain("<i>take into account</i>");
+    expect(message).toContain("send a 1–3 minute voice note");
   });
 
   it("renders feedback without phrase recommendations", () => {

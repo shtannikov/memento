@@ -146,6 +146,26 @@ export const SPEAKING_EVAL_CASES: SpeakingEvalCase[] = [
     },
   },
   {
+    kind: "topic",
+    id: "speaking-topic-unrelated-phrases-stay-coherent",
+    description:
+      "Keeps one natural mission when the separate practice phrases do not belong to a shared scenario.",
+    appId: "en",
+    input: {
+      targetDomain: "housing and neighbourhood",
+      targetGrammarFocus: "first conditional for realistic consequences",
+      recentTopics: [
+        {
+          topic: "A community repair day",
+          domain: "community and social situations",
+          grammarFocus: "first conditional for realistic consequences",
+        },
+      ],
+      recentLearnerExcerpts: [],
+      requiredPhrases: ["a splinter", "a dead-end job"],
+    },
+  },
+  {
     kind: "answer",
     id: "speaking-answer-required-phrase-statuses",
     description:

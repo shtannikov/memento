@@ -6,6 +6,7 @@ const mocks = vi.hoisted(() => ({
   getMementoDb: vi.fn(),
   generateSpeakingTopic: vi.fn(),
   sendTelegramMessage: vi.fn(),
+  sendTelegramTyping: vi.fn(),
 }));
 
 vi.mock("../supabase", () => ({ getMementoDb: mocks.getMementoDb }));
@@ -14,12 +15,18 @@ vi.mock("../openai", () => ({
 }));
 vi.mock("../telegram-bot", () => ({
   sendTelegramMessage: mocks.sendTelegramMessage,
+  sendTelegramTyping: mocks.sendTelegramTyping,
 }));
 
-import { getOrCreateSpeakingTask, runSpeakingTaskCommand } from "./tasks";
+import {
+  dispatchDailySpeakingTasks,
+  getOrCreateSpeakingTask,
+  runSpeakingTaskCommand,
+} from "./tasks";
 
 beforeEach(() => {
   vi.clearAllMocks();
+  mocks.sendTelegramTyping.mockResolvedValue(undefined);
 });
 
 describe("speaking task workflow", () => {
@@ -90,12 +97,52 @@ describe("speaking task workflow", () => {
     await expect(runSpeakingTaskCommand(42, "en", 42)).resolves.toBe("resent");
 
     expect(mocks.sendTelegramMessage).toHaveBeenCalledOnce();
+    expect(mocks.sendTelegramTyping).toHaveBeenCalledWith(42, "en");
     expect(db.from).toHaveBeenCalledWith("speaking_task_messages");
     expect(db.queries[2]?.insert).toHaveBeenCalledWith({
       task_id: "task-1",
       chat_id: 42,
       message_id: 91,
     });
+  });
+
+  it("keeps typing active while the cron job generates and delivers a task", async () => {
+    const db = database([
+      result([{ user_id: 42 }]),
+      result(null, "single"),
+      result(null, "count", 0),
+      result([
+        { id: 11, term: "a splinter", definition: "a small wood fragment" },
+        { id: 12, term: "a dead-end job", definition: "a job with no future" },
+      ]),
+      result([
+        { vocabulary_id: 11, practice_rank: 1024 },
+        { vocabulary_id: 12, practice_rank: 2048 },
+      ]),
+      result({ id: "task-2" }),
+      result(null),
+      result([]),
+      result(null),
+      result(null),
+      result(null),
+    ]);
+    mocks.getMementoDb.mockReturnValue(db);
+    mocks.generateSpeakingTopic.mockResolvedValue({
+      title: "Choose the right apartment",
+      speakingPrompt: "Compare two apartments and recommend one.",
+      domain: "housing and neighbourhood",
+      grammarFocus: "first conditional for realistic consequences",
+    });
+    mocks.sendTelegramMessage.mockResolvedValue({ messageId: 92 });
+
+    await expect(dispatchDailySpeakingTasks("en")).resolves.toEqual({
+      delivered: 1,
+      failed: 0,
+    });
+
+    expect(mocks.sendTelegramTyping).toHaveBeenCalledWith(42, "en");
+    expect(mocks.generateSpeakingTopic).toHaveBeenCalledOnce();
+    expect(mocks.sendTelegramMessage).toHaveBeenCalledOnce();
   });
 });
 
