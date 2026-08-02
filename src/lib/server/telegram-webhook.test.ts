@@ -98,14 +98,14 @@ describe("Telegram webhook workflow", () => {
     runSpeaking.mockRejectedValue(
       new AppError(
         "NO_PRACTICING_ITEMS",
-        "🎙 Nothing in Practicing yet. Keep reviewing your Learning phrases in quizzes, then tap Done in the App when one is ready.",
+        "🎙 Nothing in Practicing yet. Keep reviewing your Learning phrases in quizzes, or tap Done in the App to move one to Practicing.",
         409,
       ),
     );
     await expect(
       processTelegramUpdate(parsed, dependencies({ runSpeaking })),
     ).resolves.toMatchObject({
-      text: "🎙 Nothing in Practicing yet. Keep reviewing your Learning phrases in quizzes, then tap Done in the App when one is ready.",
+      text: "🎙 Nothing in Practicing yet. Keep reviewing your Learning phrases in quizzes, or tap Done in the App to move one to Practicing.",
     });
   });
 
