@@ -45,6 +45,8 @@ export const ENGLISH_LANGUAGE = {
       "In dictionary phrases, 'sth' is only an object placeholder. Never display the literal text 'sth'; put the concrete object in the sentence outside the blank whenever possible.",
       "Preserve the target's argument structure. If the displayed answer requires an object or complement, include it outside the blank; never use the answer elliptically as though it meant a different intransitive expression.",
       "If the target already contains its object or complement, do not add a second object or incompatible continuation after the blank.",
+      "Preserve grammatical person and point of view in every displayed answer. A possessive or reflexive pronoun inside the answer must agree with the visible subject or speaker.",
+      "Use discourse markers according to their exact logical relation. A contradiction marker must directly reject or reverse a preceding claim; it cannot merely introduce a contrast, drawback, or consequence.",
       "For example, use 'I need to ___ my coat' for 'put on', never 'I need to ___ before we go outside'; use 'I need to ___ tonight' for 'do the laundry', never 'I plan to ___ all the muddy clothes'.",
       "Do not silently substitute a more natural synonym that is absent from the supplied targets. Rewrite the surrounding sentence so the supplied target itself fits naturally.",
       "The four options must be four distinct displayed forms derived from targets in this input whenever possible.",

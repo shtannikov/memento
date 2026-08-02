@@ -129,8 +129,29 @@ describe("quiz generation contract", () => {
     expect(prompt).toContain(
       "equally natural or more likely",
     );
+    expect(prompt).toContain("Preserve grammatical person and point of view");
+    expect(prompt).toContain("must agree with the visible subject or speaker");
+    expect(prompt).toContain("directly reject or reverse a preceding claim");
+    expect(prompt).toContain("cannot merely introduce a contrast");
     expect(prompt).not.toContain("optionChecks");
     expect(prompt).not.toContain("visibleCue");
+  });
+
+  it("requires decisive Czech context when už competes with ještě", () => {
+    const prompt = buildQuizPrompt(
+      [
+        { id: "1", term: "už", definition: "already; no longer" },
+        { id: "2", term: "ještě", definition: "still; yet; another" },
+      ],
+      [],
+      "cz",
+    );
+
+    expect(prompt).toContain("short adverbs with opposing time meanings");
+    expect(prompt).toContain("decisive syntax and polarity cues");
+    expect(prompt).toContain("do not rely on time-of-day words alone");
+    expect(prompt).toContain("Do not repeat the target verb");
+    expect(prompt).toContain("must occupy a valid infinitive position");
   });
 
   it("asks the semantic grader to reject missing and duplicate objects", async () => {
@@ -252,6 +273,7 @@ describe("quiz generation contract", () => {
       ]),
     ).resolves.toEqual(fresh);
     expect(parse).toHaveBeenCalledTimes(2);
+    expect(parse.mock.calls[0][0].reasoning).toEqual({ effort: "medium" });
     expect(
       JSON.stringify(parse.mock.calls[1][0].input),
     ).toContain("She felt an ___ to check her phone.");

@@ -359,7 +359,7 @@ async function requestQuizCards(
   try {
     const response = await openai.responses.parse({
       model: process.env.OPENAI_CHAT_MODEL ?? "gpt-5.6-luna",
-      reasoning: { effort: "low" },
+      reasoning: { effort: "medium" },
       store: false,
       max_output_tokens: 4000,
       safety_identifier: createHash("sha256")
