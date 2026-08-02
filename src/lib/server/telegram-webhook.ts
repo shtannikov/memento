@@ -171,11 +171,8 @@ export async function processTelegramUpdate(
 
   if (command === "reset") {
     const preview = await dependencies.prepareReset(user, appId);
-    const taskLine = preview.hasOpenTask
-      ? " Your current unfinished speaking task will also be cancelled."
-      : "";
     return reply(
-      `This will remove ${preview.learningCount} Learning ${preview.learningCount === 1 ? "phrase" : "phrases"}.${taskLine} ` +
+      `This will remove ${preview.learningCount} Learning ${preview.learningCount === 1 ? "phrase" : "phrases"}. ` +
         "Practicing, Learned, and completed speaking history will stay.\n\n" +
         "Send /reset confirm within 10 minutes to continue.",
     );
@@ -184,8 +181,7 @@ export async function processTelegramUpdate(
     try {
       const result = await dependencies.confirmReset(user, appId);
       return reply(
-        `🧹 Done! Removed ${result.learningCount} Learning ${result.learningCount === 1 ? "phrase" : "phrases"}` +
-          `${result.taskCancelled ? " and cancelled the unfinished speaking task" : ""}.`,
+        `🧹 Done! Removed ${result.learningCount} Learning ${result.learningCount === 1 ? "phrase" : "phrases"}.`,
       );
     } catch (error) {
       if (error instanceof AppError) return reply(error.message);
@@ -244,17 +240,14 @@ export async function processTelegramUpdate(
 function buildFallbackMessage(appId: AppId): string {
   const hasSpeaking = Boolean(getLanguage(appId).speaking);
   const taskLine = hasSpeaking
-    ? "\n🎙 /speaking — Get or resend your speaking task"
+    ? "\n🎙 /speaking — get your speaking task"
     : "";
-  const resetLabel = hasSpeaking
-    ? "Reset Learning and cancel the open task"
-    : "Reset Learning phrases";
   return (
     "👋 Hey there.\n\n" +
     "Looking for the main app? Tap the <b>App</b> button below.\n\n" +
     "Here’s what I can help with right here in chat:\n" +
-    "📥 /import — Add phrases to your vocabulary" +
+    "📥 /import — add phrases to your vocabulary" +
     taskLine +
-    `\n🧹 /reset — ${resetLabel}`
+    "\n🧹 /reset — remove all phrases from Learning"
   );
 }

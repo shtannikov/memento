@@ -22,11 +22,9 @@ function dependencies(
     importItems: vi.fn().mockResolvedValue(1),
     prepareReset: vi.fn().mockResolvedValue({
       learningCount: 2,
-      hasOpenTask: false,
     }),
     confirmReset: vi.fn().mockResolvedValue({
       learningCount: 2,
-      taskCancelled: false,
     }),
     ensureUser: vi.fn().mockResolvedValue(undefined),
     runSpeaking: vi.fn().mockResolvedValue("created"),
@@ -63,11 +61,9 @@ describe("Telegram webhook workflow", () => {
   it("prepares reset and requires an explicit ten-minute confirmation", async () => {
     const prepareReset = vi.fn().mockResolvedValue({
       learningCount: 3,
-      hasOpenTask: true,
     });
     const confirmReset = vi.fn().mockResolvedValue({
       learningCount: 3,
-      taskCancelled: true,
     });
     const first = parseTelegramUpdate(update("/reset@MementoBot"));
     const confirm = parseTelegramUpdate(update("/reset confirm"));
@@ -78,7 +74,7 @@ describe("Telegram webhook workflow", () => {
       dependencies({ prepareReset }),
     );
     expect(firstReply?.text).toContain("remove 3 Learning phrases");
-    expect(firstReply?.text).toContain("unfinished speaking task");
+    expect(firstReply?.text).not.toContain("speaking task");
     expect(firstReply?.text).toContain("/reset confirm within 10 minutes");
 
     const confirmReply = await processTelegramUpdate(
@@ -86,7 +82,7 @@ describe("Telegram webhook workflow", () => {
       dependencies({ confirmReset }),
     );
     expect(confirmReply?.text).toBe(
-      "🧹 Done! Removed 3 Learning phrases and cancelled the unfinished speaking task.",
+      "🧹 Done! Removed 3 Learning phrases.",
     );
   });
 
@@ -102,14 +98,14 @@ describe("Telegram webhook workflow", () => {
     runSpeaking.mockRejectedValue(
       new AppError(
         "NO_PRACTICING_ITEMS",
-        "No phrases are ready for speaking practice yet.",
+        "🎙 Nothing in Practicing yet. Keep reviewing your Learning phrases in quizzes, then tap Done in the App when one is ready.",
         409,
       ),
     );
     await expect(
       processTelegramUpdate(parsed, dependencies({ runSpeaking })),
     ).resolves.toMatchObject({
-      text: "No phrases are ready for speaking practice yet.",
+      text: "🎙 Nothing in Practicing yet. Keep reviewing your Learning phrases in quizzes, then tap Done in the App when one is ready.",
     });
   });
 
@@ -149,6 +145,9 @@ describe("Telegram webhook workflow", () => {
     const reply = await processTelegramUpdate(parsed, dependencies());
     expect(reply?.text).toContain("🎙 /speaking");
     expect(reply?.text).toContain("🧹 /reset");
+    expect(reply?.text).toContain("— add phrases to your vocabulary");
+    expect(reply?.text).toContain("— get your speaking task");
+    expect(reply?.text).toContain("— remove all phrases from Learning");
     expect(reply?.followUps?.[0]?.text).toContain("<b>How to import</b>");
   });
 

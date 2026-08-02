@@ -102,7 +102,7 @@ export async function getOrCreateSpeakingTask(
   if (items.length === 0) {
     throw new AppError(
       "NO_PRACTICING_ITEMS",
-      "No phrases are ready for speaking practice yet. Complete a quiz or move a phrase to Practicing in the App.",
+      "🎙 Nothing in Practicing yet. Keep reviewing your Learning phrases in quizzes, then tap Done in the App when one is ready.",
       409,
     );
   }

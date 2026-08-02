@@ -167,20 +167,20 @@ export async function importVocabularyItems(
 export async function prepareLearningReset(
   user: TelegramUser,
   appId: AppId = DEFAULT_APP_ID,
-): Promise<{ learningCount: number; hasOpenTask: boolean }> {
+): Promise<{ learningCount: number }> {
   await ensureUserAndSeed(user, appId);
   const { data, error } = await getMementoDb().rpc("prepare_learning_reset", {
     requested_user_id: user.id,
     requested_app_id: appId,
   });
   if (error) throw error;
-  return data as { learningCount: number; hasOpenTask: boolean };
+  return data as { learningCount: number };
 }
 
 export async function confirmLearningReset(
   user: TelegramUser,
   appId: AppId = DEFAULT_APP_ID,
-): Promise<{ learningCount: number; taskCancelled: boolean }> {
+): Promise<{ learningCount: number }> {
   await ensureUserAndSeed(user, appId);
   const { data, error } = await getMementoDb().rpc("confirm_learning_reset", {
     requested_user_id: user.id,
@@ -196,7 +196,7 @@ export async function confirmLearningReset(
     }
     throw error;
   }
-  return data as { learningCount: number; taskCancelled: boolean };
+  return data as { learningCount: number };
 }
 
 export async function resetSchedule(vocabularyId: string): Promise<void> {

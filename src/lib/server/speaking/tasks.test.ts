@@ -58,6 +58,8 @@ describe("speaking task workflow", () => {
 
     await expect(getOrCreateSpeakingTask(42, "en")).rejects.toMatchObject({
       code: "NO_PRACTICING_ITEMS",
+      message:
+        "🎙 Nothing in Practicing yet. Keep reviewing your Learning phrases in quizzes, then tap Done in the App when one is ready.",
     });
     expect(mocks.generateSpeakingTopic).not.toHaveBeenCalled();
   });
