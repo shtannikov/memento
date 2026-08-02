@@ -1,9 +1,6 @@
 import { NextResponse } from "next/server";
 
-import { dispatchDailySpeakingTasks } from "@/lib/server/speaking/tasks";
 import { purgeExpiredSpeakingTranscripts } from "@/lib/server/speaking/retention";
-
-export const maxDuration = 300;
 
 export async function GET(request: Request) {
   const secret = process.env.CRON_SECRET;
@@ -12,6 +9,5 @@ export async function GET(request: Request) {
   }
 
   const purged = await purgeExpiredSpeakingTranscripts();
-  const delivery = await dispatchDailySpeakingTasks("en");
-  return NextResponse.json({ ok: true, purged, ...delivery });
+  return NextResponse.json({ ok: true, purged });
 }

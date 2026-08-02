@@ -208,41 +208,6 @@ export async function deliverSpeakingTask(
   if (activeError) throw activeError;
 }
 
-export async function dispatchDailySpeakingTasks(appId: AppId): Promise<{
-  delivered: number;
-  failed: number;
-}> {
-  if (!getLanguage(appId).speaking) return { delivered: 0, failed: 0 };
-  const { data, error } = await getMementoDb()
-    .from("vocabulary_items")
-    .select("user_id")
-    .eq("app_id", appId)
-    .eq("status", "practicing")
-    .eq("is_removed", false);
-  if (error) throw error;
-  const userIds = [...new Set((data ?? []).map((row) => Number(row.user_id)))];
-  let delivered = 0;
-  let failed = 0;
-  for (const userId of userIds) {
-    try {
-      const didDeliver = await runWithTelegramTyping(
-        userId,
-        appId,
-        async () => {
-          const result = await getOrCreateSpeakingTask(userId, appId);
-          if (!result.needsDelivery) return false;
-          await deliverSpeakingTask(result.task, userId, appId);
-          return true;
-        },
-      );
-      if (didDeliver) delivered += 1;
-    } catch {
-      failed += 1;
-    }
-  }
-  return { delivered, failed };
-}
-
 async function selectPracticingItems(
   userId: number,
   appId: AppId,

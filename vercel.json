@@ -3,7 +3,7 @@
   "regions": ["dub1"],
   "crons": [
     {
-      "path": "/api/cron/speaking-tasks",
+      "path": "/api/cron/speaking-retention",
       "schedule": "0 18 * * *"
     }
   ]
