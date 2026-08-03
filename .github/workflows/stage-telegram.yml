@@ -1,0 +1,44 @@
+name: Configure Stage Telegram
+
+on:
+  deployment_status:
+  workflow_dispatch:
+    inputs:
+      preview_url:
+        description: Successful Vercel Preview URL
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: memento-stage-telegram
+  cancel-in-progress: true
+
+jobs:
+  configure:
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.deployment_status.state == 'success' &&
+       github.event.deployment.environment == 'Preview' &&
+       github.event.deployment_status.environment_url != '')
+    runs-on: ubuntu-latest
+    environment: Stage
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Update Stage bot webhooks and menu buttons
+        run: npm run stage:telegram -- "$STAGE_URL" Preview
+        env:
+          STAGE_URL: ${{ github.event_name == 'workflow_dispatch' && inputs.preview_url || github.event.deployment_status.environment_url }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_WEBHOOK_SECRET: ${{ secrets.TELEGRAM_WEBHOOK_SECRET }}
+          TELEGRAM_CZ_BOT_TOKEN: ${{ secrets.TELEGRAM_CZ_BOT_TOKEN }}
+          TELEGRAM_CZ_WEBHOOK_SECRET: ${{ secrets.TELEGRAM_CZ_WEBHOOK_SECRET }}
