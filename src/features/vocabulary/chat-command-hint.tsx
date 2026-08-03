@@ -1,5 +1,5 @@
 import { MessageCircle } from "lucide-react";
-import type { ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 
 import styles from "./chat-command-hint.module.css";
 
@@ -25,25 +25,52 @@ function copyWithLegacyApi(command: string) {
 }
 
 export function ChatCommand({ children }: { children: string }) {
-  function copyCommand() {
-    if (!navigator.clipboard?.writeText) {
-      copyWithLegacyApi(children);
-      return;
+  const [copied, setCopied] = useState(false);
+  const resetTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(
+    () => () => {
+      if (resetTimeout.current) clearTimeout(resetTimeout.current);
+    },
+    [],
+  );
+
+  function showCopied() {
+    setCopied(true);
+    if (resetTimeout.current) clearTimeout(resetTimeout.current);
+    resetTimeout.current = setTimeout(() => {
+      setCopied(false);
+      resetTimeout.current = null;
+    }, 1500);
+  }
+
+  async function copyCommand() {
+    if (navigator.clipboard?.writeText) {
+      try {
+        await navigator.clipboard.writeText(children);
+        showCopied();
+        return;
+      } catch {
+        // Fall back for Telegram WebViews without Clipboard API access.
+      }
     }
 
-    void navigator.clipboard
-      .writeText(children)
-      .catch(() => copyWithLegacyApi(children));
+    copyWithLegacyApi(children);
+    showCopied();
   }
 
   return (
     <button
       type="button"
       className={styles.command}
-      aria-label={`Copy ${children} command`}
-      onClick={copyCommand}
+      aria-label={copied ? `${children} copied` : `Copy ${children} command`}
+      data-copied={copied}
+      onClick={() => void copyCommand()}
     >
       <code>{children}</code>
+      <span className={styles.copyStatus} role="status" aria-live="polite">
+        {copied ? `${children} copied` : ""}
+      </span>
     </button>
   );
 }

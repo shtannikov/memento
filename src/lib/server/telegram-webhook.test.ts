@@ -151,6 +151,24 @@ describe("Telegram webhook workflow", () => {
     expect(reply?.followUps?.[0]?.text).toContain("<b>How to import</b>");
   });
 
+  it("guides an empty import without treating it as a validation error", async () => {
+    const parsed = parseTelegramUpdate(update("/import"));
+    if (!parsed) throw new Error("Expected update to parse");
+    const importItems = vi.fn();
+
+    await expect(
+      processTelegramUpdate(parsed, dependencies({ importItems })),
+    ).resolves.toMatchObject({
+      text:
+        "📥 Ready to add some phrases?\n\n" +
+        "Send everything in one message using this format:\n\n" +
+        "/import\n" +
+        "• phrase — description\n" +
+        "• phrase — description",
+    });
+    expect(importItems).not.toHaveBeenCalled();
+  });
+
   it("keeps all-or-nothing validation and vocabulary capacity errors", async () => {
     const malformed = parseTelegramUpdate(update("/import\nvalid - definition\ninvalid"));
     const full = parseTelegramUpdate(update("/import\nvalid - definition"));
@@ -161,6 +179,7 @@ describe("Telegram webhook workflow", () => {
       dependencies({ importItems }),
     );
     expect(malformedReply?.text).toContain("I couldn’t import that list");
+    expect(malformedReply?.text).toContain("⚠️");
     expect(importItems).not.toHaveBeenCalled();
 
     importItems.mockRejectedValue(

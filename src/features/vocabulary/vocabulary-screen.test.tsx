@@ -244,12 +244,13 @@ describe("VocabularyScreen", () => {
     expect(
       screen.queryByRole("button", { name: /mark .* learned/i }),
     ).not.toBeInTheDocument();
-    await user.click(
-      screen.getByRole("button", {
-        name: "Copy /speaking command",
-      }),
-    );
+    const command = screen.getByRole("button", {
+      name: "Copy /speaking command",
+    });
+    await user.click(command);
     expect(await navigator.clipboard.readText()).toBe("/speaking");
+    expect(command).toHaveAttribute("data-copied", "true");
+    expect(command).toHaveAccessibleName("/speaking copied");
     await user.click(
       await screen.findByRole("button", {
         name: "Move make up my mind back to learning",

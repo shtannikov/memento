@@ -26,6 +26,12 @@ const IMPORT_FORMAT_ERROR =
   `• A description can’t be longer than ${DEFINITION_MAX_LENGTH} characters\n` +
   `• You can import up to ${IMPORT_MAX_ITEMS} phrases at a time\n\n` +
   "💡 <b>Tip:</b> ask ChatGPT to convert your vocabulary to this format before importing it.";
+const EMPTY_IMPORT_HELP =
+  "📥 Ready to add some phrases?\n\n" +
+  "Send everything in one message using this format:\n\n" +
+  "/import\n" +
+  "• phrase — description\n" +
+  "• phrase — description";
 
 export type ImportParseResult =
   | { ok: true; items: VocabularyInput[] }
@@ -69,7 +75,7 @@ export function parseImportCommand(text: string): ImportParseResult {
     .filter(({ value }) => value.trim().length > 0);
 
   if (itemLines.length === 0) {
-    return invalidFormat();
+    return { ok: false, message: EMPTY_IMPORT_HELP };
   }
   if (itemLines.length > IMPORT_MAX_ITEMS) {
     return {

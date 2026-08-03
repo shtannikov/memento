@@ -39,10 +39,13 @@ describe("AddPhraseDialog", () => {
     ).toHaveTextContent(
       "Want to add several phrases? Send /import in the chat to add them all at once.",
     );
-    await user.click(
-      screen.getByRole("button", { name: "Copy /import command" }),
-    );
+    const command = screen.getByRole("button", {
+      name: "Copy /import command",
+    });
+    await user.click(command);
     expect(await navigator.clipboard.readText()).toBe("/import");
+    expect(command).toHaveAttribute("data-copied", "true");
+    expect(command).toHaveAccessibleName("/import copied");
   });
 
   it("stays open after outside taps and Escape", async () => {

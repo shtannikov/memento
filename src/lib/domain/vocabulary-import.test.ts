@@ -79,7 +79,26 @@ describe("vocabulary import commands", () => {
     });
   });
 
-  it("requires the command, at least one item, and the exact separator", () => {
+  it("guides an empty import without presenting it as an error", () => {
+    const emptyHelp =
+      "📥 Ready to add some phrases?\n\n" +
+      "Send everything in one message using this format:\n\n" +
+      "/import\n" +
+      "• phrase — description\n" +
+      "• phrase — description";
+
+    expect(parseImportCommand("/import")).toEqual({
+      ok: false,
+      message: emptyHelp,
+    });
+    expect(parseImportCommand("/import@MementoBot\n\n")).toEqual({
+      ok: false,
+      message: emptyHelp,
+    });
+    expect(emptyHelp).not.toContain("⚠️");
+  });
+
+  it("requires the command and exact separator for non-empty imports", () => {
     const formatError = {
       ok: false,
       formatHelp: true,
@@ -97,7 +116,6 @@ describe("vocabulary import commands", () => {
     };
 
     expect(parseImportCommand("phrase - description")).toEqual(formatError);
-    expect(parseImportCommand("/import\n\n")).toEqual(formatError);
     expect(parseImportCommand("/import\nphrase-description")).toEqual(
       formatError,
     );
