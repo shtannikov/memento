@@ -116,12 +116,6 @@ describe("speaking answer task resolution", () => {
           evidence: "made up my mind",
         },
       ],
-      rubric: {
-        fluencyAndCoherence: 3,
-        lexicalResource: 3,
-        grammaticalRange: 3,
-        grammaticalAccuracy: 3,
-      },
       grammarPriority: null,
       telegramFeedback: "Good work.",
     });

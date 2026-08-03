@@ -429,12 +429,6 @@ describe("quiz generation contract", () => {
           evidence: "take into account the deadline",
         },
       ],
-      rubric: {
-        fluencyAndCoherence: 3,
-        lexicalResource: 3,
-        grammaticalRange: 3,
-        grammaticalAccuracy: 3,
-      },
       grammarPriority: null,
       telegramFeedback: "Clear and well structured.",
     };
@@ -458,8 +452,14 @@ describe("quiz generation contract", () => {
       evaluateSpeakingAnswer("We should take into account the deadline.", task, 42, "en", openai),
     ).resolves.toEqual(output);
     expect(parse.mock.calls[0][0].model).toBe("voice-evaluation-model");
+    expect(JSON.stringify(parse.mock.calls[0][0].text?.format)).not.toContain(
+      "rubric",
+    );
     expect(ENGLISH_LANGUAGE.speaking?.answerEvaluationPrompt).toContain(
       "Do not generate vocabulary candidates, phrase recommendations",
+    );
+    expect(ENGLISH_LANGUAGE.speaking?.answerEvaluationPrompt).not.toContain(
+      "language scores",
     );
 
     parse.mockResolvedValueOnce({

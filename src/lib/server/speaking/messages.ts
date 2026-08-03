@@ -2,7 +2,7 @@ import type {
   AnswerEvaluation,
   SpeakingTask,
 } from "@/lib/domain/speaking";
-import { estimateCefrLevel } from "@/lib/domain/speaking";
+import { formatInlineCorrection } from "./inline-correction";
 
 export function buildSpeakingTaskMessage(task: SpeakingTask): string {
   const phrases = task.items
@@ -29,19 +29,14 @@ export function buildSpeakingTaskMessage(task: SpeakingTask): string {
 export function buildSpeakingFeedbackMessage(
   transcript: string,
   evaluation: AnswerEvaluation,
-  speechStats: Record<string, number>,
 ): string {
-  const corrections = evaluation.corrections
-    .map((item) => `• <s>${escapeHtml(item.original)}</s> → <b>${escapeHtml(item.corrected)}</b>\n  ${escapeHtml(item.why)}`)
-    .join("\n");
   const phrases = evaluation.requiredPhraseUsage
     .map((item) => `${item.status === "used_correctly" ? "✅" : "❌"} ${escapeHtml(item.phrase)}`)
     .join("\n");
   const lines = [
     "<b>Nice work 👏 A few things I’d fix:</b>",
-    `<blockquote expandable>${escapeHtml(transcript)}</blockquote>`,
+    `<blockquote expandable>${formatTranscript(transcript, evaluation)}</blockquote>`,
   ];
-  if (corrections) lines.push("", `✍️ <b>Corrections</b>\n${corrections}`);
   lines.push("", `🎯 <b>Your practice phrases:</b>\n${phrases}`);
   if (evaluation.grammarPriority) {
     const grammar = evaluation.grammarPriority;
@@ -50,14 +45,7 @@ export function buildSpeakingFeedbackMessage(
       `🧩 <b>One grammar pattern to fix:</b>\n<b>${escapeHtml(grammar.issue)}</b>\n${escapeHtml(grammar.rule)}\nExample: <i>${escapeHtml(cleanGrammarExample(grammar.example))}</i>`,
     );
   }
-  lines.push(
-    "",
-    "📊 <b>Quick stats:</b>",
-    `🗣 Speaking pace: ${speechStats.wpm ?? 0} words/min`,
-    `🌍 Estimated level: ${estimateCefrLevel(evaluation.rubric)}`,
-    "",
-    "🌟 I’m looking forward to hearing your next answer.",
-  );
+  lines.push("", "🌟 I’m looking forward to hearing your next answer.");
   return lines.join("\n");
 }
 
@@ -84,6 +72,68 @@ function cleanGrammarExample(value: string): string {
     .replace(/^(?:example\s*:\s*)?(?:correct\s*:\s*)?/i, "")
     .replace(/^(['"])([\s\S]*)\1$/, "$2")
     .trim();
+}
+
+function formatTranscript(
+  transcript: string,
+  evaluation: AnswerEvaluation,
+): string {
+  type Replacement = { start: number; end: number; html: string };
+  const replacements: Replacement[] = [];
+
+  for (const correction of evaluation.corrections) {
+    const start = findUnusedOccurrence(
+      transcript,
+      correction.original,
+      replacements,
+    );
+    if (start === -1) continue;
+    replacements.push({
+      start,
+      end: start + correction.original.length,
+      html: formatInlineCorrection(correction.original, correction.corrected),
+    });
+  }
+
+  for (const usage of evaluation.requiredPhraseUsage) {
+    if (usage.status === "missed") continue;
+    const start = findUnusedOccurrence(transcript, usage.phrase, replacements);
+    if (start === -1) continue;
+    replacements.push({
+      start,
+      end: start + usage.phrase.length,
+      html: `<u>${escapeHtml(transcript.slice(start, start + usage.phrase.length))}</u>`,
+    });
+  }
+
+  replacements.sort((left, right) => left.start - right.start);
+  let cursor = 0;
+  let result = "";
+  for (const replacement of replacements) {
+    result += escapeHtml(transcript.slice(cursor, replacement.start));
+    result += replacement.html;
+    cursor = replacement.end;
+  }
+  return result + escapeHtml(transcript.slice(cursor));
+}
+
+function findUnusedOccurrence(
+  transcript: string,
+  needle: string,
+  replacements: Array<{ start: number; end: number }>,
+): number {
+  if (!needle.trim()) return -1;
+  const haystack = transcript.toLocaleLowerCase("en");
+  const normalizedNeedle = needle.toLocaleLowerCase("en");
+  let start = haystack.indexOf(normalizedNeedle);
+  while (start !== -1) {
+    const end = start + needle.length;
+    if (!replacements.some((item) => start < item.end && end > item.start)) {
+      return start;
+    }
+    start = haystack.indexOf(normalizedNeedle, start + 1);
+  }
+  return -1;
 }
 
 function escapeHtml(value: string): string {

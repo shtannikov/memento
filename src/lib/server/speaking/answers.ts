@@ -4,7 +4,6 @@ import type { AppId } from "@/lib/domain/app";
 import {
   MAX_VOICE_DURATION_SECONDS,
   MIN_VOICE_DURATION_SECONDS,
-  computeSpeechStats,
 } from "@/lib/domain/speaking";
 import { AppError } from "../api";
 import { evaluateSpeakingAnswer, transcribeVoice } from "../openai";
@@ -52,7 +51,6 @@ export async function processSpeakingVoiceAnswer(
       filename: filePath,
       mimeType: "audio/ogg",
     });
-    const speechStats = computeSpeechStats(transcript, input.durationSeconds);
     const evaluation = await evaluateSpeakingAnswer(
       transcript,
       task,
@@ -62,7 +60,6 @@ export async function processSpeakingVoiceAnswer(
     const feedbackHtml = buildSpeakingFeedbackMessage(
       transcript,
       evaluation,
-      speechStats,
     );
     const { data: completion, error: completionError } = await db.rpc(
       "complete_speaking_task",
@@ -73,7 +70,6 @@ export async function processSpeakingVoiceAnswer(
         incoming_chat_id: input.chatId,
         incoming_message_id: input.messageId,
         requested_transcript: transcript,
-        requested_speech_stats: speechStats,
         requested_evaluation: evaluation,
         requested_feedback_html: feedbackHtml,
       },

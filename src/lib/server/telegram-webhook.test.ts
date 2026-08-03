@@ -29,6 +29,7 @@ function dependencies(
     ensureUser: vi.fn().mockResolvedValue(undefined),
     runSpeaking: vi.fn().mockResolvedValue("created"),
     processVoice: vi.fn().mockResolvedValue("completed"),
+    sendTyping: vi.fn().mockResolvedValue(undefined),
     ...overrides,
   };
 }
@@ -111,6 +112,13 @@ describe("Telegram webhook workflow", () => {
 
   it("passes voice and exact reply metadata to speaking evaluation", async () => {
     const processVoice = vi.fn().mockResolvedValue("completed");
+    const order: string[] = [];
+    const sendTyping = vi.fn(async () => {
+      order.push("typing");
+    });
+    const ensureUser = vi.fn(async () => {
+      order.push("ensure-user");
+    });
     const parsed = parseTelegramUpdate({
       update_id: 100,
       message: {
@@ -124,7 +132,10 @@ describe("Telegram webhook workflow", () => {
     if (!parsed) throw new Error("Expected update to parse");
 
     await expect(
-      processTelegramUpdate(parsed, dependencies({ processVoice })),
+      processTelegramUpdate(
+        parsed,
+        dependencies({ processVoice, sendTyping, ensureUser }),
+      ),
     ).resolves.toBeNull();
     expect(processVoice).toHaveBeenCalledWith(
       {
@@ -137,6 +148,8 @@ describe("Telegram webhook workflow", () => {
       },
       "en",
     );
+    expect(sendTyping).toHaveBeenCalledWith(42, "en");
+    expect(order).toEqual(["typing", "ensure-user"]);
   });
 
   it("returns concise help and detailed import instructions", async () => {

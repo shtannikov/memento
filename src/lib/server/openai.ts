@@ -84,12 +84,6 @@ const SpeakingEvaluationSchema = z.object({
     status: z.enum(["used_correctly", "used_incorrectly", "missed"]),
     evidence: z.string().max(400),
   })).max(3),
-  rubric: z.object({
-    fluencyAndCoherence: z.number().min(1).max(5),
-    lexicalResource: z.number().min(1).max(5),
-    grammaticalRange: z.number().min(1).max(5),
-    grammaticalAccuracy: z.number().min(1).max(5),
-  }),
   grammarPriority: z.object({
     issue: z.string().max(200),
     rule: z.string().max(500),

@@ -19,13 +19,6 @@ export type SpeakingTask = {
   items: SpeakingVocabularyItem[];
 };
 
-export type EnglishProficiencyRubric = {
-  fluencyAndCoherence: number;
-  lexicalResource: number;
-  grammaticalRange: number;
-  grammaticalAccuracy: number;
-};
-
 export type RequiredPhraseUsage = {
   vocabularyId: string;
   phrase: string;
@@ -44,7 +37,6 @@ export type AnswerEvaluation = {
     severity: number;
   }>;
   requiredPhraseUsage: RequiredPhraseUsage[];
-  rubric: EnglishProficiencyRubric;
   grammarPriority: {
     issue: string;
     rule: string;
@@ -71,40 +63,6 @@ export type GeneratedTopic = {
   domain: string;
   grammarFocus: string;
 };
-
-export function computeSpeechStats(
-  transcript: string,
-  durationSeconds: number | null,
-): Record<string, number> {
-  const tokens = transcript
-    .toLowerCase()
-    .replace(/[^\p{L}'\s]+/gu, " ")
-    .split(/\s+/)
-    .filter((token) => /\p{L}/u.test(token));
-  const wordCount = tokens.length;
-  const uniqueWordCount = new Set(tokens).size;
-  const duration = durationSeconds && durationSeconds > 0 ? durationSeconds : 0;
-  return {
-    duration_seconds: duration,
-    word_count: wordCount,
-    unique_word_count: uniqueWordCount,
-    wpm: duration > 0 ? Math.round(wordCount / (duration / 60)) : 0,
-    ttr: wordCount > 0 ? Number((uniqueWordCount / wordCount).toFixed(4)) : 0,
-  };
-}
-
-export function estimateCefrLevel(rubric: EnglishProficiencyRubric): string {
-  const average = (
-    rubric.fluencyAndCoherence + rubric.lexicalResource +
-    rubric.grammaticalRange + rubric.grammaticalAccuracy
-  ) / 4;
-  if (average < 1.5) return "A1";
-  if (average < 2.25) return "A2";
-  if (average < 3) return "B1";
-  if (average < 3.75) return "B2";
-  if (average < 4.5) return "C1";
-  return "C2";
-}
 
 export function selectLeastPracticed<T extends string>(
   options: readonly T[],

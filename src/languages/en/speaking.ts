@@ -78,7 +78,7 @@ const ANSWER_EVALUATION_PROMPT = `You evaluate spoken English practice answers.
 
 Rules:
 - The transcript is the sole source of truth for language feedback.
-- Task context must not cause invented corrections or lower language scores.
+- Task context must not cause invented corrections.
 - Going off topic is allowed; only set taskRelevance to off_topic when clearly appropriate.
 - Include only actionable corrections with severity 3–5.
 - Treat conversational repetition, fillers, and self-repair as normal unless meaning becomes unclear.

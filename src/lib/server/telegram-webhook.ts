@@ -24,6 +24,7 @@ import {
 } from "./vocabulary";
 import { processSpeakingVoiceAnswer } from "./speaking/answers";
 import { runSpeakingTaskCommand } from "./speaking/tasks";
+import { sendTelegramTyping } from "./telegram-bot";
 
 const TelegramUpdateSchema = z.object({
   update_id: z.number().int(),
@@ -76,6 +77,7 @@ type TelegramCommandDependencies = {
   ensureUser: typeof ensureUserAndSeed;
   runSpeaking: typeof runSpeakingTaskCommand;
   processVoice: typeof processSpeakingVoiceAnswer;
+  sendTyping: typeof sendTelegramTyping;
 };
 
 const defaultDependencies: TelegramCommandDependencies = {
@@ -85,6 +87,7 @@ const defaultDependencies: TelegramCommandDependencies = {
   ensureUser: ensureUserAndSeed,
   runSpeaking: runSpeakingTaskCommand,
   processVoice: processSpeakingVoiceAnswer,
+  sendTyping: sendTelegramTyping,
 };
 
 const IMPORT_HELP_MESSAGE =
@@ -134,6 +137,7 @@ export async function processTelegramUpdate(
 
   if (message.voice) {
     try {
+      await dependencies.sendTyping(message.chat.id, appId);
       await dependencies.ensureUser(user, appId);
       await dependencies.processVoice(
         {
@@ -190,6 +194,7 @@ export async function processTelegramUpdate(
   }
   if (command === "speaking") {
     try {
+      await dependencies.sendTyping(message.chat.id, appId);
       await dependencies.ensureUser(user, appId);
       await dependencies.runSpeaking(user.id, appId, message.chat.id);
       return null;
