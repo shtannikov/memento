@@ -20,7 +20,8 @@ const IMPORT_RULES =
   `• A phrase can’t be longer than ${TERM_MAX_LENGTH} characters\n` +
   `• A description can’t be longer than ${DEFINITION_MAX_LENGTH} characters\n` +
   `• You can import up to ${IMPORT_MAX_ITEMS} phrases at a time\n\n` +
-  "💡 <b>Tip:</b> ask ChatGPT to convert your vocabulary to this format before importing it.";
+  "💡 <b>Tip:</b> ChatGPT can generate and format this list for you. " +
+  "Just paste this message into ChatGPT and ask it to follow the formatting rules.";
 const IMPORT_FORMAT_ERROR =
   "⚠️ I couldn’t import that list.\n\n" +
   "Please use this format:\n" +
