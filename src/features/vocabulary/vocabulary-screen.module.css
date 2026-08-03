@@ -492,7 +492,6 @@
 
 .floatingButton:disabled {
   cursor: wait;
-  opacity: 0.4;
 }
 
 @media (hover: none) and (pointer: coarse) {

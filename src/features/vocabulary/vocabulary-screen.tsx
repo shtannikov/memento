@@ -85,6 +85,15 @@ export function VocabularyScreen({
       await operation();
     } finally {
       setMutating(false);
+      window.requestAnimationFrame(() => {
+        const activeElement = document.activeElement;
+        if (
+          activeElement instanceof HTMLButtonElement &&
+          activeElement.hasAttribute("data-vocabulary-action")
+        ) {
+          activeElement.blur();
+        }
+      });
     }
   }
 

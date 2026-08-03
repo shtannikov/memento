@@ -19,11 +19,10 @@ function IconButton({
     <button
       type="button"
       aria-label={label}
+      data-vocabulary-action=""
       disabled={disabled}
-      onClick={(event) => {
-        if (event.detail > 0) event.currentTarget.blur();
-        onClick();
-      }}
+      onPointerDown={(event) => event.preventDefault()}
+      onClick={onClick}
       className={`${styles.iconButton} ${styles[tone]}`}
     >
       {children}

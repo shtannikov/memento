@@ -52,6 +52,13 @@ describe("VocabularyScreen", () => {
             setItems((current) =>
               current.filter((candidate) => candidate.id !== item.id),
             );
+            window.requestAnimationFrame(() => {
+              document
+                .querySelector<HTMLButtonElement>(
+                  '[aria-label="Move a stroller to practicing"]',
+                )
+                ?.focus();
+            });
           }}
           onReorderPracticing={vi.fn()}
           onStartQuiz={vi.fn()}
@@ -85,6 +92,11 @@ describe("VocabularyScreen", () => {
       expect(
         screen.queryByRole("heading", { name: "a cradle" }),
       ).not.toBeInTheDocument(),
+    );
+    await new Promise<void>((resolve) =>
+      window.requestAnimationFrame(() =>
+        window.requestAnimationFrame(() => resolve()),
+      ),
     );
     expect(
       screen.getByRole("button", {
