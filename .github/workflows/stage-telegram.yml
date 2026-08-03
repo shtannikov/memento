@@ -1,7 +1,9 @@
 name: Configure Stage Telegram
 
 on:
-  deployment_status:
+  repository_dispatch:
+    types:
+      - vercel.deployment.success
   workflow_dispatch:
     inputs:
       preview_url:
@@ -20,9 +22,9 @@ jobs:
   configure:
     if: >-
       github.event_name == 'workflow_dispatch' ||
-      (github.event.deployment_status.state == 'success' &&
-       github.event.deployment.environment == 'Preview' &&
-       github.event.deployment_status.environment_url != '')
+      ((github.event.client_payload.environment == 'Preview' ||
+        github.event.client_payload.environment == 'preview') &&
+       github.event.client_payload.url != '')
     runs-on: ubuntu-latest
     environment: Stage
     steps:
@@ -37,7 +39,7 @@ jobs:
       - name: Update Stage bot webhooks and menu buttons
         run: npm run stage:telegram -- "$STAGE_URL" Preview
         env:
-          STAGE_URL: ${{ github.event_name == 'workflow_dispatch' && inputs.preview_url || github.event.deployment_status.environment_url }}
+          STAGE_URL: ${{ github.event_name == 'workflow_dispatch' && inputs.preview_url || github.event.client_payload.url }}
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_WEBHOOK_SECRET: ${{ secrets.TELEGRAM_WEBHOOK_SECRET }}
           TELEGRAM_CZ_BOT_TOKEN: ${{ secrets.TELEGRAM_CZ_BOT_TOKEN }}

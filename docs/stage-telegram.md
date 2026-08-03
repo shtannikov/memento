@@ -23,16 +23,20 @@ the language registry.
 4. Make sure each webhook secret contains only `A-Z`, `a-z`, `0-9`, `_`, and
    `-`, and is at most 256 characters.
 5. In Vercel, open the `memento` project -> **Settings** -> **Git** and make
-   sure **deployment_status Events** is enabled for the connected GitHub repo.
+   sure **repository_dispatch Events** is enabled for the connected GitHub
+   repo. The older **deployment_status Events** integration is not used by this
+   workflow and may be disabled.
 6. Merge the workflow into `main`. GitHub only automatically handles later
-   `deployment_status` events with a workflow present on the default branch.
+   `repository_dispatch` events with a workflow present on the default branch.
 7. For the first existing Preview, open **Actions** ->
    **Configure Stage Telegram** -> **Run workflow** and paste its exact
    `https://...vercel.app/` Preview URL. Later successful Preview deployments
    run it automatically.
 
-The GitHub job uses the trusted script from `main`, not code from the pull
-request that receives Stage secrets.
+Both the workflow definition and the script come from trusted `main`; Vercel
+deployment metadata supplies only the successful Preview URL. A pull request
+cannot change this workflow and immediately execute that changed definition
+with Stage secrets.
 
 ## BotFather limitation
 
