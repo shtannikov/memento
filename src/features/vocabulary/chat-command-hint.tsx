@@ -1,5 +1,6 @@
-import { MessageCircle } from "lucide-react";
+import { Check, MessageCircle } from "lucide-react";
 import { useEffect, useRef, useState, type ReactNode } from "react";
+import { createPortal } from "react-dom";
 
 import styles from "./chat-command-hint.module.css";
 
@@ -60,17 +61,24 @@ export function ChatCommand({ children }: { children: string }) {
   }
 
   return (
-    <button
-      type="button"
-      className={styles.command}
-      aria-label={copied ? `${children} copied` : `Copy ${children} command`}
-      data-copied={copied}
-      onClick={() => void copyCommand()}
-    >
-      <code>{children}</code>
-      <span className={styles.copyStatus} role="status" aria-live="polite">
-        {copied ? `${children} copied` : ""}
-      </span>
-    </button>
+    <>
+      <button
+        type="button"
+        className={styles.command}
+        aria-label={copied ? `${children} copied` : `Copy ${children} command`}
+        data-copied={copied}
+        onClick={() => void copyCommand()}
+      >
+        <code>{children}</code>
+      </button>
+      {copied &&
+        createPortal(
+          <div className={styles.copyToast} role="status" aria-live="polite">
+            <Check aria-hidden="true" />
+            <span>Copied</span>
+          </div>,
+          document.body,
+        )}
+    </>
   );
 }

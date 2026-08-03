@@ -46,6 +46,7 @@ describe("AddPhraseDialog", () => {
     expect(await navigator.clipboard.readText()).toBe("/import");
     expect(command).toHaveAttribute("data-copied", "true");
     expect(command).toHaveAccessibleName("/import copied");
+    expect(screen.getByRole("status")).toHaveTextContent("Copied");
   });
 
   it("stays open after outside taps and Escape", async () => {

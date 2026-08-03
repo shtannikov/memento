@@ -251,6 +251,7 @@ describe("VocabularyScreen", () => {
     expect(await navigator.clipboard.readText()).toBe("/speaking");
     expect(command).toHaveAttribute("data-copied", "true");
     expect(command).toHaveAccessibleName("/speaking copied");
+    expect(screen.getByRole("status")).toHaveTextContent("Copied");
     await user.click(
       await screen.findByRole("button", {
         name: "Move make up my mind back to learning",
