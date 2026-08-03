@@ -45,12 +45,18 @@ add a public registration endpoint or automatic deployment hook. Adding an ID
 must not alter table constraints or replace core database functions.
 
 Create the bot in BotFather, choose a random webhook secret, and store both
-values as Vercel Sensitive variables. Bot webhook and `App` menu-button
-provisioning are external release prerequisites owned by the operator. Verify
-the Stage bot against the current Preview origin before configuring and
-verifying the separate Production bot against the stable Production origin.
-Do not add a local provisioning script that attempts to retrieve Vercel
-Sensitive bot credentials.
+values as Vercel Sensitive variables. Copy the Stage values separately into
+the matching secrets in GitHub's `Stage` environment; the workflow never reads
+Vercel Sensitive variables. After every successful Vercel Preview deployment,
+`.github/workflows/stage-telegram.yml` runs `npm run stage:telegram` and updates
+and verifies each Stage bot's webhook and default `App` menu-button URL.
+
+The script deliberately accepts only a Vercel Preview URL and Stage credentials.
+Production bot provisioning remains an external release prerequisite owned by
+the operator. Telegram's profile-level Main Mini App (`Launch app`) URL has no
+official Bot API method and must still be changed manually in BotFather if it is
+enabled; the automated default menu button is the setting equivalent to
+BotFather's `/setmenubutton`.
 
 ## Adding another language
 
