@@ -161,10 +161,16 @@ describe("Telegram webhook workflow", () => {
     ).resolves.toMatchObject({
       text:
         "📥 Ready to add some phrases?\n\n" +
-        "Send everything in one message using this format:\n\n" +
+        "Send everything in one message using this format:\n" +
         "/import\n" +
         "• phrase — description\n" +
-        "• phrase — description",
+        "• phrase — description\n\n" +
+        "☝️A few rules:\n" +
+        "• A phrase can’t be longer than 35 characters\n" +
+        "• A description can’t be longer than 45 characters\n" +
+        "• You can import up to 50 phrases at a time\n\n" +
+        "💡 <b>Tip:</b> ask ChatGPT to convert your vocabulary to this format before importing it.",
+      parseMode: "HTML",
     });
     expect(importItems).not.toHaveBeenCalled();
   });
