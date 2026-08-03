@@ -491,7 +491,11 @@
 }
 
 .floatingButton:disabled {
+  color: #f5f3ff;
+  background: #a78bfa;
+  box-shadow: 0 12px 18px -6px rgb(196 181 253 / 72%);
   cursor: wait;
+  opacity: 1;
 }
 
 @media (hover: none) and (pointer: coarse) {

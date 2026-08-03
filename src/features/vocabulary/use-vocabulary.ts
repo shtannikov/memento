@@ -21,6 +21,7 @@ export function useVocabulary(initData: string | null, appId: AppId) {
     learned: [],
   });
   const [loading, setLoading] = useState(Boolean(initData));
+  const [mutating, setMutating] = useState(false);
   const [reordering, setReordering] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -99,6 +100,8 @@ export function useVocabulary(initData: string | null, appId: AppId) {
   }
 
   async function mutate(operation: () => Promise<VocabularyData>) {
+    if (mutating) return;
+    setMutating(true);
     setError(null);
     try {
       setData(await operation());
@@ -108,12 +111,15 @@ export function useVocabulary(initData: string | null, appId: AppId) {
           ? caught.message
           : "Couldn’t update your vocabulary.",
       );
+    } finally {
+      setMutating(false);
     }
   }
 
   return {
     ...data,
     loading,
+    mutating,
     reordering,
     error,
     add,

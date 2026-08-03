@@ -38,6 +38,7 @@ describe("VocabularyScreen", () => {
 
     function PendingMoveScreen() {
       const [items, setItems] = useState(learning);
+      const [mutating, setMutating] = useState(false);
 
       return (
         <VocabularyScreen
@@ -45,20 +46,16 @@ describe("VocabularyScreen", () => {
           practicing={[]}
           learned={[]}
           speakingEnabled
+          mutating={mutating}
           onAdd={vi.fn()}
           onRemove={vi.fn()}
           onChangeStatus={async (item) => {
+            setMutating(true);
             await mutation.promise;
             setItems((current) =>
               current.filter((candidate) => candidate.id !== item.id),
             );
-            window.requestAnimationFrame(() => {
-              document
-                .querySelector<HTMLButtonElement>(
-                  '[aria-label="Move a stroller to practicing"]',
-                )
-                ?.focus();
-            });
+            setMutating(false);
           }}
           onReorderPracticing={vi.fn()}
           onStartQuiz={vi.fn()}
@@ -73,7 +70,6 @@ describe("VocabularyScreen", () => {
     });
     await user.click(moveButton);
 
-    expect(moveButton).not.toHaveFocus();
     for (const button of screen.getAllByRole("button", {
       name: /^(Move|Delete) /,
     })) {
@@ -93,16 +89,65 @@ describe("VocabularyScreen", () => {
         screen.queryByRole("heading", { name: "a cradle" }),
       ).not.toBeInTheDocument(),
     );
-    await new Promise<void>((resolve) =>
-      window.requestAnimationFrame(() =>
-        window.requestAnimationFrame(() => resolve()),
-      ),
-    );
+    const nextMoveButton = screen.getByRole("button", {
+      name: "Move a stroller to practicing",
+    });
+    expect(nextMoveButton).toBeEnabled();
+    expect(nextMoveButton).not.toHaveFocus();
+    expect(document.activeElement).toBe(document.body);
     expect(
+      screen.getByRole("button", { name: "Add phrase" }),
+    ).toHaveAttribute("aria-busy", "false");
+  });
+
+  it("shows opaque disabled Add and Quiz actions during a mutation", async () => {
+    const user = userEvent.setup();
+    const mutation = Promise.withResolvers<void>();
+    const learning: VocabularyItem[] = [
+      {
+        id: "1",
+        term: "a cradle",
+        definition: "люлька",
+        status: "learning",
+      },
+    ];
+
+    function PendingMoveScreen() {
+      const [mutating, setMutating] = useState(false);
+
+      return (
+        <VocabularyScreen
+          learning={learning}
+          practicing={[]}
+          learned={[]}
+          speakingEnabled
+          mutating={mutating}
+          onAdd={vi.fn()}
+          onRemove={vi.fn()}
+          onChangeStatus={async () => {
+            setMutating(true);
+            await mutation.promise;
+            setMutating(false);
+          }}
+          onReorderPracticing={vi.fn()}
+          onStartQuiz={vi.fn()}
+        />
+      );
+    }
+
+    render(<PendingMoveScreen />);
+
+    await user.click(
       screen.getByRole("button", {
-        name: "Move a stroller to practicing",
+        name: "Move a cradle to practicing",
       }),
-    ).not.toHaveFocus();
+    );
+
+    for (const name of ["Add phrase", "Start quiz"]) {
+      const button = screen.getByRole("button", { name });
+      expect(button).toBeDisabled();
+      expect(button).toHaveAttribute("aria-busy", "true");
+    }
   });
 
   it("disables phrase actions while deleting a phrase", async () => {
@@ -126,6 +171,7 @@ describe("VocabularyScreen", () => {
 
     function PendingDeleteScreen() {
       const [items, setItems] = useState(learning);
+      const [mutating, setMutating] = useState(false);
 
       return (
         <VocabularyScreen
@@ -133,12 +179,15 @@ describe("VocabularyScreen", () => {
           practicing={[]}
           learned={[]}
           speakingEnabled
+          mutating={mutating}
           onAdd={vi.fn()}
           onRemove={async (item) => {
+            setMutating(true);
             await mutation.promise;
             setItems((current) =>
               current.filter((candidate) => candidate.id !== item.id),
             );
+            setMutating(false);
           }}
           onChangeStatus={vi.fn()}
           onReorderPracticing={vi.fn()}
@@ -410,7 +459,7 @@ describe("VocabularyScreen", () => {
     expect(await navigator.clipboard.readText()).toBe("/speaking");
     expect(command).toHaveAttribute("data-copied", "true");
     expect(command).toHaveAccessibleName("/speaking copied");
-    expect(screen.getByRole("status")).toHaveTextContent("Copied");
+    expect(screen.getByText("Copied")).toBeInTheDocument();
     await user.click(
       await screen.findByRole("button", {
         name: "Move make up my mind back to learning",

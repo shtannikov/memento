@@ -105,6 +105,7 @@ export function MementoApp({
               onRemove={vocabulary.remove}
               onChangeStatus={vocabulary.changeStatus}
               onReorderPracticing={vocabulary.reorderPracticing}
+              mutating={vocabulary.mutating}
               reordering={vocabulary.reordering}
               onStartQuiz={() => setDestination("quiz")}
             />
