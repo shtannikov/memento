@@ -14,10 +14,6 @@ on:
 permissions:
   contents: read
 
-concurrency:
-  group: memento-stage-telegram
-  cancel-in-progress: true
-
 jobs:
   configure:
     if: >-
@@ -25,6 +21,9 @@ jobs:
       ((github.event.client_payload.environment == 'Preview' ||
         github.event.client_payload.environment == 'preview') &&
        github.event.client_payload.url != '')
+    concurrency:
+      group: memento-stage-telegram
+      cancel-in-progress: true
     runs-on: ubuntu-latest
     environment: Stage
     steps:
