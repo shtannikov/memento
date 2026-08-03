@@ -340,8 +340,8 @@
   background: #ecfdf5;
 }
 
-.success:hover,
-.success:active {
+.success:hover:not(:disabled),
+.success:active:not(:disabled) {
   background: #d1fae5;
 }
 
@@ -350,8 +350,8 @@
   background: #fff1f2;
 }
 
-.danger:hover,
-.danger:active {
+.danger:hover:not(:disabled),
+.danger:active:not(:disabled) {
   background: #ffe4e6;
 }
 
@@ -360,9 +360,14 @@
   background: #f5f3ff;
 }
 
-.restore:hover,
-.restore:active {
+.restore:hover:not(:disabled),
+.restore:active:not(:disabled) {
   background: #ede9fe;
+}
+
+.iconButton:disabled {
+  cursor: wait;
+  opacity: 0.4;
 }
 
 .activePractice {
@@ -477,12 +482,17 @@
     transform 160ms ease;
 }
 
-.floatingButton:hover {
+.floatingButton:hover:not(:disabled) {
   background: #6d28d9;
 }
 
-.floatingButton:active {
+.floatingButton:active:not(:disabled) {
   transform: scale(0.98);
+}
+
+.floatingButton:disabled {
+  cursor: wait;
+  opacity: 0.4;
 }
 
 @media (hover: none) and (pointer: coarse) {

@@ -6,18 +6,24 @@ function IconButton({
   label,
   tone,
   onClick,
+  disabled,
   children,
 }: {
   label: string;
   tone: "success" | "danger" | "restore";
   onClick: () => void;
+  disabled?: boolean;
   children: React.ReactNode;
 }) {
   return (
     <button
       type="button"
       aria-label={label}
-      onClick={onClick}
+      disabled={disabled}
+      onClick={(event) => {
+        if (event.detail > 0) event.currentTarget.blur();
+        onClick();
+      }}
       className={`${styles.iconButton} ${styles[tone]}`}
     >
       {children}
@@ -32,6 +38,7 @@ export function VocabularyCard({
   onDelete,
   speakingEnabled,
   leadingAction,
+  disabled = false,
 }: {
   item: VocabularyItem;
   onLearn: () => void;
@@ -39,6 +46,7 @@ export function VocabularyCard({
   onDelete: () => void;
   speakingEnabled: boolean;
   leadingAction?: React.ReactNode;
+  disabled?: boolean;
 }) {
   const isLearned = item.status === "learned";
   const isLearning = item.status === "learning";
@@ -65,6 +73,7 @@ export function VocabularyCard({
             label={`Move ${item.term} back to ${isPracticing || !speakingEnabled ? "learning" : "practicing"}`}
             tone="restore"
             onClick={onRestore}
+            disabled={disabled}
           >
             <UndoIcon />
           </IconButton>
@@ -77,6 +86,7 @@ export function VocabularyCard({
             }
             tone="success"
             onClick={onLearn}
+            disabled={disabled}
           >
             <CheckIcon />
           </IconButton>
@@ -85,6 +95,7 @@ export function VocabularyCard({
           label={`Delete ${item.term}`}
           tone="danger"
           onClick={onDelete}
+          disabled={disabled}
         >
           <TrashIcon />
         </IconButton>

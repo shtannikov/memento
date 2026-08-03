@@ -29,11 +29,11 @@ type VocabularyScreenProps = {
   learned: VocabularyItem[];
   speakingEnabled: boolean;
   onAdd: (item: NewVocabularyItem) => void;
-  onRemove: (item: VocabularyItem) => void;
+  onRemove: (item: VocabularyItem) => Promise<void> | void;
   onChangeStatus: (
     item: VocabularyItem,
     status: VocabularyStatus,
-  ) => void;
+  ) => Promise<void> | void;
   onReorderPracticing: (items: VocabularyItem[]) => void;
   reordering?: boolean;
   onStartQuiz: () => void;
@@ -59,6 +59,7 @@ export function VocabularyScreen({
     useState<VocabularyStatus>("learning");
   const [addOpen, setAddOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [mutating, setMutating] = useState(false);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const visibleItems =
     activeTab === "learning"
@@ -77,13 +78,23 @@ export function VocabularyScreen({
       )
     : visibleItems;
 
+  async function runMutation(operation: () => Promise<void> | void) {
+    if (mutating) return;
+    setMutating(true);
+    try {
+      await operation();
+    } finally {
+      setMutating(false);
+    }
+  }
+
   function removeItem(item: VocabularyItem) {
     if (
       globalThis.confirm(
         `Delete “${item.term}” from your vocabulary?`,
       )
     ) {
-      onRemove(item);
+      void runMutation(() => onRemove(item));
     }
   }
 
@@ -182,9 +193,13 @@ export function VocabularyScreen({
             practicing.length > 0 ? (
               <PracticingQueue
                 items={practicing}
-                reordering={reordering}
+                reordering={reordering || mutating}
                 onReorder={onReorderPracticing}
-                onRestore={(item) => onChangeStatus(item, "learning")}
+                onRestore={(item) =>
+                  void runMutation(() =>
+                    onChangeStatus(item, "learning"),
+                  )
+                }
                 onDelete={removeItem}
               />
             ) : (
@@ -193,20 +208,25 @@ export function VocabularyScreen({
                   key={item.id}
                   item={item}
                   speakingEnabled={speakingEnabled}
+                  disabled={mutating || reordering}
                   onLearn={() =>
-                    onChangeStatus(
-                      item,
-                      speakingEnabled ? "practicing" : "learned",
+                    void runMutation(() =>
+                      onChangeStatus(
+                        item,
+                        speakingEnabled ? "practicing" : "learned",
+                      ),
                     )
                   }
                   onRestore={() =>
-                    onChangeStatus(
-                      item,
-                      item.status === "practicing"
-                        ? "learning"
-                        : speakingEnabled
-                          ? "practicing"
-                          : "learning",
+                    void runMutation(() =>
+                      onChangeStatus(
+                        item,
+                        item.status === "practicing"
+                          ? "learning"
+                          : speakingEnabled
+                            ? "practicing"
+                            : "learning",
+                      ),
                     )
                   }
                   onDelete={() => removeItem(item)}
@@ -242,6 +262,7 @@ export function VocabularyScreen({
           <div className={styles.floatingActions}>
             <button
               className={styles.floatingButton}
+              disabled={mutating}
               onClick={() => setAddOpen(true)}
             >
               <PlusIcon />
@@ -249,6 +270,7 @@ export function VocabularyScreen({
             </button>
             <button
               className={styles.floatingButton}
+              disabled={mutating}
               onClick={onStartQuiz}
             >
               <PlayIcon />

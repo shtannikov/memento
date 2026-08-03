@@ -42,6 +42,7 @@ export function SortableVocabularyCard({
         onLearn={() => undefined}
         onRestore={onRestore}
         onDelete={onDelete}
+        disabled={disabled}
         leadingAction={
           <button
             ref={setActivatorNodeRef}

@@ -1,13 +1,160 @@
-import { cleanup, render, screen, within } from "@testing-library/react";
+import {
+  cleanup,
+  render,
+  screen,
+  waitFor,
+  within,
+} from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { useState } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { VocabularyScreen } from "./vocabulary-screen";
 import type { VocabularyItem } from "./vocabulary.types";
 
-afterEach(cleanup);
+afterEach(() => {
+  cleanup();
+  vi.restoreAllMocks();
+});
 
 describe("VocabularyScreen", () => {
+  it("disables phrase actions during a move without moving focus to the next phrase", async () => {
+    const user = userEvent.setup();
+    const mutation = Promise.withResolvers<void>();
+    const learning: VocabularyItem[] = [
+      {
+        id: "1",
+        term: "a cradle",
+        definition: "люлька",
+        status: "learning",
+      },
+      {
+        id: "2",
+        term: "a stroller",
+        definition: "коляска",
+        status: "learning",
+      },
+    ];
+
+    function PendingMoveScreen() {
+      const [items, setItems] = useState(learning);
+
+      return (
+        <VocabularyScreen
+          learning={items}
+          practicing={[]}
+          learned={[]}
+          speakingEnabled
+          onAdd={vi.fn()}
+          onRemove={vi.fn()}
+          onChangeStatus={async (item) => {
+            await mutation.promise;
+            setItems((current) =>
+              current.filter((candidate) => candidate.id !== item.id),
+            );
+          }}
+          onReorderPracticing={vi.fn()}
+          onStartQuiz={vi.fn()}
+        />
+      );
+    }
+
+    render(<PendingMoveScreen />);
+
+    const moveButton = screen.getByRole("button", {
+      name: "Move a cradle to practicing",
+    });
+    await user.click(moveButton);
+
+    expect(moveButton).not.toHaveFocus();
+    for (const button of screen.getAllByRole("button", {
+      name: /^(Move|Delete) /,
+    })) {
+      expect(button).toBeDisabled();
+    }
+    expect(
+      screen.getByRole("button", { name: "Add phrase" }),
+    ).toBeDisabled();
+    expect(
+      screen.getByRole("button", { name: "Start quiz" }),
+    ).toBeDisabled();
+
+    mutation.resolve();
+
+    await waitFor(() =>
+      expect(
+        screen.queryByRole("heading", { name: "a cradle" }),
+      ).not.toBeInTheDocument(),
+    );
+    expect(
+      screen.getByRole("button", {
+        name: "Move a stroller to practicing",
+      }),
+    ).not.toHaveFocus();
+  });
+
+  it("disables phrase actions while deleting a phrase", async () => {
+    const user = userEvent.setup();
+    const mutation = Promise.withResolvers<void>();
+    const learning: VocabularyItem[] = [
+      {
+        id: "1",
+        term: "a cradle",
+        definition: "люлька",
+        status: "learning",
+      },
+      {
+        id: "2",
+        term: "a stroller",
+        definition: "коляска",
+        status: "learning",
+      },
+    ];
+    vi.spyOn(globalThis, "confirm").mockReturnValue(true);
+
+    function PendingDeleteScreen() {
+      const [items, setItems] = useState(learning);
+
+      return (
+        <VocabularyScreen
+          learning={items}
+          practicing={[]}
+          learned={[]}
+          speakingEnabled
+          onAdd={vi.fn()}
+          onRemove={async (item) => {
+            await mutation.promise;
+            setItems((current) =>
+              current.filter((candidate) => candidate.id !== item.id),
+            );
+          }}
+          onChangeStatus={vi.fn()}
+          onReorderPracticing={vi.fn()}
+          onStartQuiz={vi.fn()}
+        />
+      );
+    }
+
+    render(<PendingDeleteScreen />);
+    await user.click(
+      screen.getByRole("button", { name: "Delete a cradle" }),
+    );
+
+    for (const button of screen.getAllByRole("button", {
+      name: /^(Move|Delete) /,
+    })) {
+      expect(button).toBeDisabled();
+    }
+
+    mutation.resolve();
+
+    await waitFor(() =>
+      expect(
+        screen.queryByRole("heading", { name: "a cradle" }),
+      ).not.toBeInTheDocument(),
+    );
+  });
+
   it("filters the active vocabulary tab by phrase or definition", async () => {
     const user = userEvent.setup();
     const learning: VocabularyItem[] = [
