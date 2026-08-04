@@ -21,12 +21,18 @@ const TelegramOkResponseSchema = z.object({
   description: z.string().optional(),
 }).passthrough();
 
+export type TelegramInlineButton = {
+  text: string;
+  callbackData: string;
+};
+
 export async function sendTelegramMessage(
   chatId: number,
   text: string,
   replyToMessageId?: number,
   parseMode?: "HTML",
   appId: AppId = "en",
+  inlineKeyboard?: TelegramInlineButton[][],
 ): Promise<{ messageId: number }> {
   const language = getLanguage(appId);
   const token = process.env[language.botTokenEnv];
@@ -43,6 +49,18 @@ export async function sendTelegramMessage(
         chat_id: chatId,
         text,
         ...(parseMode ? { parse_mode: parseMode } : {}),
+        ...(inlineKeyboard
+          ? {
+              reply_markup: {
+                inline_keyboard: inlineKeyboard.map((row) =>
+                  row.map((button) => ({
+                    text: button.text,
+                    callback_data: button.callbackData,
+                  })),
+                ),
+              },
+            }
+          : {}),
         ...(replyToMessageId
           ? {
               reply_parameters: {
@@ -70,6 +88,29 @@ export async function sendTelegramMessage(
   const messageId = payload.data.result?.message_id;
   if (!messageId) throw new Error("Telegram sendMessage returned no message ID");
   return { messageId };
+}
+
+export async function answerTelegramCallbackQuery(
+  callbackQueryId: string,
+  appId: AppId = "en",
+): Promise<void> {
+  await callTelegram(appId, "answerCallbackQuery", {
+    callback_query_id: callbackQueryId,
+  });
+}
+
+export async function editTelegramMessage(
+  chatId: number,
+  messageId: number,
+  text: string,
+  appId: AppId = "en",
+): Promise<void> {
+  await callTelegram(appId, "editMessageText", {
+    chat_id: chatId,
+    message_id: messageId,
+    text,
+    reply_markup: { inline_keyboard: [] },
+  });
 }
 
 export async function sendTelegramTyping(

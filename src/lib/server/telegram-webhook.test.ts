@@ -15,6 +15,21 @@ function update(text: string, type = "private") {
   };
 }
 
+function regenerationCallback(data = "speaking:regenerate:550e8400-e29b-41d4-a716-446655440000") {
+  return {
+    update_id: 101,
+    callback_query: {
+      id: "callback-1",
+      data,
+      message: {
+        message_id: 9,
+        chat: { id: 42, type: "private" },
+      },
+      from: { id: 42, first_name: "Ada", username: "ada" },
+    },
+  };
+}
+
 function dependencies(
   overrides: Partial<NonNullable<Parameters<typeof processTelegramUpdate>[1]>> = {},
 ): NonNullable<Parameters<typeof processTelegramUpdate>[1]> {
@@ -28,8 +43,11 @@ function dependencies(
     }),
     ensureUser: vi.fn().mockResolvedValue(undefined),
     runSpeaking: vi.fn().mockResolvedValue("created"),
+    regenerateSpeaking: vi.fn().mockResolvedValue("created"),
     processVoice: vi.fn().mockResolvedValue("completed"),
     sendTyping: vi.fn().mockResolvedValue(undefined),
+    answerCallback: vi.fn().mockResolvedValue(undefined),
+    editMessage: vi.fn().mockResolvedValue(undefined),
     ...overrides,
   };
 }
@@ -108,6 +126,136 @@ describe("Telegram webhook workflow", () => {
     ).resolves.toMatchObject({
       text: "🎙 Nothing in Practicing yet. Keep reviewing your Learning phrases in quizzes, or tap Done in the App to move one to Practicing.",
     });
+  });
+
+  it("asks for confirmation before regenerating an active task", async () => {
+    const parsed = parseTelegramUpdate(update("/speaking"));
+    if (!parsed) throw new Error("Expected update to parse");
+    const runSpeaking = vi.fn().mockResolvedValue({
+      kind: "confirmation",
+      activeTaskId: "550e8400-e29b-41d4-a716-446655440000",
+    });
+
+    await expect(
+      processTelegramUpdate(parsed, dependencies({ runSpeaking })),
+    ).resolves.toMatchObject({
+      chatId: 42,
+      replyToMessageId: 7,
+      text: expect.stringContaining(
+        "Please note: the daily limit is 5 speaking tasks.",
+      ),
+      inlineKeyboard: [[{
+        text: "Regenerate",
+        callbackData:
+          "speaking:regenerate:550e8400-e29b-41d4-a716-446655440000",
+      }]],
+    });
+  });
+
+  it("acknowledges a regeneration callback and updates its confirmation message", async () => {
+    const parsed = parseTelegramUpdate(regenerationCallback());
+    if (!parsed) throw new Error("Expected callback to parse");
+    const order: string[] = [];
+    const answerCallback = vi.fn(async () => { order.push("answer"); });
+    const editMessage = vi.fn(async (_chatId, _messageId, text) => {
+      order.push(text);
+    });
+    const regenerateSpeaking = vi.fn(async () => {
+      order.push("regenerate");
+      return "created" as const;
+    });
+
+    await expect(processTelegramUpdate(parsed, dependencies({
+      answerCallback,
+      editMessage,
+      regenerateSpeaking,
+    }))).resolves.toBeNull();
+
+    expect(answerCallback).toHaveBeenCalledWith("callback-1", "en");
+    expect(regenerateSpeaking).toHaveBeenCalledWith(
+      42,
+      "en",
+      42,
+      "550e8400-e29b-41d4-a716-446655440000",
+    );
+    expect(order).toEqual([
+      "answer",
+      "⏳ Regenerating your speaking task…",
+      "regenerate",
+      "✅ Your new speaking task is ready.",
+    ]);
+  });
+
+  it("turns stale regeneration callbacks into an inactive warning", async () => {
+    const parsed = parseTelegramUpdate(regenerationCallback());
+    if (!parsed) throw new Error("Expected callback to parse");
+    const editMessage = vi.fn().mockResolvedValue(undefined);
+    const regenerateSpeaking = vi.fn().mockRejectedValue(
+      new AppError("REGENERATION_STALE", "stale", 409),
+    );
+
+    await processTelegramUpdate(parsed, dependencies({
+      editMessage,
+      regenerateSpeaking,
+    }));
+
+    expect(editMessage).toHaveBeenLastCalledWith(
+      42,
+      9,
+      "This regeneration request is no longer active. Send /speaking to check your current task.",
+      "en",
+    );
+    expect(regenerateSpeaking).toHaveBeenCalledOnce();
+  });
+
+  it("does not start another generation for a callback already being processed", async () => {
+    const parsed = parseTelegramUpdate(regenerationCallback());
+    if (!parsed) throw new Error("Expected callback to parse");
+    const editMessage = vi.fn().mockResolvedValue(undefined);
+    const regenerateSpeaking = vi.fn().mockRejectedValue(
+      new AppError("TASK_PREPARING", "preparing", 409),
+    );
+
+    await processTelegramUpdate(parsed, dependencies({
+      editMessage,
+      regenerateSpeaking,
+    }));
+
+    expect(editMessage).toHaveBeenLastCalledWith(
+      42,
+      9,
+      "⏳ A new speaking task is already being prepared.",
+      "en",
+    );
+    expect(regenerateSpeaking).toHaveBeenCalledOnce();
+  });
+
+  it("ignores foreign and unsupported callback data", async () => {
+    const foreign = regenerationCallback();
+    foreign.callback_query.from.id = 99;
+    const parsedForeign = parseTelegramUpdate(foreign);
+    const parsedUnsupported = parseTelegramUpdate(
+      regenerationCallback("unrelated:action"),
+    );
+    if (!parsedForeign || !parsedUnsupported) {
+      throw new Error("Expected callbacks to parse");
+    }
+    const answerCallback = vi.fn().mockResolvedValue(undefined);
+    const editMessage = vi.fn().mockResolvedValue(undefined);
+    const regenerateSpeaking = vi.fn().mockResolvedValue("created" as const);
+    const deps = dependencies({
+      answerCallback,
+      editMessage,
+      regenerateSpeaking,
+    });
+
+    await expect(processTelegramUpdate(parsedForeign, deps)).resolves.toBeNull();
+    expect(answerCallback).not.toHaveBeenCalled();
+
+    await expect(processTelegramUpdate(parsedUnsupported, deps)).resolves.toBeNull();
+    expect(answerCallback).toHaveBeenCalledWith("callback-1", "en");
+    expect(editMessage).not.toHaveBeenCalled();
+    expect(regenerateSpeaking).not.toHaveBeenCalled();
   });
 
   it("passes voice and exact reply metadata to speaking evaluation", async () => {

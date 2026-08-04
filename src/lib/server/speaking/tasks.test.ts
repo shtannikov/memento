@@ -5,7 +5,6 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 const mocks = vi.hoisted(() => ({
   getMementoDb: vi.fn(),
   generateSpeakingTopic: vi.fn(),
-  deleteTelegramMessage: vi.fn(),
   sendTelegramMessage: vi.fn(),
   sendTelegramTyping: vi.fn(),
 }));
@@ -15,13 +14,13 @@ vi.mock("../openai", () => ({
   generateSpeakingTopic: mocks.generateSpeakingTopic,
 }));
 vi.mock("../telegram-bot", () => ({
-  deleteTelegramMessage: mocks.deleteTelegramMessage,
   sendTelegramMessage: mocks.sendTelegramMessage,
   sendTelegramTyping: mocks.sendTelegramTyping,
 }));
 
 import {
   getOrCreateSpeakingTask,
+  regenerateSpeakingTaskCommand,
   runSpeakingTaskCommand,
 } from "./tasks";
 
@@ -52,12 +51,45 @@ describe("speaking task workflow", () => {
 
     const response = await getOrCreateSpeakingTask(42, "en");
 
-    expect(response).toMatchObject({ existing: true, needsDelivery: true });
+    expect(response).toMatchObject({
+      kind: "task",
+      existing: true,
+      needsDelivery: true,
+    });
+    if (response.kind !== "task") throw new Error("Expected a task");
     expect(response.task.items[0]?.term).toBe("make up my mind");
     expect(mocks.generateSpeakingTopic).not.toHaveBeenCalled();
   });
 
-  it("regenerates an active task from the latest Practicing priorities", async () => {
+  it("asks for confirmation without regenerating an active task", async () => {
+    const db = database([
+      result({ id: "task-old", status: "active" }, "single"),
+      result(null, "count", 1),
+    ]);
+    mocks.getMementoDb.mockReturnValue(db);
+
+    await expect(getOrCreateSpeakingTask(42, "en")).resolves.toEqual({
+      kind: "confirmation",
+      activeTaskId: "task-old",
+    });
+    expect(mocks.generateSpeakingTopic).not.toHaveBeenCalled();
+    expect(db.from).toHaveBeenCalledTimes(2);
+  });
+
+  it("returns the confirmation without delivering another task", async () => {
+    mocks.getMementoDb.mockReturnValue(database([
+      result({ id: "task-old", status: "active" }, "single"),
+      result(null, "count", 1),
+    ]));
+
+    await expect(runSpeakingTaskCommand(42, "en", 42)).resolves.toEqual({
+      kind: "confirmation",
+      activeTaskId: "task-old",
+    });
+    expect(mocks.sendTelegramMessage).not.toHaveBeenCalled();
+  });
+
+  it("regenerates the confirmed active task from the latest Practicing priorities", async () => {
     const db = database([
       result({
         id: "task-old",
@@ -76,7 +108,7 @@ describe("speaking task workflow", () => {
         { vocabulary_id: 11, practice_rank: 2048 },
         { vocabulary_id: 22, practice_rank: 1024 },
       ]),
-      result(null),
+      result({ id: "task-old" }),
       result({ id: "task-new" }, "single"),
       result(null),
       result([]),
@@ -90,16 +122,18 @@ describe("speaking task workflow", () => {
       speakingPrompt: "Discuss the new priority.",
     });
 
-    const response = await getOrCreateSpeakingTask(42, "en");
+    const response = await getOrCreateSpeakingTask(42, "en", "task-old");
 
     expect(response).toMatchObject({
       existing: false,
+      kind: "task",
       needsDelivery: true,
       supersededTaskId: "task-old",
       task: {
         id: "task-new",
       },
     });
+    if (response.kind !== "task") throw new Error("Expected a task");
     expect(response.task.items[0]).toMatchObject({
       vocabularyId: "22",
       term: "new priority",
@@ -133,7 +167,23 @@ describe("speaking task workflow", () => {
     expect(mocks.generateSpeakingTopic).not.toHaveBeenCalled();
   });
 
-  it("delivers a regenerated task before deleting the obsolete message", async () => {
+  it("rejects a stale confirmation when another request claims the active task", async () => {
+    const db = database([
+      result({ id: "task-old", status: "active" }, "single"),
+      result(null, "count", 1),
+      result([{ id: 22, term: "new priority", definition: "definition" }]),
+      result([{ vocabulary_id: 22, practice_rank: 1024 }]),
+      result(null),
+    ]);
+    mocks.getMementoDb.mockReturnValue(db);
+
+    await expect(
+      getOrCreateSpeakingTask(42, "en", "task-old"),
+    ).rejects.toMatchObject({ code: "REGENERATION_STALE" });
+    expect(mocks.generateSpeakingTopic).not.toHaveBeenCalled();
+  });
+
+  it("delivers a regenerated task without deleting the old task message", async () => {
     const db = database([
       result({
         id: "task-old",
@@ -146,14 +196,13 @@ describe("speaking task workflow", () => {
       result(null, "count", 1),
       result([{ id: 22, term: "new priority", definition: "definition" }]),
       result([{ vocabulary_id: 22, practice_rank: 1024 }]),
-      result(null),
+      result({ id: "task-old" }),
       result({ id: "task-new" }, "single"),
       result(null),
       result([]),
       result(null),
       result(null),
       result(null),
-      result([{ message_id: 88 }]),
     ]);
     mocks.getMementoDb.mockReturnValue(db);
     mocks.generateSpeakingTopic.mockResolvedValue({
@@ -163,15 +212,52 @@ describe("speaking task workflow", () => {
       speakingPrompt: "Discuss the new priority.",
     });
     mocks.sendTelegramMessage.mockResolvedValue({ messageId: 99 });
-    mocks.deleteTelegramMessage.mockResolvedValue(undefined);
 
-    await expect(runSpeakingTaskCommand(42, "en", 42)).resolves.toBe("created");
+    await expect(
+      regenerateSpeakingTaskCommand(42, "en", 42, "task-old"),
+    ).resolves.toBe("created");
 
     expect(mocks.sendTelegramMessage).toHaveBeenCalledOnce();
-    expect(mocks.deleteTelegramMessage).toHaveBeenCalledWith(42, 88, "en");
-    expect(
-      mocks.sendTelegramMessage.mock.invocationCallOrder[0],
-    ).toBeLessThan(mocks.deleteTelegramMessage.mock.invocationCallOrder[0]);
+    expect(db.queries[9]?.insert).toHaveBeenCalledWith({
+      task_id: "task-new",
+      chat_id: 42,
+      message_id: 99,
+    });
+    expect(db.queries[10]?.update).toHaveBeenCalledWith(
+      expect.objectContaining({ status: "active" }),
+    );
+    expect(db.from).toHaveBeenCalledTimes(11);
+  });
+
+  it("restores the old active task when regenerated task delivery fails", async () => {
+    const db = database([
+      result({ id: "task-old", status: "active" }, "single"),
+      result(null, "count", 1),
+      result([{ id: 22, term: "new priority", definition: "definition" }]),
+      result([{ vocabulary_id: 22, practice_rank: 1024 }]),
+      result({ id: "task-old" }),
+      result({ id: "task-new" }, "single"),
+      result(null),
+      result([]),
+      result(null),
+      result(null),
+      result(null),
+    ]);
+    mocks.getMementoDb.mockReturnValue(db);
+    mocks.generateSpeakingTopic.mockResolvedValue({
+      title: "New topic",
+      domain: "work",
+      grammarFocus: "conditionals",
+      speakingPrompt: "Discuss the new priority.",
+    });
+    mocks.sendTelegramMessage.mockRejectedValue(new Error("delivery failed"));
+
+    await expect(
+      regenerateSpeakingTaskCommand(42, "en", 42, "task-old"),
+    ).rejects.toThrow("delivery failed");
+
+    expect(db.queries[9]?.update).toHaveBeenCalledWith({ status: "failed" });
+    expect(db.queries[10]?.update).toHaveBeenCalledWith({ status: "active" });
   });
 
   it("restores the old active task when regeneration fails", async () => {
@@ -187,7 +273,7 @@ describe("speaking task workflow", () => {
       result(null, "count", 1),
       result([{ id: 22, term: "new priority", definition: "definition" }]),
       result([{ vocabulary_id: 22, practice_rank: 1024 }]),
-      result(null),
+      result({ id: "task-old" }),
       result({ id: "task-new" }, "single"),
       result(null),
       result([]),
@@ -197,7 +283,7 @@ describe("speaking task workflow", () => {
     mocks.getMementoDb.mockReturnValue(db);
     mocks.generateSpeakingTopic.mockRejectedValue(new Error("generation failed"));
 
-    await expect(getOrCreateSpeakingTask(42, "en")).rejects.toThrow(
+    await expect(getOrCreateSpeakingTask(42, "en", "task-old")).rejects.toThrow(
       "generation failed",
     );
 

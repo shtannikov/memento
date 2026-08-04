@@ -28,6 +28,7 @@ export async function handleTelegramWebhook(request: Request, appId: AppId) {
         reply.replyToMessageId,
         reply.parseMode,
         appId,
+        reply.inlineKeyboard,
       );
       for (const followUp of reply.followUps ?? []) {
         await sendTelegramMessage(

@@ -2,6 +2,7 @@ import "server-only";
 
 import { z } from "zod";
 import { DEFAULT_APP_ID, type AppId } from "@/lib/domain/app";
+import { MAX_SPEAKING_TASKS_PER_DAY } from "@/lib/domain/speaking";
 import { getLanguage } from "@/languages/registry";
 
 import {
@@ -23,8 +24,16 @@ import {
   prepareLearningReset,
 } from "./vocabulary";
 import { processSpeakingVoiceAnswer } from "./speaking/answers";
-import { runSpeakingTaskCommand } from "./speaking/tasks";
-import { sendTelegramTyping } from "./telegram-bot";
+import {
+  regenerateSpeakingTaskCommand,
+  runSpeakingTaskCommand,
+} from "./speaking/tasks";
+import {
+  answerTelegramCallbackQuery,
+  editTelegramMessage,
+  sendTelegramTyping,
+  type TelegramInlineButton,
+} from "./telegram-bot";
 
 const TelegramUpdateSchema = z.object({
   update_id: z.number().int(),
@@ -55,6 +64,25 @@ const TelegramUpdateSchema = z.object({
         .optional(),
     })
     .optional(),
+  callback_query: z
+    .object({
+      id: z.string().min(1),
+      data: z.string().min(1),
+      from: z.object({
+        id: z.number().int().positive(),
+        first_name: z.string().optional(),
+        last_name: z.string().optional(),
+        username: z.string().optional(),
+      }),
+      message: z.object({
+        message_id: z.number().int().positive(),
+        chat: z.object({
+          id: z.number().int(),
+          type: z.string(),
+        }),
+      }),
+    })
+    .optional(),
 });
 
 type TelegramUpdate = z.infer<typeof TelegramUpdateSchema>;
@@ -64,6 +92,7 @@ export type TelegramReply = {
   replyToMessageId: number;
   text: string;
   parseMode?: "HTML";
+  inlineKeyboard?: TelegramInlineButton[][];
   followUps?: Array<{
     text: string;
     parseMode?: "HTML";
@@ -76,8 +105,11 @@ type TelegramCommandDependencies = {
   confirmReset: typeof confirmLearningReset;
   ensureUser: typeof ensureUserAndSeed;
   runSpeaking: typeof runSpeakingTaskCommand;
+  regenerateSpeaking: typeof regenerateSpeakingTaskCommand;
   processVoice: typeof processSpeakingVoiceAnswer;
   sendTyping: typeof sendTelegramTyping;
+  answerCallback: typeof answerTelegramCallbackQuery;
+  editMessage: typeof editTelegramMessage;
 };
 
 const defaultDependencies: TelegramCommandDependencies = {
@@ -86,9 +118,18 @@ const defaultDependencies: TelegramCommandDependencies = {
   confirmReset: confirmLearningReset,
   ensureUser: ensureUserAndSeed,
   runSpeaking: runSpeakingTaskCommand,
+  regenerateSpeaking: regenerateSpeakingTaskCommand,
   processVoice: processSpeakingVoiceAnswer,
   sendTyping: sendTelegramTyping,
+  answerCallback: answerTelegramCallbackQuery,
+  editMessage: editTelegramMessage,
 };
+
+const REGENERATE_CALLBACK_PREFIX = "speaking:regenerate:";
+const REGENERATION_WARNING =
+  "⚠️ Regenerate your speaking task?\n\n" +
+  "Your current task will become inactive. " +
+  `Please note: the daily limit is ${MAX_SPEAKING_TASKS_PER_DAY} speaking tasks.`;
 
 const IMPORT_HELP_MESSAGE =
   "<b>How to import</b>\n\n" +
@@ -112,6 +153,13 @@ export async function processTelegramUpdate(
   dependencies: TelegramCommandDependencies = defaultDependencies,
   appId: AppId = DEFAULT_APP_ID,
 ): Promise<TelegramReply | null> {
+  if (update.callback_query) {
+    return processSpeakingRegenerationCallback(
+      update.callback_query,
+      dependencies,
+      appId,
+    );
+  }
   const message = update.message;
   if (
     !message ||
@@ -194,9 +242,21 @@ export async function processTelegramUpdate(
   }
   if (command === "speaking") {
     try {
-      await dependencies.sendTyping(message.chat.id, appId);
       await dependencies.ensureUser(user, appId);
-      await dependencies.runSpeaking(user.id, appId, message.chat.id);
+      const result = await dependencies.runSpeaking(
+        user.id,
+        appId,
+        message.chat.id,
+      );
+      if (typeof result === "object") {
+        return {
+          ...reply(REGENERATION_WARNING),
+          inlineKeyboard: [[{
+            text: "Regenerate",
+            callbackData: `${REGENERATE_CALLBACK_PREFIX}${result.activeTaskId}`,
+          }]],
+        };
+      }
       return null;
     } catch (error) {
       if (error instanceof AppError) return reply(error.message);
@@ -240,6 +300,84 @@ export async function processTelegramUpdate(
     }
     throw error;
   }
+}
+
+async function processSpeakingRegenerationCallback(
+  callback: NonNullable<TelegramUpdate["callback_query"]>,
+  dependencies: TelegramCommandDependencies,
+  appId: AppId,
+): Promise<null> {
+  if (
+    callback.message.chat.type !== "private" ||
+    callback.from.id !== callback.message.chat.id
+  ) {
+    return null;
+  }
+
+  await dependencies.answerCallback(callback.id, appId);
+  const activeTaskId = readRegenerationTaskId(callback.data);
+  if (!activeTaskId) return null;
+
+  const chatId = callback.message.chat.id;
+  const confirmationMessageId = callback.message.message_id;
+  await dependencies.editMessage(
+    chatId,
+    confirmationMessageId,
+    "⏳ Regenerating your speaking task…",
+    appId,
+  );
+
+  try {
+    await dependencies.ensureUser({
+      id: callback.from.id,
+      first_name: callback.from.first_name,
+      last_name: callback.from.last_name,
+      username: callback.from.username,
+    }, appId);
+    await dependencies.regenerateSpeaking(
+      callback.from.id,
+      appId,
+      chatId,
+      activeTaskId,
+    );
+    await dependencies.editMessage(
+      chatId,
+      confirmationMessageId,
+      "✅ Your new speaking task is ready.",
+      appId,
+    );
+  } catch (error) {
+    const message = regenerationErrorMessage(error);
+    if (!(error instanceof AppError)) console.error(error);
+    await dependencies.editMessage(
+      chatId,
+      confirmationMessageId,
+      message,
+      appId,
+    );
+  }
+  return null;
+}
+
+function readRegenerationTaskId(data: string): string | null {
+  if (!data.startsWith(REGENERATE_CALLBACK_PREFIX)) return null;
+  const parsed = z.string().uuid().safeParse(
+    data.slice(REGENERATE_CALLBACK_PREFIX.length),
+  );
+  return parsed.success ? parsed.data : null;
+}
+
+function regenerationErrorMessage(error: unknown): string {
+  if (!(error instanceof AppError)) {
+    return "⚠️ I couldn’t regenerate the task. Your current task is still active. Send /speaking to try again.";
+  }
+  if (error.code === "TASK_PREPARING") {
+    return "⏳ A new speaking task is already being prepared.";
+  }
+  if (error.code === "REGENERATION_STALE") {
+    return "This regeneration request is no longer active. Send /speaking to check your current task.";
+  }
+  return error.message;
 }
 
 function buildFallbackMessage(appId: AppId): string {
