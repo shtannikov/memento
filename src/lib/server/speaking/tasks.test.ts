@@ -104,6 +104,37 @@ describe("speaking task workflow", () => {
       message_id: 91,
     });
   });
+
+  it("stops refreshing typing before sending the task message", async () => {
+    vi.useFakeTimers();
+    const db = database([
+      result({
+        id: "task-1",
+        status: "active",
+        topic: "A difficult decision",
+        domain: "personal decisions",
+        grammar_focus: "future plans and predictions",
+        prompt: "Explain the choice and what will happen next.",
+      }, "single"),
+      result([{
+        vocabulary_id: 11,
+        term_snapshot: "make up my mind",
+        definition_snapshot: "decide",
+      }]),
+      result(null),
+      result(null),
+    ]);
+    mocks.getMementoDb.mockReturnValue(db);
+    mocks.sendTelegramMessage.mockImplementation(async () => {
+      await vi.advanceTimersByTimeAsync(4000);
+      return { messageId: 91 };
+    });
+
+    await expect(runSpeakingTaskCommand(42, "en", 42)).resolves.toBe("resent");
+
+    expect(mocks.sendTelegramTyping).toHaveBeenCalledTimes(1);
+    vi.useRealTimers();
+  });
 });
 
 function database(queries: ReturnType<typeof result>[]) {

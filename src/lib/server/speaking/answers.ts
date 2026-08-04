@@ -43,7 +43,7 @@ export async function processSpeakingVoiceAnswer(
 
   const taskRow = await resolveAnswerTask(input, appId);
   const task = await loadSpeakingTask(taskRow);
-  return runWithTelegramTyping(input.chatId, appId, async () => {
+  const result = await runWithTelegramTyping(input.chatId, appId, async () => {
     const { filePath } = await getTelegramFile(input.fileId, appId);
     const bytes = await downloadTelegramFile(filePath, appId);
     const transcript = await transcribeVoice({
@@ -76,17 +76,20 @@ export async function processSpeakingVoiceAnswer(
     );
     if (completionError) throw completionError;
     if ((completion as { alreadyCompleted?: boolean } | null)?.alreadyCompleted) {
-      return "duplicate";
+      return { status: "duplicate" as const, feedbackHtml: null };
     }
+    return { status: "completed" as const, feedbackHtml };
+  });
+  if (result.feedbackHtml) {
     await sendTelegramMessage(
       input.chatId,
-      feedbackHtml,
+      result.feedbackHtml,
       input.messageId,
       "HTML",
       appId,
     );
-    return "completed";
-  });
+  }
+  return result.status;
 }
 
 export function validateVoiceDuration(durationSeconds: number): void {

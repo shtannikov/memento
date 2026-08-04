@@ -31,11 +31,13 @@ export async function runSpeakingTaskCommand(
   appId: AppId,
   chatId: number,
 ): Promise<"created" | "resent"> {
-  return runWithTelegramTyping(chatId, appId, async () => {
-    const { task, existing } = await getOrCreateSpeakingTask(userId, appId);
-    await deliverSpeakingTask(task, chatId, appId);
-    return existing ? "resent" : "created";
-  });
+  const { task, existing } = await runWithTelegramTyping(
+    chatId,
+    appId,
+    () => getOrCreateSpeakingTask(userId, appId),
+  );
+  await deliverSpeakingTask(task, chatId, appId);
+  return existing ? "resent" : "created";
 }
 
 export async function getOrCreateSpeakingTask(
