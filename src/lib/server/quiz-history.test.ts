@@ -78,7 +78,7 @@ describe("recent quiz history", () => {
     expect(from).toHaveBeenCalledTimes(1);
   });
 
-  it("deduplicates cosmetic variants and keeps five sentences per item", () => {
+  it("deduplicates cosmetic variants and keeps three sentences per item", () => {
     const cards = [
       { vocabulary_id: 1, sentence: "She felt an ___ to leave." },
       { vocabulary_id: 1, sentence: "SHE FELT AN ___ TO LEAVE!" },
@@ -90,7 +90,7 @@ describe("recent quiz history", () => {
     ];
 
     const result = collectRecentQuizSentences(cards);
-    expect(result.filter((item) => item.vocabularyId === "1")).toHaveLength(5);
+    expect(result.filter((item) => item.vocabularyId === "1")).toHaveLength(3);
     expect(result.filter((item) => item.vocabularyId === "2")).toEqual([
       { vocabularyId: "2", sentence: "They enjoyed a ___ lunch." },
     ]);
