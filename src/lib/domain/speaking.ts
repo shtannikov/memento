@@ -28,7 +28,7 @@ export type RequiredPhraseUsage = {
 
 export type AnswerEvaluation = {
   coverageScore: number;
-  taskRelevance: "on_topic" | "off_topic";
+  substantiveSpeech: boolean;
   corrections: Array<{
     category: string;
     original: string;

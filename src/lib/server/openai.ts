@@ -70,7 +70,7 @@ const SpeakingTopicGradeSchema = z.object({
 
 const SpeakingEvaluationSchema = z.object({
   coverageScore: z.number().min(0).max(100),
-  taskRelevance: z.enum(["on_topic", "off_topic"]),
+  substantiveSpeech: z.boolean(),
   corrections: z.array(z.object({
     category: z.string().max(80),
     original: z.string().trim().min(1).max(400),
@@ -396,6 +396,12 @@ export async function evaluateSpeakingAnswer(
     findCaseInsensitiveRanges(transcript, correction.original)
   );
   for (const usage of evaluation.requiredPhraseUsage) {
+    if (
+      !evaluation.substantiveSpeech &&
+      usage.status === "used_correctly"
+    ) {
+      usage.status = "used_incorrectly";
+    }
     if (usage.status !== "used_correctly" || usage.matchedText === null) {
       continue;
     }

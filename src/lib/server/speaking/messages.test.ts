@@ -28,7 +28,7 @@ describe("speaking messages", () => {
   it("renders corrections inline and omits quick stats", () => {
     const evaluation: AnswerEvaluation = {
       coverageScore: 80,
-      taskRelevance: "on_topic",
+      substantiveSpeech: true,
       corrections: [{
         category: "grammar",
         original: "took",
@@ -62,7 +62,7 @@ describe("speaking messages", () => {
   it("underlines every spoken phrase and keeps corrections visible", () => {
     const evaluation: AnswerEvaluation = {
       coverageScore: 100,
-      taskRelevance: "on_topic",
+      substantiveSpeech: true,
       corrections: [{
         category: "grammar",
         original: "responsible of",
@@ -112,5 +112,30 @@ describe("speaking messages", () => {
       "One grammar pattern to fix:</b>\nUse the preposition for after responsible.",
     );
     expect(message).not.toContain("<b>Use the preposition");
+  });
+
+  it("returns only the not-counted message for a non-substantive phrase list", () => {
+    const evaluation: AnswerEvaluation = {
+      coverageScore: 100,
+      substantiveSpeech: false,
+      corrections: [],
+      requiredPhraseUsage: [{
+        vocabularyId: "1",
+        phrase: "take into account",
+        status: "used_incorrectly",
+        matchedText: "take into account",
+      }],
+      grammarPriority: null,
+      telegramFeedback: "Use the phrases in connected speech.",
+    };
+
+    const message = buildSpeakingFeedbackMessage(
+      "First, take into account means consider.",
+      evaluation,
+    );
+
+    expect(message).toBe(
+      "To practice these phrases effectively, use them to tell a short story, share an opinion, or describe something. Just listing them isn’t enough, so I can’t count this attempt yet 🙁",
+    );
   });
 });

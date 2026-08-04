@@ -79,8 +79,9 @@ const ANSWER_EVALUATION_PROMPT = `You evaluate spoken English practice answers. 
 
 Audit the answer in this order:
 1. Read every sentence and identify every clear grammar or word-choice error. Check subject-verb agreement, tense and aspect, articles and determiners, prepositions and collocations, word forms, pronouns, clause structure, conditionals, and word order. Do not ignore an error merely because the meaning remains understandable.
-2. Evaluate every required phrase independently. Locate natural inflections and substitutions for dictionary placeholders: a leading "to" is an infinitive marker, while sth/sb are semantic slots rather than literal words. Use the supplied definition to verify meaning.
-3. Return concise, minimal corrections and one optional grammar priority.
+2. Set substantiveSpeech to true when the learner develops at least one meaningful message, such as an event, opinion, request, explanation, decision, or story. The speech may be about any topic and may contain language errors. Set it to false when the response mainly names, reads, defines, translates, or paraphrases the required phrases; presents them as items to demonstrate; or makes meta-comments about satisfying or passing the task without developing a meaningful message.
+3. Evaluate every required phrase independently. Locate natural inflections and substitutions for dictionary placeholders: a leading "to" is an infinitive marker, while sth/sb are semantic slots rather than literal words. Use the supplied definition to verify meaning.
+4. Return concise, minimal corrections and one optional grammar priority.
 
 Correction rules:
 - Include all clear, actionable errors, up to 20, in transcript order. Errors involving required phrases always take priority.
@@ -94,13 +95,13 @@ Correction rules:
 Required phrase rules:
 - requiredPhraseUsage must include every supplied vocabularyId exactly once and preserve its supplied phrase exactly.
 - matchedText must be the exact, contiguous words copied from the transcript that realize the phrase. It may be an inflected surface form. Set it to null only when status is missed.
-- Mark used_correctly only when the phrase is recognizable, semantically appropriate for its definition, natural in context, and grammatically correct within its sentence.
-- Mark used_incorrectly whenever a recognizable occurrence is semantically wrong, grammatically broken, or used in an unnatural construction. If any correction overlaps matchedText, status must be used_incorrectly. Never award credit based on how the occurrence could be corrected.
+- Mark used_correctly only when the phrase is recognizable, semantically appropriate for its definition, natural in context, grammatically correct within its sentence, and contributes meaning to substantive speech. The speech may be about any topic.
+- Mark used_incorrectly whenever a recognizable occurrence is semantically wrong, grammatically broken, used in an unnatural construction, or merely named, listed, defined, translated, or presented as an item instead of contributing meaning to substantive speech. If any correction overlaps matchedText, status must be used_incorrectly. Never award credit based on how the occurrence could be corrected.
 - Mark missed only when no recognizable occurrence exists.
 
 grammarPriority is null when there is no useful grammar correction. Otherwise return the single most useful repeated or high-impact issue as a compact explanation and one correct example. Do not create a separate issue title or repeat the section heading in the explanation.
 
-Task context must not cause invented corrections. Going off topic is allowed; only set taskRelevance to off_topic when clearly appropriate. Do not generate vocabulary candidates, recommendations, or suggestions for what to learn next. telegramFeedback must be concise, must not quote the transcript or correction fragments, and must not contain markdown code fences.`;
+Topic relevance does not affect scoring. Any substantive speech can receive used_correctly credit; a non-substantive phrase list cannot. A phrase-list response can still receive ordinary grammar feedback. Do not generate vocabulary candidates, recommendations, or suggestions for what to learn next. telegramFeedback must be concise, must not quote the transcript or correction fragments, and must not contain markdown code fences.`;
 
 export const ENGLISH_SPEAKING = {
   lifeDomains: LIFE_DOMAINS,

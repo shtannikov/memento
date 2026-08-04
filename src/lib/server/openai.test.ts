@@ -489,7 +489,7 @@ describe("quiz generation contract", () => {
     process.env.OPENAI_SPEAKING_EVALUATION_MODEL = "voice-evaluation-model";
     const output = {
       coverageScore: 80,
-      taskRelevance: "on_topic",
+      substantiveSpeech: true,
       corrections: [],
       requiredPhraseUsage: [
         {
@@ -533,6 +533,12 @@ describe("quiz generation contract", () => {
     );
     expect(ENGLISH_LANGUAGE.speaking?.answerEvaluationPrompt).toContain(
       "Never award credit based on how the occurrence could be corrected",
+    );
+    expect(ENGLISH_LANGUAGE.speaking?.answerEvaluationPrompt).toContain(
+      "The speech may be about any topic",
+    );
+    expect(ENGLISH_LANGUAGE.speaking?.answerEvaluationPrompt).toContain(
+      "a non-substantive phrase list cannot",
     );
     expect(ENGLISH_LANGUAGE.speaking?.answerEvaluationPrompt).not.toContain(
       "language scores",
@@ -598,6 +604,96 @@ describe("quiz generation contract", () => {
       ),
     ).resolves.toMatchObject({
       requiredPhraseUsage: [{ status: "used_incorrectly" }],
+    });
+  });
+
+  it("does not award phrase credit to a non-substantive phrase list", async () => {
+    const parse = vi.fn().mockResolvedValue({
+      status: "completed",
+      output_parsed: {
+        coverageScore: 100,
+        substantiveSpeech: false,
+        corrections: [],
+        requiredPhraseUsage: [
+          {
+            vocabularyId: "701",
+            phrase: "take into account",
+            status: "used_correctly",
+            matchedText: "take into account",
+          },
+        ],
+        grammarPriority: null,
+        telegramFeedback: "Use the phrases in connected speech.",
+      },
+    });
+    const openai = { responses: { parse } } as unknown as OpenAI;
+    const task = {
+      id: "task-1",
+      topic: "A deadline",
+      domain: "work and career",
+      grammarFocus: "polite requests and indirect questions",
+      prompt: "Explain the change and ask for input.",
+      items: [
+        { vocabularyId: "701", term: "take into account", definition: "consider" },
+      ],
+    };
+
+    await expect(
+      evaluateSpeakingAnswer(
+        "First, take into account means consider. I hope that's enough to pass.",
+        task,
+        42,
+        "en",
+        openai,
+      ),
+    ).resolves.toMatchObject({
+      substantiveSpeech: false,
+      requiredPhraseUsage: [{ status: "used_incorrectly" }],
+    });
+  });
+
+  it("preserves phrase credit in substantive speech on any topic", async () => {
+    const parse = vi.fn().mockResolvedValue({
+      status: "completed",
+      output_parsed: {
+        coverageScore: 100,
+        substantiveSpeech: true,
+        corrections: [],
+        requiredPhraseUsage: [
+          {
+            vocabularyId: "701",
+            phrase: "take into account",
+            status: "used_correctly",
+            matchedText: "take into account",
+          },
+        ],
+        grammarPriority: null,
+        telegramFeedback: "Natural phrase use in connected speech.",
+      },
+    });
+    const openai = { responses: { parse } } as unknown as OpenAI;
+    const task = {
+      id: "task-1",
+      topic: "A deadline",
+      domain: "work and career",
+      grammarFocus: "polite requests and indirect questions",
+      prompt: "Explain the change and ask for input.",
+      items: [
+        { vocabularyId: "701", term: "take into account", definition: "consider" },
+      ],
+    };
+
+    await expect(
+      evaluateSpeakingAnswer(
+        "On our family trip, we had to take into account the heavy rain.",
+        task,
+        42,
+        "en",
+        openai,
+      ),
+    ).resolves.toMatchObject({
+      substantiveSpeech: true,
+      requiredPhraseUsage: [{ status: "used_correctly" }],
     });
   });
 });

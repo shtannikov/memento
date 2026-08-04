@@ -237,4 +237,36 @@ export const SPEAKING_EVAL_CASES: SpeakingEvalCase[] = [
     ],
     expectGrammarPriority: true,
   },
+  {
+    kind: "answer",
+    id: "speaking-answer-rejects-phrase-list-cheating",
+    description:
+      "Rejects a list of definitions and meta-commentary instead of treating isolated phrase mentions as speaking practice.",
+    appId: "en",
+    task: speakingTask,
+    transcript:
+      "First, take into account means consider. Second, be responsible for means have responsibility. And third, wrap up means finish. I hope that's enough to pass this task.",
+    expectedUsage: {
+      "701": "used_incorrectly",
+      "702": "used_incorrectly",
+      "703": "used_incorrectly",
+    },
+    expectedSubstantiveSpeech: false,
+  },
+  {
+    kind: "answer",
+    id: "speaking-answer-allows-any-substantive-topic",
+    description:
+      "Awards natural phrase usage in connected speech even when it does not answer the supplied scene.",
+    appId: "en",
+    task: speakingTask,
+    transcript:
+      "Last weekend our family trip went wrong. We had to take into account the heavy rain, and I was responsible for finding a hotel. Once everyone was safe indoors, we wrapped up the evening with dinner.",
+    expectedUsage: {
+      "701": "used_correctly",
+      "702": "used_correctly",
+      "703": "used_correctly",
+    },
+    expectedSubstantiveSpeech: true,
+  },
 ];

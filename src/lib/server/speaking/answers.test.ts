@@ -110,7 +110,7 @@ describe("speaking answer task resolution", () => {
     mocks.transcribeVoice.mockResolvedValue("I made up my mind.");
     mocks.evaluateSpeakingAnswer.mockResolvedValue({
       coverageScore: 100,
-      taskRelevance: "on_topic",
+      substantiveSpeech: true,
       corrections: [],
       requiredPhraseUsage: [
         {

@@ -4,6 +4,9 @@ import type {
 } from "@/lib/domain/speaking";
 import { formatInlineCorrection } from "./inline-correction";
 
+export const NON_SUBSTANTIVE_SPEAKING_FEEDBACK =
+  "To practice these phrases effectively, use them to tell a short story, share an opinion, or describe something. Just listing them isn’t enough, so I can’t count this attempt yet 🙁";
+
 export function buildSpeakingTaskMessage(task: SpeakingTask): string {
   const phrases = task.items
     .map((item) => `• <i>${escapeHtml(item.term)}</i>`)
@@ -30,6 +33,9 @@ export function buildSpeakingFeedbackMessage(
   transcript: string,
   evaluation: AnswerEvaluation,
 ): string {
+  if (!evaluation.substantiveSpeech) {
+    return NON_SUBSTANTIVE_SPEAKING_FEEDBACK;
+  }
   const phrases = evaluation.requiredPhraseUsage
     .map((item) => `${item.status === "used_correctly" ? "✅" : "❌"} ${escapeHtml(item.phrase)}`)
     .join("\n");

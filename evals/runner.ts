@@ -146,6 +146,8 @@ async function runSpeakingCase(evalCase: SpeakingEvalCase) {
     Object.entries(evalCase.expectedUsage).every(
       ([id, status]) => actualUsage[id] === status,
     ) &&
+    (evalCase.expectedSubstantiveSpeech === undefined ||
+      evaluation.substantiveSpeech === evalCase.expectedSubstantiveSpeech) &&
     correctionsCoverExpectedErrors &&
     (evalCase.expectGrammarPriority !== true ||
       evaluation.grammarPriority !== null) &&
