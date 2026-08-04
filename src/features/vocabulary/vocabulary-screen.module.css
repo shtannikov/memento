@@ -304,19 +304,6 @@
   white-space: nowrap;
 }
 
-.wordCopy .learningProgress {
-  display: block;
-  margin-top: 4px;
-  font-size: 10px;
-  line-height: 12px;
-  font-weight: 600;
-  text-transform: uppercase;
-}
-
-.wordCopy .learningProgress {
-  color: #0f766e;
-}
-
 .wordActions {
   display: flex;
   flex-shrink: 0;

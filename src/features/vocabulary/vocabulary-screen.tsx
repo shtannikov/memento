@@ -168,8 +168,8 @@ export function VocabularyScreen({
           />
           <div
             className={`${styles.search} ${
-              speakingEnabled &&
-              (activeTab === "learning" || activeTab === "practicing")
+              activeTab === "learning" ||
+              (speakingEnabled && activeTab === "practicing")
                 ? styles.searchBeforeHint
                 : ""
             }`}
@@ -196,10 +196,11 @@ export function VocabularyScreen({
               </button>
             )}
           </div>
-          {speakingEnabled && activeTab === "learning" && (
+          {activeTab === "learning" && (
             <div className={styles.progressHint}>
               <ChatCommandHint>
-                A phrase moves to Practicing after 3 correct answers.
+                A phrase moves to {speakingEnabled ? "Practicing" : "Learned"}{" "}
+                after 3 completed quizzes.
               </ChatCommandHint>
             </div>
           )}

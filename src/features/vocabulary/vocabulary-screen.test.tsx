@@ -364,7 +364,7 @@ describe("VocabularyScreen", () => {
     expect(search).toHaveAttribute("placeholder", "Search phrases");
     expect(
       screen.getByText(
-        "A phrase moves to Practicing after 3 correct answers.",
+        "A phrase moves to Practicing after 3 completed quizzes.",
       ),
     ).toBeInTheDocument();
     expect(
@@ -660,9 +660,11 @@ describe("VocabularyScreen", () => {
       screen.queryByText(/Send \/speaking in the chat/),
     ).not.toBeInTheDocument();
     expect(
-      screen.queryByText(/move it to Practicing/),
-    ).not.toBeInTheDocument();
-    expect(screen.getByText("2/3 correct answers")).toBeInTheDocument();
+      screen.getByText(
+        "A phrase moves to Learned after 3 completed quizzes.",
+      ),
+    ).toBeInTheDocument();
+    expect(screen.queryByText(/correct answers/)).not.toBeInTheDocument();
     await user.click(
       screen.getByRole("button", { name: "Mark zapamatovat si as learned" }),
     );
