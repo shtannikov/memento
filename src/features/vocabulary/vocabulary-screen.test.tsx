@@ -18,6 +18,115 @@ afterEach(() => {
 });
 
 describe("VocabularyScreen", () => {
+  it("shows a toast after successful phrase moves and removal", async () => {
+    const user = userEvent.setup();
+    const learning: VocabularyItem = {
+      id: "1",
+      term: "follow up",
+      definition: "continue checking",
+      status: "learning",
+    };
+    const practicing: VocabularyItem = {
+      id: "2",
+      term: "take into account",
+      definition: "consider",
+      status: "practicing",
+    };
+    vi.spyOn(globalThis, "confirm").mockReturnValue(true);
+
+    render(
+      <VocabularyScreen
+        learning={[learning]}
+        practicing={[practicing]}
+        learned={[]}
+        speakingEnabled
+        onAdd={vi.fn()}
+        onRemove={vi.fn().mockResolvedValue(true)}
+        onChangeStatus={vi.fn().mockResolvedValue(true)}
+        onReorderPracticing={vi.fn()}
+        onStartQuiz={vi.fn()}
+      />,
+    );
+
+    await user.click(
+      screen.getByRole("button", { name: "Move follow up to practicing" }),
+    );
+    expect(screen.getByText("Moved to Practicing")).toBeInTheDocument();
+
+    await user.click(screen.getByRole("tab", { name: "Practicing" }));
+    await user.click(
+      await screen.findByRole("button", {
+        name: "Move take into account back to learning",
+      }),
+    );
+    expect(screen.getByText("Moved to Learning")).toBeInTheDocument();
+
+    await user.click(
+      screen.getByRole("button", { name: "Delete take into account" }),
+    );
+    expect(screen.getByText("Removed")).toBeInTheDocument();
+  });
+
+  it("uses the Learned destination for the Czech two-stage flow", async () => {
+    const user = userEvent.setup();
+    const item: VocabularyItem = {
+      id: "1",
+      term: "zapamatovat si",
+      definition: "to remember",
+      status: "learning",
+    };
+
+    render(
+      <VocabularyScreen
+        learning={[item]}
+        practicing={[]}
+        learned={[]}
+        speakingEnabled={false}
+        onAdd={vi.fn()}
+        onRemove={vi.fn()}
+        onChangeStatus={vi.fn().mockResolvedValue(true)}
+        onReorderPracticing={vi.fn()}
+        onStartQuiz={vi.fn()}
+      />,
+    );
+
+    await user.click(
+      screen.getByRole("button", { name: "Mark zapamatovat si as learned" }),
+    );
+
+    expect(screen.getByRole("status")).toHaveTextContent("Moved to Learned");
+  });
+
+  it("does not show a toast when a mutation is unsuccessful", async () => {
+    const user = userEvent.setup();
+    const item: VocabularyItem = {
+      id: "1",
+      term: "follow up",
+      definition: "continue checking",
+      status: "learning",
+    };
+
+    render(
+      <VocabularyScreen
+        learning={[item]}
+        practicing={[]}
+        learned={[]}
+        speakingEnabled
+        onAdd={vi.fn()}
+        onRemove={vi.fn()}
+        onChangeStatus={vi.fn().mockResolvedValue(false)}
+        onReorderPracticing={vi.fn()}
+        onStartQuiz={vi.fn()}
+      />,
+    );
+
+    await user.click(
+      screen.getByRole("button", { name: "Move follow up to practicing" }),
+    );
+
+    expect(screen.queryByRole("status")).not.toBeInTheDocument();
+  });
+
   it("disables phrase actions during a move without moving focus to the next phrase", async () => {
     const user = userEvent.setup();
     const mutation = Promise.withResolvers<void>();

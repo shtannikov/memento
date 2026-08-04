@@ -1,5 +1,6 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import dynamic from "next/dynamic";
+import { createPortal } from "react-dom";
 
 import { AddPhraseDialog } from "./add-phrase-dialog";
 import {
@@ -11,6 +12,7 @@ import { VocabularyEmptyState } from "./vocabulary-empty-state";
 import { VocabularyHeader } from "./vocabulary-header";
 import {
   CloseIcon,
+  CheckIcon,
   PlayIcon,
   PlusIcon,
   SearchIcon,
@@ -29,11 +31,13 @@ type VocabularyScreenProps = {
   learned: VocabularyItem[];
   speakingEnabled: boolean;
   onAdd: (item: NewVocabularyItem) => void;
-  onRemove: (item: VocabularyItem) => Promise<void> | void;
+  onRemove: (
+    item: VocabularyItem,
+  ) => Promise<boolean | void> | boolean | void;
   onChangeStatus: (
     item: VocabularyItem,
     status: VocabularyStatus,
-  ) => Promise<void> | void;
+  ) => Promise<boolean | void> | boolean | void;
   onReorderPracticing: (items: VocabularyItem[]) => void;
   mutating?: boolean;
   reordering?: boolean;
@@ -61,7 +65,11 @@ export function VocabularyScreen({
     useState<VocabularyStatus>("learning");
   const [addOpen, setAddOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [toast, setToast] = useState<{ id: number; message: string } | null>(
+    null,
+  );
   const searchInputRef = useRef<HTMLInputElement>(null);
+  const toastTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const visibleItems =
     activeTab === "learning"
       ? learning
@@ -79,13 +87,50 @@ export function VocabularyScreen({
       )
     : visibleItems;
 
+  useEffect(
+    () => () => {
+      if (toastTimeoutRef.current) clearTimeout(toastTimeoutRef.current);
+    },
+    [],
+  );
+
+  function showToast(message: string) {
+    if (toastTimeoutRef.current) clearTimeout(toastTimeoutRef.current);
+    setToast((current) => ({ id: (current?.id ?? 0) + 1, message }));
+    toastTimeoutRef.current = setTimeout(() => {
+      setToast(null);
+      toastTimeoutRef.current = null;
+    }, 1800);
+  }
+
+  async function removeConfirmedItem(item: VocabularyItem) {
+    const succeeded = await onRemove(item);
+    if (succeeded !== false) showToast("Removed");
+  }
+
   function removeItem(item: VocabularyItem) {
     if (
       globalThis.confirm(
         `Delete “${item.term}” from your vocabulary?`,
       )
     ) {
-      void onRemove(item);
+      void removeConfirmedItem(item);
+    }
+  }
+
+  async function changeItemStatus(
+    item: VocabularyItem,
+    status: VocabularyStatus,
+  ) {
+    const succeeded = await onChangeStatus(item, status);
+    if (succeeded !== false) {
+      showToast(
+        status === "practicing"
+          ? "Moved to Practicing"
+          : status === "learning"
+            ? "Moved to Learning"
+            : "Moved to Learned",
+      );
     }
   }
 
@@ -187,7 +232,7 @@ export function VocabularyScreen({
                 reordering={reordering || mutating}
                 onReorder={onReorderPracticing}
                 onRestore={(item) =>
-                  void onChangeStatus(item, "learning")
+                  void changeItemStatus(item, "learning")
                 }
                 onDelete={removeItem}
               />
@@ -199,13 +244,13 @@ export function VocabularyScreen({
                   speakingEnabled={speakingEnabled}
                   disabled={mutating || reordering}
                   onLearn={() =>
-                    void onChangeStatus(
+                    void changeItemStatus(
                       item,
                       speakingEnabled ? "practicing" : "learned",
                     )
                   }
                   onRestore={() =>
-                    void onChangeStatus(
+                    void changeItemStatus(
                       item,
                       item.status === "practicing"
                         ? "learning"
@@ -275,6 +320,19 @@ export function VocabularyScreen({
           setActiveTab("learning");
         }}
       />
+      {toast &&
+        createPortal(
+          <div
+            key={toast.id}
+            className={styles.mutationToast}
+            role="status"
+            aria-live="polite"
+          >
+            <CheckIcon />
+            <span>{toast.message}</span>
+          </div>,
+          document.body,
+        )}
     </>
   );
 }

@@ -53,16 +53,16 @@ export function useVocabulary(initData: string | null, appId: AppId) {
   }
 
   async function remove(item: VocabularyItem) {
-    if (!initData) return;
-    await mutate(() => removeVocabularyItem(initData, appId, item.id));
+    if (!initData) return false;
+    return mutate(() => removeVocabularyItem(initData, appId, item.id));
   }
 
   async function changeStatus(
     item: VocabularyItem,
     status: VocabularyItem["status"],
   ) {
-    if (!initData) return;
-    await mutate(() =>
+    if (!initData) return false;
+    return mutate(() =>
       changeVocabularyStatus(
         initData,
         appId,
@@ -100,17 +100,19 @@ export function useVocabulary(initData: string | null, appId: AppId) {
   }
 
   async function mutate(operation: () => Promise<VocabularyData>) {
-    if (mutating) return;
+    if (mutating) return false;
     setMutating(true);
     setError(null);
     try {
       setData(await operation());
+      return true;
     } catch (caught) {
       setError(
         caught instanceof Error
           ? caught.message
           : "Couldn’t update your vocabulary.",
       );
+      return false;
     } finally {
       setMutating(false);
     }

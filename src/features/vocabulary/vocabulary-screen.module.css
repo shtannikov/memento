@@ -498,6 +498,43 @@
   opacity: 1;
 }
 
+.mutationToast {
+  position: fixed;
+  z-index: 60;
+  bottom: calc(92px + env(safe-area-inset-bottom, 0px));
+  left: 50%;
+  display: inline-flex;
+  min-height: 32px;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 11px;
+  color: #ffffff;
+  border-radius: 999px;
+  background: rgb(15 23 42 / 94%);
+  box-shadow: 0 8px 24px rgb(15 23 42 / 24%);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 16px;
+  white-space: nowrap;
+  pointer-events: none;
+  transform: translateX(-50%);
+  animation: mutation-toast-in 160ms ease both;
+}
+
+.mutationToast svg {
+  width: 14px;
+  height: 14px;
+  color: #6ee7b7;
+  stroke-width: 2.5;
+}
+
+@keyframes mutation-toast-in {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 6px) scale(0.96);
+  }
+}
+
 @media (hover: none) and (pointer: coarse) {
   .tabs button:focus-visible {
     outline: none;
