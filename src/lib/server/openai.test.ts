@@ -80,6 +80,41 @@ describe("quiz generation contract", () => {
     expect(prompt).not.toContain("Let's ___ the meeting before lunch.");
   });
 
+  it("requires exact, grammatically complete substitution in every language", () => {
+    const englishPrompt = buildQuizPrompt([
+      {
+        id: "1",
+        term: "be offended",
+        definition: "Feel hurt by criticism.",
+      },
+    ]);
+    const czechPrompt = buildQuizPrompt(
+      [
+        {
+          id: "1",
+          term: "zapamatovat si",
+          definition: "to remember",
+        },
+      ],
+      [],
+      "cz",
+    );
+
+    for (const prompt of [englishPrompt, czechPrompt]) {
+      expect(prompt).toContain("final displayed replacement string");
+      expect(prompt).toContain("Insert it into ___ exactly as written");
+      expect(prompt).toContain("without any hidden transformation");
+    }
+    expect(englishPrompt).toContain(
+      "Any visible auxiliary, modal, or negation must grammatically govern",
+    );
+    expect(englishPrompt).toContain("answer 'wasn't offended'");
+    expect(englishPrompt).toContain("I didn't be offended");
+    expect(czechPrompt).toContain(
+      "never omit it or include it in both places",
+    );
+  });
+
   it("preserves required objects and avoids adding duplicate objects", () => {
     const prompt = buildQuizPrompt([
       {
@@ -180,6 +215,31 @@ describe("quiz generation contract", () => {
     );
     expect(instructions).toContain(
       "I plan to do the laundry all the muddy clothes",
+    );
+    expect(instructions).toContain(
+      "Replace ___ with the displayed answer exactly as written",
+    );
+    expect(instructions).toContain("I didn't be offended");
+  });
+
+  it("asks the Czech grader to judge exact displayed substitution", async () => {
+    const parse = vi.fn().mockResolvedValue({
+      status: "completed",
+      output_parsed: {
+        evaluations: [],
+        passed: false,
+      },
+    });
+    const openai = { responses: { parse } } as unknown as OpenAI;
+
+    await gradeQuizCards([], [], openai, "cz");
+
+    const instructions = parse.mock.calls[0][0].input[0].content;
+    expect(instructions).toContain(
+      "Replace ___ with the displayed answer exactly as written",
+    );
+    expect(instructions).toContain(
+      "exactly one correctly placed reflexive particle se/si",
     );
   });
 

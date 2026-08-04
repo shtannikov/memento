@@ -47,6 +47,34 @@ export const EVAL_CASES: EvalCase[] = [
     })),
   },
   {
+    id: "auxiliary-compatible-answer-forms",
+    description:
+      "Produces a grammatical sentence after exact answer substitution, including when be offended requires a compatible auxiliary and negation.",
+    appId: ENGLISH_LANGUAGE.id,
+    items: [
+      {
+        id: "151",
+        term: "break a sweat",
+        definition: "Make a noticeable physical effort.",
+      },
+      {
+        id: "152",
+        term: "start over",
+        definition: "Begin again from the beginning.",
+      },
+      {
+        id: "153",
+        term: "be offended",
+        definition: "Feel hurt or upset by someone's words or actions.",
+      },
+      {
+        id: "154",
+        term: "take advantage of",
+        definition: "Use an opportunity for your benefit.",
+      },
+    ],
+  },
+  {
     id: "avoid-recent-russian-definition-cards",
     description:
       "Generates fresh English situations instead of repeating recent cards when definitions are Russian.",

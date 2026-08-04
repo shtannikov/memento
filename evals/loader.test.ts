@@ -8,7 +8,7 @@ describe("language eval loader", () => {
   it("discovers every registered language beside its definition", async () => {
     const cases = await loadEvalCases();
 
-    expect(cases.filter((evalCase) => evalCase.appId === "en")).toHaveLength(6);
+    expect(cases.filter((evalCase) => evalCase.appId === "en")).toHaveLength(7);
     expect(cases.filter((evalCase) => evalCase.appId === "cz")).toHaveLength(2);
   });
 
