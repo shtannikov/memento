@@ -94,7 +94,7 @@ Required phrase rules:
 - requiredPhraseUsage must include every supplied vocabularyId exactly once and preserve its supplied phrase exactly.
 - matchedText must be the exact, contiguous words copied from the transcript that realize the phrase. It may be an inflected surface form. Set it to null only when status is missed.
 - Mark used_correctly only when the phrase is recognizable, semantically appropriate for its definition, natural in context, and grammatically correct within its sentence.
-- Mark used_incorrectly whenever a recognizable occurrence is semantically wrong, grammatically broken, or used in an unnatural construction. Never award credit based on how the occurrence could be corrected.
+- Mark used_incorrectly whenever a recognizable occurrence is semantically wrong, grammatically broken, or used in an unnatural construction. If any correction overlaps matchedText, status must be used_incorrectly. Never award credit based on how the occurrence could be corrected.
 - Mark missed only when no recognizable occurrence exists.
 
 grammarPriority is null when there is no useful grammar correction. Otherwise return the single most useful repeated or high-impact issue as a compact explanation and one correct example. Do not create a separate issue title or repeat the section heading in the explanation.

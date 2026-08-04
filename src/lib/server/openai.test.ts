@@ -567,6 +567,35 @@ describe("quiz generation contract", () => {
         openai,
       ),
     ).rejects.toThrow("absent from the transcript");
+
+    parse.mockResolvedValueOnce({
+      status: "completed",
+      output_parsed: {
+        ...output,
+        corrections: [{
+          category: "verb form",
+          original: "didn't took",
+          corrected: "didn't take",
+          why: "Use the base form after didn't.",
+          severity: 5,
+        }],
+        requiredPhraseUsage: [{
+          ...output.requiredPhraseUsage[0],
+          matchedText: "took the deadline into account",
+        }],
+      },
+    });
+    await expect(
+      evaluateSpeakingAnswer(
+        "We didn't took the deadline into account.",
+        task,
+        42,
+        "en",
+        openai,
+      ),
+    ).resolves.toMatchObject({
+      requiredPhraseUsage: [{ status: "used_incorrectly" }],
+    });
   });
 });
 

@@ -392,6 +392,24 @@ export async function evaluateSpeakingAnswer(
       "Speaking evaluation returned text that is absent from the transcript",
     );
   }
+  const correctionRanges = evaluation.corrections.flatMap((correction) =>
+    findCaseInsensitiveRanges(transcript, correction.original)
+  );
+  for (const usage of evaluation.requiredPhraseUsage) {
+    if (usage.status !== "used_correctly" || usage.matchedText === null) {
+      continue;
+    }
+    const usageRanges = findCaseInsensitiveRanges(transcript, usage.matchedText);
+    if (
+      usageRanges.some((usageRange) =>
+        correctionRanges.some((correctionRange) =>
+          rangesOverlap(usageRange, correctionRange)
+        )
+      )
+    ) {
+      usage.status = "used_incorrectly";
+    }
+  }
   return evaluation;
 }
 
@@ -399,6 +417,28 @@ function containsCaseInsensitive(haystack: string, needle: string): boolean {
   return haystack.toLocaleLowerCase().includes(
     needle.toLocaleLowerCase(),
   );
+}
+
+function findCaseInsensitiveRanges(
+  haystack: string,
+  needle: string,
+): Array<{ start: number; end: number }> {
+  const normalizedHaystack = haystack.toLocaleLowerCase();
+  const normalizedNeedle = needle.toLocaleLowerCase();
+  const ranges: Array<{ start: number; end: number }> = [];
+  let start = normalizedHaystack.indexOf(normalizedNeedle);
+  while (start !== -1) {
+    ranges.push({ start, end: start + needle.length });
+    start = normalizedHaystack.indexOf(normalizedNeedle, start + 1);
+  }
+  return ranges;
+}
+
+function rangesOverlap(
+  left: { start: number; end: number },
+  right: { start: number; end: number },
+): boolean {
+  return left.start < right.end && left.end > right.start;
 }
 
 function normalizeVoiceFilename(value: string): string {
