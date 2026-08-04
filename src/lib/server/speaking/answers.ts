@@ -126,7 +126,7 @@ async function resolveAnswerTask(
     if (!mapping) {
       throw new AppError(
         "TASK_STALE",
-        "That task is no longer active. Send /speaking to get your current speaking task.",
+        "That speaking task is no longer active. If you have another active task, reply to it. Otherwise, send /speaking to get a new one.",
         409,
       );
     }
@@ -148,7 +148,7 @@ async function resolveAnswerTask(
     throw new AppError(
       "NO_ACTIVE_TASK",
       taskId
-        ? "That task is no longer active. Send /speaking to get your current speaking task."
+        ? "That speaking task is no longer active. If you have another active task, reply to it. Otherwise, send /speaking to get a new one."
         : "You don’t have an active speaking task. Send /speaking to get one.",
       409,
     );

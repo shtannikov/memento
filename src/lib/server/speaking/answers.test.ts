@@ -65,7 +65,11 @@ describe("speaking answer task resolution", () => {
         },
         "en",
       ),
-    ).rejects.toMatchObject({ code: "TASK_STALE" });
+    ).rejects.toMatchObject({
+      code: "TASK_STALE",
+      message:
+        "That speaking task is no longer active. If you have another active task, reply to it. Otherwise, send /speaking to get a new one.",
+    });
     expect(mocks.transcribeVoice).not.toHaveBeenCalled();
     expect(mocks.evaluateSpeakingAnswer).not.toHaveBeenCalled();
   });
