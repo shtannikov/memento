@@ -18,6 +18,29 @@ afterEach(() => {
 });
 
 describe("VocabularyScreen", () => {
+  it("disables the quiz action when Learning has no phrases", async () => {
+    const onStartQuiz = vi.fn();
+
+    render(
+      <VocabularyScreen
+        learning={[]}
+        practicing={[]}
+        learned={[]}
+        speakingEnabled
+        onAdd={vi.fn()}
+        onRemove={vi.fn()}
+        onChangeStatus={vi.fn()}
+        onReorderPracticing={vi.fn()}
+        onStartQuiz={onStartQuiz}
+      />,
+    );
+
+    const quizButton = screen.getByRole("button", { name: "Start quiz" });
+    expect(quizButton).toBeDisabled();
+    expect(quizButton).toHaveAttribute("aria-busy", "false");
+    expect(onStartQuiz).not.toHaveBeenCalled();
+  });
+
   it("shows a toast after successful phrase moves and removal", async () => {
     const user = userEvent.setup();
     const learning: VocabularyItem = {
