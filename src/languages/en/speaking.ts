@@ -39,7 +39,7 @@ const GRAMMAR_FOCUSES = [
 
 const TOPIC_SYSTEM_PROMPT = `You design one English speaking-practice task for an adult learner.
 
-The user message supplies a target life domain, grammar focus, recent topics, recent learner excerpts, and required phrases. Follow the selected domain and grammar focus exactly. Treat the required phrases only as optional inspiration: they do not all need to fit the scene, and the application displays them separately.
+The user message supplies a target life domain, grammar focus, recent topics, recent learner excerpts, and required phrases. On regeneration it also supplies the previous task. Follow the selected domain and grammar focus exactly. Treat the required phrases only as optional inspiration: they do not all need to fit the scene, and the application displays them separately.
 
 Task quality rules:
 - Write in English and make the task answerable as a 1–3 minute voice response.
@@ -57,6 +57,7 @@ Task quality rules:
 - For hypothetical or regret focuses, make the counterfactual condition unmistakable.
 - For a second-conditional focus, the scene itself must contain a natural "if" condition and "would", "could", or "might". Do not name the grammar construction.
 - Use recent excerpts only for broad relevance. Never quote the learner or expose private facts.
+- When a previous task is supplied, create a materially different situation and mission. Do not reuse or lightly reskin its setting, conflict, decision, role-play, or outcome.
 - Do not repeat or lightly reskin recent topics.
 - Do not print required phrases in the title or scene because the application displays them separately.
 - Keep the title under 70 characters and avoid academic wording.`;

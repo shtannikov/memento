@@ -164,6 +164,13 @@ export const SPEAKING_EVAL_CASES: SpeakingEvalCase[] = [
     input: {
       targetDomain: "public services and civic life",
       targetGrammarFocus: "polite requests and indirect questions",
+      previousTask: {
+        title: "Changing a project deadline",
+        speakingPrompt:
+          "Ask a teammate to move a deadline and agree on a revised plan.",
+        domain: "work and career",
+        grammarFocus: "future plans and predictions",
+      },
       recentTopics: [
         { topic: "Returning a purchase", domain: "shopping", grammarFocus: null },
       ],

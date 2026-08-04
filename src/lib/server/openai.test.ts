@@ -439,6 +439,9 @@ describe("quiz generation contract", () => {
     expect(ENGLISH_LANGUAGE.speaking?.topicSystemPrompt).toContain(
       "form a realistic causal chain",
     );
+    expect(ENGLISH_LANGUAGE.speaking?.topicSystemPrompt).toContain(
+      "create a materially different situation and mission",
+    );
   });
 
   it("grades forced combinations of unrelated practice phrases as incoherent", async () => {

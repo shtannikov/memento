@@ -95,8 +95,8 @@ describe("speaking task workflow", () => {
         id: "task-old",
         status: "active",
         topic: "Old topic",
-        domain: "old domain",
-        grammar_focus: "old grammar",
+        domain: "work and career",
+        grammar_focus: "future plans and predictions",
         prompt: "Old prompt",
       }, "single"),
       result(null, "count", 1),
@@ -142,7 +142,19 @@ describe("speaking task workflow", () => {
       status: "superseded",
     });
     expect(mocks.generateSpeakingTopic).toHaveBeenCalledWith(
-      expect.objectContaining({ requiredPhrases: ["new priority", "old priority"] }),
+      expect.objectContaining({
+        previousTask: {
+          title: "Old topic",
+          speakingPrompt: "Old prompt",
+          domain: "work and career",
+          grammarFocus: "future plans and predictions",
+        },
+        requiredPhrases: ["new priority", "old priority"],
+        targetDomain: expect.not.stringMatching(/^work and career$/i),
+        targetGrammarFocus: expect.not.stringMatching(
+          /^future plans and predictions$/i,
+        ),
+      }),
       42,
       "en",
     );
@@ -169,7 +181,14 @@ describe("speaking task workflow", () => {
 
   it("rejects a stale confirmation when another request claims the active task", async () => {
     const db = database([
-      result({ id: "task-old", status: "active" }, "single"),
+      result({
+        id: "task-old",
+        status: "active",
+        topic: "Old topic",
+        domain: "work and career",
+        grammar_focus: "future plans and predictions",
+        prompt: "Old prompt",
+      }, "single"),
       result(null, "count", 1),
       result([{ id: 22, term: "new priority", definition: "definition" }]),
       result([{ vocabulary_id: 22, practice_rank: 1024 }]),
@@ -181,6 +200,28 @@ describe("speaking task workflow", () => {
       getOrCreateSpeakingTask(42, "en", "task-old"),
     ).rejects.toMatchObject({ code: "REGENERATION_STALE" });
     expect(mocks.generateSpeakingTopic).not.toHaveBeenCalled();
+  });
+
+  it("does not supersede an incomplete active task during regeneration", async () => {
+    const db = database([
+      result({
+        id: "task-old",
+        status: "active",
+        topic: "Old topic",
+        domain: null,
+        grammar_focus: "future plans and predictions",
+        prompt: "Old prompt",
+      }, "single"),
+      result(null, "count", 1),
+    ]);
+    mocks.getMementoDb.mockReturnValue(db);
+
+    await expect(
+      getOrCreateSpeakingTask(42, "en", "task-old"),
+    ).rejects.toThrow("Active speaking task is incomplete");
+
+    expect(mocks.generateSpeakingTopic).not.toHaveBeenCalled();
+    expect(db.from).toHaveBeenCalledTimes(2);
   });
 
   it("delivers a regenerated task without deleting the old task message", async () => {
@@ -231,7 +272,14 @@ describe("speaking task workflow", () => {
 
   it("restores the old active task when regenerated task delivery fails", async () => {
     const db = database([
-      result({ id: "task-old", status: "active" }, "single"),
+      result({
+        id: "task-old",
+        status: "active",
+        topic: "Old topic",
+        domain: "work and career",
+        grammar_focus: "future plans and predictions",
+        prompt: "Old prompt",
+      }, "single"),
       result(null, "count", 1),
       result([{ id: 22, term: "new priority", definition: "definition" }]),
       result([{ vocabulary_id: 22, practice_rank: 1024 }]),

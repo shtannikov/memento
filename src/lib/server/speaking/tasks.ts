@@ -7,6 +7,7 @@ import {
   selectLeastPracticed,
   type SpeakingTask,
   type SpeakingVocabularyItem,
+  type TopicGenerationInput,
 } from "@/lib/domain/speaking";
 import { getLanguage } from "@/languages/registry";
 import { AppError } from "../api";
@@ -179,6 +180,23 @@ export async function getOrCreateSpeakingTask(
       409,
     );
   }
+  let previousTask: TopicGenerationInput["previousTask"];
+  if (regenerationTaskId && existing) {
+    if (
+      !existing.topic ||
+      !existing.prompt ||
+      !existing.domain ||
+      !existing.grammar_focus
+    ) {
+      throw new Error("Active speaking task is incomplete");
+    }
+    previousTask = {
+      title: existing.topic,
+      speakingPrompt: existing.prompt,
+      domain: existing.domain,
+      grammarFocus: existing.grammar_focus,
+    };
+  }
 
   const items = await selectPracticingItems(userId, appId);
   if (items.length === 0) {
@@ -244,19 +262,33 @@ export async function getOrCreateSpeakingTask(
     if (itemError) throw itemError;
 
     const context = await loadTopicContext(userId, appId);
+    const domainOptions = previousTask
+      ? speaking.lifeDomains.filter(
+          (domain) =>
+            domain.toLowerCase() !== previousTask.domain.trim().toLowerCase(),
+        )
+      : speaking.lifeDomains;
+    const grammarOptions = previousTask
+      ? speaking.grammarFocuses.filter(
+          (focus) =>
+            focus.toLowerCase() !==
+            previousTask.grammarFocus.trim().toLowerCase(),
+        )
+      : speaking.grammarFocuses;
     const targetDomain = selectLeastPracticed(
-      speaking.lifeDomains,
+      domainOptions,
       context.recentTopics.map((row) => row.domain),
       `${userId}:${today}:domain`,
     );
     const targetGrammarFocus = selectLeastPracticed(
-      speaking.grammarFocuses,
+      grammarOptions,
       context.recentTopics.map((row) => row.grammarFocus),
       `${userId}:${today}:grammar`,
     );
     const generated = await generateSpeakingTopic({
       targetDomain,
       targetGrammarFocus,
+      ...(previousTask ? { previousTask } : {}),
       recentTopics: context.recentTopics,
       recentLearnerExcerpts: context.recentLearnerExcerpts,
       requiredPhrases: items.map((item) => item.term),
