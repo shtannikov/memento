@@ -113,7 +113,7 @@ describe("speaking answer task resolution", () => {
           vocabularyId: "7",
           phrase: "make up my mind",
           status: "used_correctly",
-          evidence: "made up my mind",
+          matchedText: "made up my mind",
         },
       ],
       grammarPriority: null,
@@ -135,6 +135,10 @@ describe("speaking answer task resolution", () => {
     ).resolves.toBe("completed");
 
     expect(mocks.sendTelegramTyping).toHaveBeenCalledWith(42, "en");
+    expect(mocks.transcribeVoice).toHaveBeenCalledWith(
+      expect.objectContaining({ filename: "voice/file.oga" }),
+      "en",
+    );
     expect(mocks.evaluateSpeakingAnswer).toHaveBeenCalledOnce();
   });
 });

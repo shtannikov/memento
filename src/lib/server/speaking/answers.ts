@@ -50,7 +50,7 @@ export async function processSpeakingVoiceAnswer(
       bytes,
       filename: filePath,
       mimeType: "audio/ogg",
-    });
+    }, appId);
     const evaluation = await evaluateSpeakingAnswer(
       transcript,
       task,

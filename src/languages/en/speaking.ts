@@ -74,24 +74,32 @@ Set each criterion strictly:
 
 Do not fail a task because the required phrases are absent. Do fail a task that mashes together unrelated concepts without one convincing situation connecting them. Keep the reason concise and specific.`;
 
-const ANSWER_EVALUATION_PROMPT = `You evaluate spoken English practice answers.
+const ANSWER_EVALUATION_PROMPT = `You evaluate spoken English practice answers. The transcript is an immutable, verbatim record and the sole source of truth for language feedback.
 
-Rules:
-- The transcript is the sole source of truth for language feedback.
-- Task context must not cause invented corrections.
-- Going off topic is allowed; only set taskRelevance to off_topic when clearly appropriate.
-- Include only actionable corrections with severity 3–5.
-- Treat conversational repetition, fillers, and self-repair as normal unless meaning becomes unclear.
-- Never suggest stylistic synonym swaps when the learner's wording is already natural.
-- requiredPhraseUsage must include every supplied vocabularyId exactly once.
-- Preserve the supplied phrase and vocabularyId even when the phrase is inflected in speech.
-- Treat leading "to" as an infinitive marker and sth/sb as placeholders.
-- Mark used_correctly only for a natural, grammatically correct occurrence in a coherent sentence.
-- Mark a present but broken or unnatural occurrence used_incorrectly; otherwise mark it missed.
-- grammarPriority is either null or one high-impact repeated construction found in the transcript.
-- Do not generate vocabulary candidates, phrase recommendations, or suggestions for what to learn next.
-- telegramFeedback must not quote the transcript, evidence, or the learner's original correction fragments.
-- Keep telegramFeedback concise and suitable for Telegram. Do not include markdown code fences.`;
+Audit the answer in this order:
+1. Read every sentence and identify every clear grammar or word-choice error. Check subject-verb agreement, tense and aspect, articles and determiners, prepositions and collocations, word forms, pronouns, clause structure, conditionals, and word order. Do not ignore an error merely because the meaning remains understandable.
+2. Evaluate every required phrase independently. Locate natural inflections and substitutions for dictionary placeholders: a leading "to" is an infinitive marker, while sth/sb are semantic slots rather than literal words. Use the supplied definition to verify meaning.
+3. Return concise, minimal corrections and one optional grammar priority.
+
+Correction rules:
+- Include all clear, actionable errors, up to 20, in transcript order. Errors involving required phrases always take priority.
+- original must be an exact, contiguous substring copied from the transcript, including its original punctuation and capitalization. Never reconstruct, normalize, or silently correct it.
+- corrected must be the smallest replacement that makes original grammatical and natural without changing the learner's intended meaning.
+- Keep correction spans non-overlapping. Combine adjacent errors only when separate spans would overlap.
+- Use severity 1–5. Do not use confidence as severity and do not omit a clear error because it is minor.
+- Treat conversational repetition, fillers, false starts, and self-repair as normal unless they create a genuine language error or make the meaning unclear.
+- Never suggest a stylistic synonym when the learner's wording is already grammatical, natural, and semantically appropriate.
+
+Required phrase rules:
+- requiredPhraseUsage must include every supplied vocabularyId exactly once and preserve its supplied phrase exactly.
+- matchedText must be the exact, contiguous words copied from the transcript that realize the phrase. It may be an inflected surface form. Set it to null only when status is missed.
+- Mark used_correctly only when the phrase is recognizable, semantically appropriate for its definition, natural in context, and grammatically correct within its sentence.
+- Mark used_incorrectly whenever a recognizable occurrence is semantically wrong, grammatically broken, or used in an unnatural construction. Never award credit based on how the occurrence could be corrected.
+- Mark missed only when no recognizable occurrence exists.
+
+grammarPriority is null when there is no useful grammar correction. Otherwise return the single most useful repeated or high-impact issue as a compact explanation and one correct example. Do not create a separate issue title or repeat the section heading in the explanation.
+
+Task context must not cause invented corrections. Going off topic is allowed; only set taskRelevance to off_topic when clearly appropriate. Do not generate vocabulary candidates, recommendations, or suggestions for what to learn next. telegramFeedback must be concise, must not quote the transcript or correction fragments, and must not contain markdown code fences.`;
 
 export const ENGLISH_SPEAKING = {
   lifeDomains: LIFE_DOMAINS,

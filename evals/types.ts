@@ -32,4 +32,6 @@ export type SpeakingEvalCase =
       task: SpeakingTask;
       transcript: string;
       expectedUsage: Record<string, "used_correctly" | "used_incorrectly" | "missed">;
+      expectedCorrectionFragments?: string[];
+      expectGrammarPriority?: boolean;
     };

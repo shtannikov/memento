@@ -18,6 +18,9 @@ export const CZECH_LANGUAGE = {
   appName: "Pomněnka",
   locale: "cs-CZ",
   targetLanguage: "Czech",
+  transcriptionLanguage: "cs",
+  transcriptionPrompt:
+    "Přepiš řeč přesně tak, jak zazněla. Zachovej gramatické chyby, volbu slov, opakování, výplňková slova, falešné začátky a vlastní opravy. Nic nepřeformulovávej ani neopravuj. Doplň běžnou interpunkci a velká písmena pouze podle pauz a intonace.",
   appPath: "/cz",
   webhookPath: "/api/telegram/webhook/cz",
   botTokenEnv: "TELEGRAM_CZ_BOT_TOKEN",

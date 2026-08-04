@@ -208,4 +208,26 @@ export const SPEAKING_EVAL_CASES: SpeakingEvalCase[] = [
       "703": "missed",
     },
   },
+  {
+    kind: "answer",
+    id: "speaking-answer-grammar-and-phrase-accuracy",
+    description:
+      "Finds clear grammar errors throughout the transcript and rejects grammatically broken required phrases.",
+    appId: "en",
+    task: speakingTask,
+    transcript:
+      "Yesterday I go to the office. I am responsible of the final report. We didn't took the deadline into account, and then we wrap up the meeting.",
+    expectedUsage: {
+      "701": "used_incorrectly",
+      "702": "used_incorrectly",
+      "703": "used_incorrectly",
+    },
+    expectedCorrectionFragments: [
+      "I go",
+      "responsible of",
+      "didn't took",
+      "we wrap up",
+    ],
+    expectGrammarPriority: true,
+  },
 ];

@@ -23,7 +23,7 @@ export type RequiredPhraseUsage = {
   vocabularyId: string;
   phrase: string;
   status: "used_correctly" | "used_incorrectly" | "missed";
-  evidence: string;
+  matchedText: string | null;
 };
 
 export type AnswerEvaluation = {
@@ -38,8 +38,7 @@ export type AnswerEvaluation = {
   }>;
   requiredPhraseUsage: RequiredPhraseUsage[];
   grammarPriority: {
-    issue: string;
-    rule: string;
+    explanation: string;
     example: string;
   } | null;
   telegramFeedback: string;

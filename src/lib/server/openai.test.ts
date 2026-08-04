@@ -12,6 +12,7 @@ import {
   gradeQuizCards,
   gradeSpeakingTopic,
   normalizeQuizSentence,
+  transcribeVoice,
   validateGeneratedCards,
   type GenerationVocabularyItem,
   type GeneratedQuizCard,
@@ -26,6 +27,7 @@ const items: GenerationVocabularyItem[] = [
 
 const originalSpeakingEvaluationModel =
   process.env.OPENAI_SPEAKING_EVALUATION_MODEL;
+const originalSttModel = process.env.OPENAI_STT_MODEL;
 
 afterEach(() => {
   if (originalSpeakingEvaluationModel === undefined) {
@@ -33,6 +35,11 @@ afterEach(() => {
   } else {
     process.env.OPENAI_SPEAKING_EVALUATION_MODEL =
       originalSpeakingEvaluationModel;
+  }
+  if (originalSttModel === undefined) {
+    delete process.env.OPENAI_STT_MODEL;
+  } else {
+    process.env.OPENAI_STT_MODEL = originalSttModel;
   }
 });
 
@@ -486,7 +493,7 @@ describe("quiz generation contract", () => {
           vocabularyId: "701",
           phrase: "take into account",
           status: "used_correctly",
-          evidence: "take into account the deadline",
+          matchedText: "take into account",
         },
       ],
       grammarPriority: null,
@@ -516,7 +523,13 @@ describe("quiz generation contract", () => {
       "rubric",
     );
     expect(ENGLISH_LANGUAGE.speaking?.answerEvaluationPrompt).toContain(
-      "Do not generate vocabulary candidates, phrase recommendations",
+      "Do not generate vocabulary candidates, recommendations",
+    );
+    expect(ENGLISH_LANGUAGE.speaking?.answerEvaluationPrompt).toContain(
+      "identify every clear grammar or word-choice error",
+    );
+    expect(ENGLISH_LANGUAGE.speaking?.answerEvaluationPrompt).toContain(
+      "Never award credit based on how the occurrence could be corrected",
     );
     expect(ENGLISH_LANGUAGE.speaking?.answerEvaluationPrompt).not.toContain(
       "language scores",
@@ -534,6 +547,74 @@ describe("quiz generation contract", () => {
     await expect(
       evaluateSpeakingAnswer("We should take it into account.", task, 42, "en", openai),
     ).rejects.toThrow("invalid vocabulary references");
+
+    parse.mockResolvedValueOnce({
+      status: "completed",
+      output_parsed: {
+        ...output,
+        requiredPhraseUsage: [{
+          ...output.requiredPhraseUsage[0],
+          matchedText: "have taken into account",
+        }],
+      },
+    });
+    await expect(
+      evaluateSpeakingAnswer(
+        "We should take into account the deadline.",
+        task,
+        42,
+        "en",
+        openai,
+      ),
+    ).rejects.toThrow("absent from the transcript");
+  });
+});
+
+describe("voice transcription contract", () => {
+  it("uses the English STT config and gpt-4o-transcribe fallback", async () => {
+    delete process.env.OPENAI_STT_MODEL;
+    const create = vi.fn().mockResolvedValue({ text: "I goes there." });
+    const openai = {
+      audio: { transcriptions: { create } },
+    } as unknown as OpenAI;
+
+    await expect(
+      transcribeVoice(
+        {
+          bytes: new Uint8Array([1, 2, 3]),
+          filename: "voice/file.oga",
+        },
+        "en",
+        openai,
+      ),
+    ).resolves.toBe("I goes there.");
+
+    expect(create).toHaveBeenCalledWith(expect.objectContaining({
+      model: "gpt-4o-transcribe",
+      language: "en",
+      response_format: "json",
+      prompt: expect.stringContaining("Preserve grammar mistakes"),
+    }));
+  });
+
+  it("uses the Czech ISO language and localized prompt with an env override", async () => {
+    process.env.OPENAI_STT_MODEL = "custom-transcription-model";
+    const create = vi.fn().mockResolvedValue({ text: "Já tam jde." });
+    const openai = {
+      audio: { transcriptions: { create } },
+    } as unknown as OpenAI;
+
+    await transcribeVoice(
+      { bytes: new Uint8Array([1]), filename: "voice.ogg" },
+      "cz",
+      openai,
+    );
+
+    expect(create).toHaveBeenCalledWith(expect.objectContaining({
+      model: "custom-transcription-model",
+      language: "cs",
+      prompt: expect.stringContaining("Zachovej gramatické chyby"),
+    }));
   });
 });
 

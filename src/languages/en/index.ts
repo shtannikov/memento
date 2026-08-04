@@ -25,6 +25,9 @@ export const ENGLISH_LANGUAGE = {
   appName: "Memento",
   locale: "en",
   targetLanguage: "English",
+  transcriptionLanguage: "en",
+  transcriptionPrompt:
+    "Transcribe the speech exactly as spoken. Preserve grammar mistakes, word choice, repetitions, filler words, false starts, and self-corrections. Do not rewrite, paraphrase, or correct anything. Add normal punctuation and capitalization only from the speaker's pauses and intonation.",
   appPath: "/",
   webhookPath: "/api/telegram/webhook",
   botTokenEnv: "TELEGRAM_BOT_TOKEN",

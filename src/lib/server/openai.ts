@@ -73,21 +73,20 @@ const SpeakingEvaluationSchema = z.object({
   taskRelevance: z.enum(["on_topic", "off_topic"]),
   corrections: z.array(z.object({
     category: z.string().max(80),
-    original: z.string().max(400),
-    corrected: z.string().max(400),
-    why: z.string().max(500),
+    original: z.string().trim().min(1).max(400),
+    corrected: z.string().trim().min(1).max(400),
+    why: z.string().trim().min(1).max(500),
     severity: z.number().min(1).max(5),
-  })).max(8),
+  })).max(20),
   requiredPhraseUsage: z.array(z.object({
     vocabularyId: z.string(),
     phrase: z.string().max(200),
     status: z.enum(["used_correctly", "used_incorrectly", "missed"]),
-    evidence: z.string().max(400),
+    matchedText: z.string().trim().min(1).max(400).nullable(),
   })).max(3),
   grammarPriority: z.object({
-    issue: z.string().max(200),
-    rule: z.string().max(500),
-    example: z.string().max(400),
+    explanation: z.string().trim().min(1).max(500),
+    example: z.string().trim().min(1).max(400),
   }).nullable(),
   telegramFeedback: z.string().max(1200),
 });
@@ -231,15 +230,20 @@ export function normalizeQuizSentence(sentence: string): string {
 
 export async function transcribeVoice(
   input: { bytes: Uint8Array; filename: string; mimeType?: string },
+  appId: AppId,
   openai = getOpenAIClient(),
 ): Promise<string> {
+  const language = getLanguage(appId);
   const filename = normalizeVoiceFilename(input.filename);
   const file = new File([input.bytes as Uint8Array<ArrayBuffer>], filename, {
     type: input.mimeType ?? "audio/ogg",
   });
   const result = await openai.audio.transcriptions.create({
     file,
-    model: process.env.OPENAI_STT_MODEL ?? "whisper-1",
+    model: process.env.OPENAI_STT_MODEL ?? "gpt-4o-transcribe",
+    language: language.transcriptionLanguage,
+    prompt: language.transcriptionPrompt,
+    response_format: "json",
   });
   const transcript = result.text.trim();
   if (!transcript) throw new Error("Voice transcription was empty");
@@ -373,7 +377,28 @@ export async function evaluateSpeakingAnswer(
   ) {
     throw new Error("Speaking evaluation returned invalid vocabulary references");
   }
+  if (
+    evaluation.corrections.some(
+      (correction) => !containsCaseInsensitive(transcript, correction.original),
+    ) ||
+    evaluation.requiredPhraseUsage.some((usage) =>
+      usage.status === "missed"
+        ? usage.matchedText !== null
+        : usage.matchedText === null ||
+          !containsCaseInsensitive(transcript, usage.matchedText)
+    )
+  ) {
+    throw new Error(
+      "Speaking evaluation returned text that is absent from the transcript",
+    );
+  }
   return evaluation;
+}
+
+function containsCaseInsensitive(haystack: string, needle: string): boolean {
+  return haystack.toLocaleLowerCase().includes(
+    needle.toLocaleLowerCase(),
+  );
 }
 
 function normalizeVoiceFilename(value: string): string {

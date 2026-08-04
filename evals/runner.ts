@@ -136,11 +136,33 @@ async function runSpeakingCase(evalCase: SpeakingEvalCase) {
   const actualUsage = Object.fromEntries(
     evaluation.requiredPhraseUsage.map((item) => [item.vocabularyId, item.status]),
   );
+  const correctionsCoverExpectedErrors =
+    evalCase.expectedCorrectionFragments?.every((fragment) =>
+      evaluation.corrections.some((correction) =>
+        textRangesOverlap(fragment, correction.original)
+      )
+    ) ?? true;
   const passed =
     Object.entries(evalCase.expectedUsage).every(
       ([id, status]) => actualUsage[id] === status,
-    ) && evaluation.telegramFeedback.trim().length > 0;
-  return { passed, actualUsage, evaluation };
+    ) &&
+    correctionsCoverExpectedErrors &&
+    (evalCase.expectGrammarPriority !== true ||
+      evaluation.grammarPriority !== null) &&
+    evaluation.telegramFeedback.trim().length > 0;
+  return {
+    passed,
+    actualUsage,
+    correctionsCoverExpectedErrors,
+    evaluation,
+  };
+}
+
+function textRangesOverlap(expected: string, actual: string): boolean {
+  const normalizedExpected = expected.toLocaleLowerCase("en");
+  const normalizedActual = actual.toLocaleLowerCase("en");
+  return normalizedExpected.includes(normalizedActual) ||
+    normalizedActual.includes(normalizedExpected);
 }
 
 async function runSpeakingWithTransientRetries(evalCase: SpeakingEvalCase) {

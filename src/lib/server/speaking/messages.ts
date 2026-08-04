@@ -42,7 +42,7 @@ export function buildSpeakingFeedbackMessage(
     const grammar = evaluation.grammarPriority;
     lines.push(
       "",
-      `🧩 <b>One grammar pattern to fix:</b>\n<b>${escapeHtml(grammar.issue)}</b>\n${escapeHtml(grammar.rule)}\nExample: <i>${escapeHtml(cleanGrammarExample(grammar.example))}</i>`,
+      `🧩 <b>One grammar pattern to fix:</b>\n${escapeHtml(grammar.explanation)}\nExample: <i>${escapeHtml(cleanGrammarExample(grammar.example))}</i>`,
     );
   }
   lines.push("", "🌟 I’m looking forward to hearing your next answer.");
@@ -79,31 +79,67 @@ function formatTranscript(
   evaluation: AnswerEvaluation,
 ): string {
   type Replacement = { start: number; end: number; html: string };
-  const replacements: Replacement[] = [];
+  const corrections: Array<Replacement & { overlapsPhrase: boolean }> = [];
 
   for (const correction of evaluation.corrections) {
     const start = findUnusedOccurrence(
       transcript,
       correction.original,
-      replacements,
+      corrections,
     );
     if (start === -1) continue;
-    replacements.push({
+    corrections.push({
       start,
       end: start + correction.original.length,
       html: formatInlineCorrection(correction.original, correction.corrected),
+      overlapsPhrase: false,
     });
   }
 
+  const phraseRanges: Array<{ start: number; end: number }> = [];
   for (const usage of evaluation.requiredPhraseUsage) {
-    if (usage.status === "missed") continue;
-    const start = findUnusedOccurrence(transcript, usage.phrase, replacements);
+    if (usage.status === "missed" || usage.matchedText === null) continue;
+    const start = findUnusedOccurrence(
+      transcript,
+      usage.matchedText,
+      phraseRanges,
+    );
     if (start === -1) continue;
-    replacements.push({
+    phraseRanges.push({
       start,
-      end: start + usage.phrase.length,
-      html: `<u>${escapeHtml(transcript.slice(start, start + usage.phrase.length))}</u>`,
+      end: start + usage.matchedText.length,
     });
+  }
+
+  const replacements: Replacement[] = [];
+  for (const correction of corrections) {
+    correction.overlapsPhrase = phraseRanges.some((phrase) =>
+      rangesOverlap(correction, phrase)
+    );
+    replacements.push({
+      start: correction.start,
+      end: correction.end,
+      html: correction.overlapsPhrase
+        ? `<u>${correction.html}</u>`
+        : correction.html,
+    });
+  }
+
+  for (const phrase of phraseRanges) {
+    const overlappingCorrections = corrections
+      .filter((correction) => rangesOverlap(correction, phrase))
+      .sort((left, right) => left.start - right.start);
+    let cursor = phrase.start;
+    for (const correction of overlappingCorrections) {
+      const segmentEnd = Math.min(correction.start, phrase.end);
+      if (cursor < segmentEnd) {
+        replacements.push(underlineRange(transcript, cursor, segmentEnd));
+      }
+      cursor = Math.max(cursor, Math.min(correction.end, phrase.end));
+    }
+    if (cursor < phrase.end) {
+      replacements.push(underlineRange(transcript, cursor, phrase.end));
+    }
   }
 
   replacements.sort((left, right) => left.start - right.start);
@@ -115,6 +151,25 @@ function formatTranscript(
     cursor = replacement.end;
   }
   return result + escapeHtml(transcript.slice(cursor));
+}
+
+function rangesOverlap(
+  left: { start: number; end: number },
+  right: { start: number; end: number },
+): boolean {
+  return left.start < right.end && left.end > right.start;
+}
+
+function underlineRange(
+  transcript: string,
+  start: number,
+  end: number,
+): { start: number; end: number; html: string } {
+  return {
+    start,
+    end,
+    html: `<u>${escapeHtml(transcript.slice(start, end))}</u>`,
+  };
 }
 
 function findUnusedOccurrence(

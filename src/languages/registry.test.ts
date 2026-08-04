@@ -7,6 +7,7 @@ describe("language registry", () => {
     expect(APP_IDS).toEqual(["en", "cz"]);
     expect(getLanguage("en")).toMatchObject({
       appName: "Memento",
+      transcriptionLanguage: "en",
       appPath: "/",
       webhookPath: "/api/telegram/webhook",
       botTokenEnv: "TELEGRAM_BOT_TOKEN",
@@ -14,6 +15,7 @@ describe("language registry", () => {
     expect(getLanguage("cz")).toMatchObject({
       appName: "Pomněnka",
       locale: "cs-CZ",
+      transcriptionLanguage: "cs",
       appPath: "/cz",
       webhookPath: "/api/telegram/webhook/cz",
       botTokenEnv: "TELEGRAM_CZ_BOT_TOKEN",

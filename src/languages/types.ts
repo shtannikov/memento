@@ -22,6 +22,8 @@ export type LanguageDefinition<Id extends string = string> = {
   appName: string;
   locale: string;
   targetLanguage: string;
+  transcriptionLanguage: string;
+  transcriptionPrompt: string;
   appPath: string;
   webhookPath: string;
   botTokenEnv: string;
