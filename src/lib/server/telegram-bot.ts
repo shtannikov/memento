@@ -82,6 +82,17 @@ export async function sendTelegramTyping(
   });
 }
 
+export async function deleteTelegramMessage(
+  chatId: number,
+  messageId: number,
+  appId: AppId = "en",
+): Promise<void> {
+  await callTelegram(appId, "deleteMessage", {
+    chat_id: chatId,
+    message_id: messageId,
+  });
+}
+
 export async function getTelegramFile(
   fileId: string,
   appId: AppId = "en",

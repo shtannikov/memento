@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { sendTelegramMessage } from "./telegram-bot";
+import { deleteTelegramMessage, sendTelegramMessage } from "./telegram-bot";
 
 const originalToken = process.env.TELEGRAM_BOT_TOKEN;
 const originalCzechToken = process.env.TELEGRAM_CZ_BOT_TOKEN;
@@ -108,6 +108,23 @@ describe("Telegram bot client", () => {
     expect(fetchMock).toHaveBeenCalledWith(
       "https://api.telegram.org/bot456:czech/sendMessage",
       expect.any(Object),
+    );
+  });
+
+  it("deletes an obsolete speaking task message", async () => {
+    process.env.TELEGRAM_BOT_TOKEN = "123:test";
+    const fetchMock = vi.fn().mockResolvedValue(
+      new Response(JSON.stringify({ ok: true, result: true }), { status: 200 }),
+    );
+    vi.stubGlobal("fetch", fetchMock);
+
+    await deleteTelegramMessage(42, 88);
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      "https://api.telegram.org/bot123:test/deleteMessage",
+      expect.objectContaining({
+        body: JSON.stringify({ chat_id: 42, message_id: 88 }),
+      }),
     );
   });
 });

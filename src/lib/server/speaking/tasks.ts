@@ -12,7 +12,10 @@ import { getLanguage } from "@/languages/registry";
 import { AppError } from "../api";
 import { generateSpeakingTopic } from "../openai";
 import { getMementoDb } from "../supabase";
-import { sendTelegramMessage } from "../telegram-bot";
+import {
+  deleteTelegramMessage,
+  sendTelegramMessage,
+} from "../telegram-bot";
 import { buildSpeakingTaskMessage } from "./messages";
 import { runWithTelegramTyping } from "./typing-indicator";
 
@@ -31,19 +34,27 @@ export async function runSpeakingTaskCommand(
   appId: AppId,
   chatId: number,
 ): Promise<"created" | "resent"> {
-  const { task, existing } = await runWithTelegramTyping(
+  const { task, existing, supersededTaskId } = await runWithTelegramTyping(
     chatId,
     appId,
     () => getOrCreateSpeakingTask(userId, appId),
   );
   await deliverSpeakingTask(task, chatId, appId);
+  if (supersededTaskId) {
+    await deleteSupersededTaskMessages(supersededTaskId, chatId, appId);
+  }
   return existing ? "resent" : "created";
 }
 
 export async function getOrCreateSpeakingTask(
   userId: number,
   appId: AppId,
-): Promise<{ task: SpeakingTask; existing: boolean; needsDelivery: boolean }> {
+): Promise<{
+  task: SpeakingTask;
+  existing: boolean;
+  needsDelivery: boolean;
+  supersededTaskId?: string;
+}> {
   const speaking = getLanguage(appId).speaking;
   if (!speaking) {
     throw new AppError("SPEAKING_UNAVAILABLE", "Speaking practice is unavailable for this language.", 409);
@@ -80,11 +91,13 @@ export async function getOrCreateSpeakingTask(
         409,
       );
     }
-    return {
-      task: await loadSpeakingTask(existing as StoredTaskRow),
-      existing: true,
-      needsDelivery: existing.status === "ready",
-    };
+    if (existing.status === "ready") {
+      return {
+        task: await loadSpeakingTask(existing as StoredTaskRow),
+        existing: true,
+        needsDelivery: true,
+      };
+    }
   }
 
   const today = formatUtcDate(new Date());
@@ -112,6 +125,18 @@ export async function getOrCreateSpeakingTask(
     );
   }
 
+  const supersededTaskId = existing?.status === "active"
+    ? String(existing.id)
+    : undefined;
+  if (supersededTaskId) {
+    const { error: supersedeError } = await db
+      .from("speaking_tasks")
+      .update({ status: "superseded" })
+      .eq("id", supersededTaskId)
+      .eq("status", "active");
+    if (supersedeError) throw supersedeError;
+  }
+
   const { data: created, error: createError } = await db
     .from("speaking_tasks")
     .insert({ user_id: userId, app_id: appId, task_date: today, status: "preparing" })
@@ -119,6 +144,7 @@ export async function getOrCreateSpeakingTask(
     .single();
   if (createError) {
     if (createError.code === "23505") return getOrCreateSpeakingTask(userId, appId);
+    if (supersededTaskId) await restoreSupersededTask(supersededTaskId);
     throw createError;
   }
   const taskId = String(created.id);
@@ -169,6 +195,7 @@ export async function getOrCreateSpeakingTask(
     return {
       existing: false,
       needsDelivery: true,
+      ...(supersededTaskId ? { supersededTaskId } : {}),
       task: {
         id: taskId,
         topic: generated.title,
@@ -180,8 +207,17 @@ export async function getOrCreateSpeakingTask(
     };
   } catch (error) {
     await db.from("speaking_tasks").update({ status: "failed" }).eq("id", taskId);
+    if (supersededTaskId) await restoreSupersededTask(supersededTaskId);
     throw error;
   }
+}
+
+async function restoreSupersededTask(taskId: string): Promise<void> {
+  await getMementoDb()
+    .from("speaking_tasks")
+    .update({ status: "active" })
+    .eq("id", taskId)
+    .eq("status", "superseded");
 }
 
 export async function deliverSpeakingTask(
@@ -208,6 +244,28 @@ export async function deliverSpeakingTask(
     activated_at: new Date().toISOString(),
   }).eq("id", task.id).in("status", ["ready", "active"]);
   if (activeError) throw activeError;
+}
+
+async function deleteSupersededTaskMessages(
+  taskId: string,
+  chatId: number,
+  appId: AppId,
+): Promise<void> {
+  try {
+    const { data, error } = await getMementoDb()
+      .from("speaking_task_messages")
+      .select("message_id")
+      .eq("task_id", taskId)
+      .eq("chat_id", chatId);
+    if (error) return;
+    await Promise.allSettled(
+      (data ?? []).map((row) =>
+        deleteTelegramMessage(chatId, Number(row.message_id), appId),
+      ),
+    );
+  } catch {
+    // Removing an obsolete Telegram message is best-effort only.
+  }
 }
 
 async function selectPracticingItems(
