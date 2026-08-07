@@ -18,6 +18,7 @@ describe("vocabulary import commands", () => {
     expect(readVocabularyCommand("/imported x")).toBeNull();
     expect(readVocabularyCommand("/reset")).toBe("reset");
     expect(readVocabularyCommand("/reset@MementoBot")).toBe("reset");
+    expect(readVocabularyCommand("/reset confirm")).toBeNull();
     expect(readVocabularyCommand("/speaking")).toBe("speaking");
     expect(readVocabularyCommand("/speaking@MementoBot")).toBe("speaking");
     expect(readVocabularyCommand("/task")).toBeNull();

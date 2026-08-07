@@ -8,7 +8,6 @@ import {
 const IMPORT_COMMAND = /^\/import(?:@[a-z0-9_]+)?$/i;
 const IMPORT_COMMAND_PREFIX = /^\/import(?:@[a-z0-9_]+)?(?=$|\s)/i;
 const RESET_COMMAND = /^\/reset(?:@[a-z0-9_]+)?$/i;
-const RESET_CONFIRM_COMMAND = /^\/reset(?:@[a-z0-9_]+)?\s+confirm$/i;
 const HELP_COMMAND = /^\/help(?:@[a-z0-9_]+)?$/i;
 const SPEAKING_COMMAND = /^\/speaking(?:@[a-z0-9_]+)?$/i;
 const START_COMMAND = /^\/start(?:@[a-z0-9_]+)?(?:\s.*)?$/i;
@@ -45,7 +44,6 @@ export type VocabularyCommand =
   | "help"
   | "import"
   | "reset"
-  | "reset_confirm"
   | "start"
   | "speaking";
 
@@ -57,9 +55,6 @@ export function readVocabularyCommand(text: string): VocabularyCommand | null {
   if (lines.length === 1 && HELP_COMMAND.test(firstLine)) return "help";
   if (lines.length === 1 && SPEAKING_COMMAND.test(firstLine)) {
     return "speaking";
-  }
-  if (lines.length === 1 && RESET_CONFIRM_COMMAND.test(firstLine)) {
-    return "reset_confirm";
   }
   if (lines.length === 1 && RESET_COMMAND.test(firstLine)) return "reset";
   if (lines.length === 1 && START_COMMAND.test(firstLine)) return "start";

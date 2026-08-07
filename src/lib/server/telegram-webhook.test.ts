@@ -30,6 +30,10 @@ function regenerationCallback(data = "speaking:regenerate:550e8400-e29b-41d4-a71
   };
 }
 
+function resetCallback() {
+  return regenerationCallback("vocabulary:reset");
+}
+
 function dependencies(
   overrides: Partial<NonNullable<Parameters<typeof processTelegramUpdate>[1]>> = {},
 ): NonNullable<Parameters<typeof processTelegramUpdate>[1]> {
@@ -77,16 +81,12 @@ describe("Telegram webhook workflow", () => {
     );
   });
 
-  it("prepares reset and requires an explicit ten-minute confirmation", async () => {
+  it("prepares reset and returns an inline confirmation button", async () => {
     const prepareReset = vi.fn().mockResolvedValue({
       learningCount: 3,
     });
-    const confirmReset = vi.fn().mockResolvedValue({
-      learningCount: 3,
-    });
     const first = parseTelegramUpdate(update("/reset@MementoBot"));
-    const confirm = parseTelegramUpdate(update("/reset confirm"));
-    if (!first || !confirm) throw new Error("Expected updates to parse");
+    if (!first) throw new Error("Expected update to parse");
 
     const firstReply = await processTelegramUpdate(
       first,
@@ -94,15 +94,69 @@ describe("Telegram webhook workflow", () => {
     );
     expect(firstReply?.text).toContain("remove 3 Learning phrases");
     expect(firstReply?.text).not.toContain("speaking task");
-    expect(firstReply?.text).toContain("/reset confirm within 10 minutes");
+    expect(firstReply?.text).toContain("⚠️ Reset your Learning phrases?");
+    expect(firstReply?.inlineKeyboard).toEqual([[{
+      text: "Reset",
+      callbackData: "vocabulary:reset",
+    }]]);
+  });
 
-    const confirmReply = await processTelegramUpdate(
-      confirm,
-      dependencies({ confirmReset }),
+  it("acknowledges a reset callback and updates its confirmation message", async () => {
+    const parsed = parseTelegramUpdate(resetCallback());
+    if (!parsed) throw new Error("Expected callback to parse");
+    const order: string[] = [];
+    const answerCallback = vi.fn(async () => { order.push("answer"); });
+    const editMessage = vi.fn(async (_chatId, _messageId, text) => {
+      order.push(text);
+    });
+    const confirmReset = vi.fn(async () => {
+      order.push("reset");
+      return { learningCount: 3 };
+    });
+
+    await expect(processTelegramUpdate(parsed, dependencies({
+      answerCallback,
+      editMessage,
+      confirmReset,
+    }))).resolves.toBeNull();
+
+    expect(answerCallback).toHaveBeenCalledWith("callback-1", "en");
+    expect(confirmReset).toHaveBeenCalledWith(
+      { id: 42, first_name: "Ada", last_name: undefined, username: "ada" },
+      "en",
     );
-    expect(confirmReply?.text).toBe(
+    expect(order).toEqual([
+      "answer",
+      "⏳ Resetting your Learning phrases…",
+      "reset",
       "🧹 Done! Removed 3 Learning phrases.",
+    ]);
+  });
+
+  it("turns an expired reset callback into a retry warning", async () => {
+    const parsed = parseTelegramUpdate(resetCallback());
+    if (!parsed) throw new Error("Expected callback to parse");
+    const editMessage = vi.fn().mockResolvedValue(undefined);
+    const confirmReset = vi.fn().mockRejectedValue(
+      new AppError(
+        "RESET_CONFIRMATION_EXPIRED",
+        "That reset confirmation has expired. Send /reset to start again.",
+        409,
+      ),
     );
+
+    await processTelegramUpdate(parsed, dependencies({
+      editMessage,
+      confirmReset,
+    }));
+
+    expect(editMessage).toHaveBeenLastCalledWith(
+      42,
+      9,
+      "That reset confirmation has expired. Send /reset to start again.",
+      "en",
+    );
+    expect(confirmReset).toHaveBeenCalledOnce();
   });
 
   it("creates or resends a task and returns the empty-practice message", async () => {

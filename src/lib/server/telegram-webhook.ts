@@ -126,6 +126,7 @@ const defaultDependencies: TelegramCommandDependencies = {
 };
 
 const REGENERATE_CALLBACK_PREFIX = "speaking:regenerate:";
+const RESET_CALLBACK_DATA = "vocabulary:reset";
 const REGENERATION_WARNING =
   "⚠️ Regenerate your speaking task?\n\n" +
   "Your current task will become inactive. " +
@@ -154,7 +155,7 @@ export async function processTelegramUpdate(
   appId: AppId = DEFAULT_APP_ID,
 ): Promise<TelegramReply | null> {
   if (update.callback_query) {
-    return processSpeakingRegenerationCallback(
+    return processTelegramCallback(
       update.callback_query,
       dependencies,
       appId,
@@ -223,22 +224,17 @@ export async function processTelegramUpdate(
 
   if (command === "reset") {
     const preview = await dependencies.prepareReset(user, appId);
-    return reply(
-      `This will remove ${preview.learningCount} Learning ${preview.learningCount === 1 ? "phrase" : "phrases"}. ` +
-        "Practicing, Learned, and completed speaking history will stay.\n\n" +
-        "Send /reset confirm within 10 minutes to continue.",
-    );
-  }
-  if (command === "reset_confirm") {
-    try {
-      const result = await dependencies.confirmReset(user, appId);
-      return reply(
-        `🧹 Done! Removed ${result.learningCount} Learning ${result.learningCount === 1 ? "phrase" : "phrases"}.`,
-      );
-    } catch (error) {
-      if (error instanceof AppError) return reply(error.message);
-      throw error;
-    }
+    return {
+      ...reply(
+        "⚠️ Reset your Learning phrases?\n\n" +
+          `This will remove ${preview.learningCount} Learning ${preview.learningCount === 1 ? "phrase" : "phrases"}. ` +
+          "Practicing, Learned, and completed speaking history will stay.",
+      ),
+      inlineKeyboard: [[{
+        text: "Reset",
+        callbackData: RESET_CALLBACK_DATA,
+      }]],
+    };
   }
   if (command === "speaking") {
     try {
@@ -302,7 +298,7 @@ export async function processTelegramUpdate(
   }
 }
 
-async function processSpeakingRegenerationCallback(
+async function processTelegramCallback(
   callback: NonNullable<TelegramUpdate["callback_query"]>,
   dependencies: TelegramCommandDependencies,
   appId: AppId,
@@ -315,6 +311,10 @@ async function processSpeakingRegenerationCallback(
   }
 
   await dependencies.answerCallback(callback.id, appId);
+  if (callback.data === RESET_CALLBACK_DATA) {
+    return processResetCallback(callback, dependencies, appId);
+  }
+
   const activeTaskId = readRegenerationTaskId(callback.data);
   if (!activeTaskId) return null;
 
@@ -353,6 +353,47 @@ async function processSpeakingRegenerationCallback(
       chatId,
       confirmationMessageId,
       message,
+      appId,
+    );
+  }
+  return null;
+}
+
+async function processResetCallback(
+  callback: NonNullable<TelegramUpdate["callback_query"]>,
+  dependencies: TelegramCommandDependencies,
+  appId: AppId,
+): Promise<null> {
+  const chatId = callback.message.chat.id;
+  const confirmationMessageId = callback.message.message_id;
+  await dependencies.editMessage(
+    chatId,
+    confirmationMessageId,
+    "⏳ Resetting your Learning phrases…",
+    appId,
+  );
+
+  try {
+    const result = await dependencies.confirmReset({
+      id: callback.from.id,
+      first_name: callback.from.first_name,
+      last_name: callback.from.last_name,
+      username: callback.from.username,
+    }, appId);
+    await dependencies.editMessage(
+      chatId,
+      confirmationMessageId,
+      `🧹 Done! Removed ${result.learningCount} Learning ${result.learningCount === 1 ? "phrase" : "phrases"}.`,
+      appId,
+    );
+  } catch (error) {
+    if (!(error instanceof AppError)) console.error(error);
+    await dependencies.editMessage(
+      chatId,
+      confirmationMessageId,
+      error instanceof AppError
+        ? error.message
+        : "⚠️ I couldn’t reset your Learning phrases. Send /reset to try again.",
       appId,
     );
   }
