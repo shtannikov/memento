@@ -226,9 +226,9 @@ export async function processTelegramUpdate(
     const preview = await dependencies.prepareReset(user, appId);
     return {
       ...reply(
-        "⚠️ Reset your Learning phrases?\n\n" +
-          `This will remove ${preview.learningCount} Learning ${preview.learningCount === 1 ? "phrase" : "phrases"}. ` +
-          "Practicing, Learned, and completed speaking history will stay.",
+        "⚠️ Reset your Learning list?\n\n" +
+          `This will remove all ${preview.learningCount} ${preview.learningCount === 1 ? "phrase" : "phrases"} from your Learning list. ` +
+          "Everything else will stay just as it is.",
       ),
       inlineKeyboard: [[{
         text: "Reset",
@@ -374,7 +374,7 @@ async function processResetCallback(
   );
 
   try {
-    const result = await dependencies.confirmReset({
+    await dependencies.confirmReset({
       id: callback.from.id,
       first_name: callback.from.first_name,
       last_name: callback.from.last_name,
@@ -383,7 +383,7 @@ async function processResetCallback(
     await dependencies.editMessage(
       chatId,
       confirmationMessageId,
-      `🧹 Done! Removed ${result.learningCount} Learning ${result.learningCount === 1 ? "phrase" : "phrases"}.`,
+      "🧹 Done! The Learning list has been reset.",
       appId,
     );
   } catch (error) {

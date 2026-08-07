@@ -92,9 +92,11 @@ describe("Telegram webhook workflow", () => {
       first,
       dependencies({ prepareReset }),
     );
-    expect(firstReply?.text).toContain("remove 3 Learning phrases");
-    expect(firstReply?.text).not.toContain("speaking task");
-    expect(firstReply?.text).toContain("⚠️ Reset your Learning phrases?");
+    expect(firstReply?.text).toBe(
+      "⚠️ Reset your Learning list?\n\n" +
+        "This will remove all 3 phrases from your Learning list. " +
+        "Everything else will stay just as it is.",
+    );
     expect(firstReply?.inlineKeyboard).toEqual([[{
       text: "Reset",
       callbackData: "vocabulary:reset",
@@ -129,7 +131,7 @@ describe("Telegram webhook workflow", () => {
       "answer",
       "⏳ Resetting your Learning phrases…",
       "reset",
-      "🧹 Done! Removed 3 Learning phrases.",
+      "🧹 Done! The Learning list has been reset.",
     ]);
   });
 
