@@ -54,6 +54,34 @@ describe("speaking messages", () => {
     expect(message).not.toContain("A few things I’d fix");
   });
 
+  it("encourages practice phrases when a correct answer misses them", () => {
+    const evaluation: AnswerEvaluation = {
+      coverageScore: 0,
+      substantiveSpeech: true,
+      corrections: [],
+      requiredPhraseUsage: [{
+        vocabularyId: "1",
+        phrase: "take into account",
+        status: "missed",
+        matchedText: null,
+      }],
+      grammarPriority: null,
+      telegramFeedback: "Use your practice phrase next time.",
+    };
+
+    const message = buildSpeakingFeedbackMessage(
+      "I always consider every option.",
+      evaluation,
+    );
+
+    expect(message).toContain(
+      "Nice work 👏 Your English sounded great! Next time, try to include more of your practice phrases. Here’s your answer:",
+    );
+    expect(message).toContain("❌ take into account");
+    expect(message).not.toContain("You nailed it");
+    expect(message).not.toContain("A few things I’d fix");
+  });
+
   it("renders corrections inline and omits quick stats", () => {
     const evaluation: AnswerEvaluation = {
       coverageScore: 80,

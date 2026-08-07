@@ -38,13 +38,21 @@ export function buildSpeakingFeedbackMessage(
     .map((item) => `${item.status === "used_correctly" ? "✅" : "❌"} ${escapeHtml(item.phrase)}`)
     .join("\n");
   const hasCorrections =
-    evaluation.corrections.length > 0 || evaluation.grammarPriority !== null;
+    evaluation.corrections.length > 0 ||
+    evaluation.grammarPriority !== null ||
+    evaluation.requiredPhraseUsage.some((item) =>
+      item.status === "used_incorrectly"
+    );
+  const missedPracticePhrases = evaluation.requiredPhraseUsage.some((item) =>
+    item.status === "missed"
+  );
+  const feedbackHeading = hasCorrections
+    ? "<b>Nice work 👏 A few things I’d fix:</b>"
+    : missedPracticePhrases
+    ? "<b>Nice work 👏 Your English sounded great! Next time, try to include more of your practice phrases. Here’s your answer:</b>"
+    : "<b>You nailed it 👏 I wouldn’t change a thing! Here’s your answer:</b>";
   const lines = [
-    ...(hasCorrections
-      ? ["<b>Nice work 👏 A few things I’d fix:</b>"]
-      : [
-        "<b>You nailed it 👏 I wouldn’t change a thing! Here’s your answer:</b>",
-      ]),
+    feedbackHeading,
     `<blockquote expandable>${formatTranscript(transcript, evaluation)}</blockquote>`,
   ];
   lines.push("", `🎯 <b>Your practice phrases:</b>\n${phrases}`);
