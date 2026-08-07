@@ -1,6 +1,6 @@
 import { DAILY_GENERATION_LIMIT, ROUND_SIZE } from "@/lib/domain/round";
 import type { AppId } from "@/lib/domain/app";
-import { randomizeQuizOptions } from "@/lib/domain/quiz-options";
+import { randomizeQuizCards } from "@/lib/domain/quiz-options";
 import { AppError } from "./api";
 import {
   generateQuizCards,
@@ -87,7 +87,7 @@ export async function createRound(
       recentSentences,
       appId,
     );
-    const cards = randomizeQuizOptions(generatedCards);
+    const cards = randomizeQuizCards(generatedCards);
     const { error: cardError } = await supabase.from("round_cards").insert(
       cards.map((card, position) => ({
         round_id: createdRound.id,
