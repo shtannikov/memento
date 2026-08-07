@@ -1,7 +1,7 @@
 import { loadEnvConfig } from "@next/env";
 
-import { loadEvalCases } from "./loader";
-import type { EvalCase } from "./types";
+import { loadEvalCases, loadSpeakingEvalCases } from "./loader";
+import type { EvalCase, SpeakingEvalCase } from "./types";
 
 loadEnvConfig(process.cwd());
 const openaiClient = import("../src/lib/server/openai");
@@ -101,6 +101,86 @@ async function runWithTransientRetries(evalCase: EvalCase) {
   throw lastError;
 }
 
+async function runSpeakingCase(evalCase: SpeakingEvalCase) {
+  const {
+    evaluateSpeakingAnswer,
+    generateSpeakingTopic,
+    gradeSpeakingTopic,
+  } = await openaiClient;
+  if (evalCase.kind === "topic") {
+    const topic = await generateSpeakingTopic(evalCase.input, 1, evalCase.appId);
+    const recentTitles = new Set(
+      evalCase.input.recentTopics.map((item) => item.topic.toLowerCase()),
+    );
+    const grade = await gradeSpeakingTopic(
+      evalCase.input,
+      topic,
+      1,
+      evalCase.appId,
+    );
+    const passed =
+      topic.domain === evalCase.input.targetDomain &&
+      topic.grammarFocus === evalCase.input.targetGrammarFocus &&
+      topic.title.length > 0 &&
+      topic.speakingPrompt.length > 0 &&
+      !recentTitles.has(topic.title.toLowerCase()) &&
+      grade.passed;
+    return { passed, topic, grade };
+  }
+  const evaluation = await evaluateSpeakingAnswer(
+    evalCase.transcript,
+    evalCase.task,
+    1,
+    evalCase.appId,
+  );
+  const actualUsage = Object.fromEntries(
+    evaluation.requiredPhraseUsage.map((item) => [item.vocabularyId, item.status]),
+  );
+  const correctionsCoverExpectedErrors =
+    evalCase.expectedCorrectionFragments?.every((fragment) =>
+      evaluation.corrections.some((correction) =>
+        textRangesOverlap(fragment, correction.original)
+      )
+    ) ?? true;
+  const passed =
+    Object.entries(evalCase.expectedUsage).every(
+      ([id, status]) => actualUsage[id] === status,
+    ) &&
+    (evalCase.expectedSubstantiveSpeech === undefined ||
+      evaluation.substantiveSpeech === evalCase.expectedSubstantiveSpeech) &&
+    correctionsCoverExpectedErrors &&
+    (evalCase.expectGrammarPriority !== true ||
+      evaluation.grammarPriority !== null) &&
+    evaluation.telegramFeedback.trim().length > 0;
+  return {
+    passed,
+    actualUsage,
+    correctionsCoverExpectedErrors,
+    evaluation,
+  };
+}
+
+function textRangesOverlap(expected: string, actual: string): boolean {
+  const normalizedExpected = expected.toLocaleLowerCase("en");
+  const normalizedActual = actual.toLocaleLowerCase("en");
+  return normalizedExpected.includes(normalizedActual) ||
+    normalizedActual.includes(normalizedExpected);
+}
+
+async function runSpeakingWithTransientRetries(evalCase: SpeakingEvalCase) {
+  let lastError: unknown;
+  for (let attempt = 0; attempt <= MAX_TRANSIENT_RETRIES; attempt += 1) {
+    try {
+      return await runSpeakingCase(evalCase);
+    } catch (error) {
+      lastError = error;
+      if (!isTransient(error) || attempt === MAX_TRANSIENT_RETRIES) throw error;
+      await new Promise((resolve) => setTimeout(resolve, 1000 * (attempt + 1)));
+    }
+  }
+  throw lastError;
+}
+
 async function main() {
   if (!process.env.OPENAI_API_KEY) {
     throw new Error("OPENAI_API_KEY is required for live evals");
@@ -128,6 +208,33 @@ async function main() {
           id: evalCase.id,
           description: evalCase.description,
           passed,
+          durationMs: Date.now() - startedAt,
+          assertions: result,
+        }),
+      );
+    } catch (error) {
+      failed = true;
+      console.error(
+        JSON.stringify({
+          id: evalCase.id,
+          passed: false,
+          durationMs: Date.now() - startedAt,
+          error: error instanceof Error ? error.message : String(error),
+        }),
+      );
+    }
+  }
+  const speakingCases = await loadSpeakingEvalCases();
+  for (const evalCase of speakingCases) {
+    const startedAt = Date.now();
+    try {
+      const result = await runSpeakingWithTransientRetries(evalCase);
+      failed ||= !result.passed;
+      console.log(
+        JSON.stringify({
+          id: evalCase.id,
+          description: evalCase.description,
+          passed: result.passed,
           durationMs: Date.now() - startedAt,
           assertions: result,
         }),

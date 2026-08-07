@@ -69,6 +69,7 @@ describe("Telegram webhook route", () => {
       7,
       undefined,
       "en",
+      undefined,
     );
   });
 
@@ -92,6 +93,7 @@ describe("Telegram webhook route", () => {
       7,
       "HTML",
       "en",
+      undefined,
     );
   });
 
@@ -117,6 +119,7 @@ describe("Telegram webhook route", () => {
       7,
       "HTML",
       "en",
+      undefined,
     );
     expect(sendTelegramMessage).toHaveBeenNthCalledWith(
       2,
@@ -125,6 +128,35 @@ describe("Telegram webhook route", () => {
       undefined,
       "HTML",
       "en",
+    );
+  });
+
+  it("forwards a regeneration inline keyboard", async () => {
+    const parsed = { update_id: 100 };
+    const inlineKeyboard = [[{
+      text: "Regenerate",
+      callbackData:
+        "speaking:regenerate:550e8400-e29b-41d4-a716-446655440000",
+    }]];
+    parseTelegramUpdate.mockReturnValue(parsed);
+    processTelegramUpdate.mockResolvedValue({
+      chatId: 42,
+      replyToMessageId: 7,
+      text: "Regenerate?",
+      inlineKeyboard,
+    });
+    sendTelegramMessage.mockResolvedValue(undefined);
+
+    const response = await POST(request());
+
+    expect(response.status).toBe(200);
+    expect(sendTelegramMessage).toHaveBeenCalledWith(
+      42,
+      "Regenerate?",
+      7,
+      undefined,
+      "en",
+      inlineKeyboard,
     );
   });
 

@@ -4,6 +4,8 @@ import { DEFAULT_APP_ID } from "@/lib/domain/app";
 import { handleTelegramWebhook } from "@/lib/server/telegram-route";
 import { getLanguageFromRoute } from "@/languages/registry";
 
+export const maxDuration = 300;
+
 export async function POST(
   request: Request,
   { params }: { params: Promise<{ appId: string }> },

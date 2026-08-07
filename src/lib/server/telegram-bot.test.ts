@@ -1,6 +1,11 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { sendTelegramMessage } from "./telegram-bot";
+import {
+  answerTelegramCallbackQuery,
+  deleteTelegramMessage,
+  editTelegramMessage,
+  sendTelegramMessage,
+} from "./telegram-bot";
 
 const originalToken = process.env.TELEGRAM_BOT_TOKEN;
 const originalCzechToken = process.env.TELEGRAM_CZ_BOT_TOKEN;
@@ -23,7 +28,7 @@ describe("Telegram bot client", () => {
   it("sends a reply with reply parameters", async () => {
     process.env.TELEGRAM_BOT_TOKEN = "123:test";
     const fetchMock = vi.fn().mockResolvedValue(
-      new Response(JSON.stringify({ ok: true }), { status: 200 }),
+      new Response(JSON.stringify({ ok: true, result: { message_id: 99 } }), { status: 200 }),
     );
     vi.stubGlobal("fetch", fetchMock);
 
@@ -48,7 +53,7 @@ describe("Telegram bot client", () => {
   it("sends HTML formatting when requested", async () => {
     process.env.TELEGRAM_BOT_TOKEN = "123:test";
     const fetchMock = vi.fn().mockResolvedValue(
-      new Response(JSON.stringify({ ok: true }), { status: 200 }),
+      new Response(JSON.stringify({ ok: true, result: { message_id: 99 } }), { status: 200 }),
     );
     vi.stubGlobal("fetch", fetchMock);
 
@@ -70,6 +75,79 @@ describe("Telegram bot client", () => {
             message_id: 7,
             allow_sending_without_reply: true,
           },
+        }),
+      }),
+    );
+  });
+
+  it("sends a single-row inline keyboard", async () => {
+    process.env.TELEGRAM_BOT_TOKEN = "123:test";
+    const fetchMock = vi.fn().mockResolvedValue(
+      new Response(JSON.stringify({ ok: true, result: { message_id: 99 } }), { status: 200 }),
+    );
+    vi.stubGlobal("fetch", fetchMock);
+
+    await sendTelegramMessage(
+      42,
+      "Regenerate?",
+      7,
+      undefined,
+      "en",
+      [[{
+        text: "Regenerate",
+        callbackData:
+          "speaking:regenerate:550e8400-e29b-41d4-a716-446655440000",
+      }]],
+    );
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      "https://api.telegram.org/bot123:test/sendMessage",
+      expect.objectContaining({
+        body: JSON.stringify({
+          chat_id: 42,
+          text: "Regenerate?",
+          reply_markup: {
+            inline_keyboard: [[{
+              text: "Regenerate",
+              callback_data:
+                "speaking:regenerate:550e8400-e29b-41d4-a716-446655440000",
+            }]],
+          },
+          reply_parameters: {
+            message_id: 7,
+            allow_sending_without_reply: true,
+          },
+        }),
+      }),
+    );
+  });
+
+  it("acknowledges callbacks and edits confirmation messages without buttons", async () => {
+    process.env.TELEGRAM_BOT_TOKEN = "123:test";
+    const fetchMock = vi.fn().mockImplementation(async () =>
+      new Response(JSON.stringify({ ok: true, result: true }), { status: 200 }),
+    );
+    vi.stubGlobal("fetch", fetchMock);
+
+    await answerTelegramCallbackQuery("callback-1");
+    await editTelegramMessage(42, 9, "Regenerating…");
+
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      1,
+      "https://api.telegram.org/bot123:test/answerCallbackQuery",
+      expect.objectContaining({
+        body: JSON.stringify({ callback_query_id: "callback-1" }),
+      }),
+    );
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      2,
+      "https://api.telegram.org/bot123:test/editMessageText",
+      expect.objectContaining({
+        body: JSON.stringify({
+          chat_id: 42,
+          message_id: 9,
+          text: "Regenerating…",
+          reply_markup: { inline_keyboard: [] },
         }),
       }),
     );
@@ -99,7 +177,7 @@ describe("Telegram bot client", () => {
   it("sends Czech replies through the Czech bot", async () => {
     process.env.TELEGRAM_CZ_BOT_TOKEN = "456:czech";
     const fetchMock = vi.fn().mockResolvedValue(
-      new Response(JSON.stringify({ ok: true }), { status: 200 }),
+      new Response(JSON.stringify({ ok: true, result: { message_id: 99 } }), { status: 200 }),
     );
     vi.stubGlobal("fetch", fetchMock);
 
@@ -108,6 +186,23 @@ describe("Telegram bot client", () => {
     expect(fetchMock).toHaveBeenCalledWith(
       "https://api.telegram.org/bot456:czech/sendMessage",
       expect.any(Object),
+    );
+  });
+
+  it("deletes an obsolete speaking task message", async () => {
+    process.env.TELEGRAM_BOT_TOKEN = "123:test";
+    const fetchMock = vi.fn().mockResolvedValue(
+      new Response(JSON.stringify({ ok: true, result: true }), { status: 200 }),
+    );
+    vi.stubGlobal("fetch", fetchMock);
+
+    await deleteTelegramMessage(42, 88);
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      "https://api.telegram.org/bot123:test/deleteMessage",
+      expect.objectContaining({
+        body: JSON.stringify({ chat_id: 42, message_id: 88 }),
+      }),
     );
   });
 });

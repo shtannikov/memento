@@ -5,7 +5,7 @@ export const EVAL_CASES: EvalCase[] = [
   {
     id: "czech-starter-vocabulary",
     description:
-      "Generates grammatical Czech cards with natural inflection and reflexive particles.",
+      "Generates grammatical Czech cards after exact answer substitution, with natural inflection and reflexive particles placed exactly once.",
     appId: CZECH_LANGUAGE.id,
     items: CZECH_LANGUAGE.starterVocabulary.map((item, index) => ({
       id: String(index + 501),

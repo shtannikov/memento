@@ -12,7 +12,10 @@ export type StoredVocabularyItem = {
   id: string;
   term: string;
   definition: string;
-  status: "learning" | "learned";
+  status: "learning" | "practicing" | "learned";
+  consecutiveCorrect?: number;
+  correctUses?: number;
+  practiceRank?: number;
 };
 
 export async function ensureUserAndSeed(
@@ -95,7 +98,11 @@ export async function ensureUserAndSeed(
 export async function loadVocabulary(
   userId: number,
   appId: AppId = DEFAULT_APP_ID,
-): Promise<{ learning: StoredVocabularyItem[]; learned: StoredVocabularyItem[] }> {
+): Promise<{
+  learning: StoredVocabularyItem[];
+  practicing: StoredVocabularyItem[];
+  learned: StoredVocabularyItem[];
+}> {
   const { data, error } = await getMementoDb()
     .from("vocabulary_items")
     .select("id, term, definition, status")
@@ -105,16 +112,89 @@ export async function loadVocabulary(
     .order("created_at", { ascending: false });
   if (error) throw error;
 
+  const itemIds = (data ?? []).map((item) => item.id);
+  const [speakingResult, schedulingResult] = itemIds.length
+    ? await Promise.all([
+        getMementoDb()
+          .from("speaking_states")
+          .select("vocabulary_id,correct_uses,practice_rank")
+          .in("vocabulary_id", itemIds),
+        getMementoDb()
+          .from("scheduling_states")
+          .select("vocabulary_id,consecutive_correct")
+          .in("vocabulary_id", itemIds),
+      ])
+    : [
+        { data: [], error: null },
+        { data: [], error: null },
+      ];
+  const { data: speakingStates, error: speakingError } = speakingResult;
+  const { data: schedulingStates, error: schedulingError } = schedulingResult;
+  if (speakingError) throw speakingError;
+  if (schedulingError) throw schedulingError;
+  const speakingProgress = new Map(
+    (speakingStates ?? []).map((state) => [
+      String(state.vocabulary_id),
+      {
+        correctUses: Number(state.correct_uses),
+        practiceRank: Number(state.practice_rank),
+      },
+    ]),
+  );
+  const learningProgress = new Map(
+    (schedulingStates ?? []).map((state) => [
+      String(state.vocabulary_id),
+      Number(state.consecutive_correct),
+    ]),
+  );
   const items = (data ?? []).map((item) => ({
     id: String(item.id),
     term: item.term,
     definition: item.definition,
-    status: item.status as "learning" | "learned",
+    status: item.status as "learning" | "practicing" | "learned",
+    ...(item.status === "learning"
+      ? {
+          consecutiveCorrect:
+            learningProgress.get(String(item.id)) ?? 0,
+        }
+      : {}),
+    ...(item.status === "practicing"
+      ? {
+          correctUses:
+            speakingProgress.get(String(item.id))?.correctUses ?? 0,
+          practiceRank:
+            speakingProgress.get(String(item.id))?.practiceRank ??
+            Number.MAX_SAFE_INTEGER,
+        }
+      : {}),
   }));
   return {
     learning: items.filter((item) => item.status === "learning"),
+    practicing: items
+      .filter((item) => item.status === "practicing")
+      .sort(
+        (left, right) =>
+          (left.practiceRank ?? Number.MAX_SAFE_INTEGER) -
+          (right.practiceRank ?? Number.MAX_SAFE_INTEGER),
+      ),
     learned: items.filter((item) => item.status === "learned"),
   };
+}
+
+export async function reorderPracticingVocabulary(
+  userId: number,
+  appId: AppId,
+  vocabularyIds: string[],
+): Promise<void> {
+  const { error } = await getMementoDb().rpc(
+    "reorder_practicing_vocabulary",
+    {
+      requested_user_id: userId,
+      requested_app_id: appId,
+      requested_vocabulary_ids: vocabularyIds.map(Number),
+    },
+  );
+  if (error) throw error;
 }
 
 export async function importVocabularyItems(
@@ -141,16 +221,39 @@ export async function importVocabularyItems(
   return items.length;
 }
 
-export async function resetVocabulary(
+export async function prepareLearningReset(
   user: TelegramUser,
   appId: AppId = DEFAULT_APP_ID,
-): Promise<void> {
+): Promise<{ learningCount: number }> {
   await ensureUserAndSeed(user, appId);
-  const { error } = await getMementoDb().rpc("reset_vocabulary", {
+  const { data, error } = await getMementoDb().rpc("prepare_learning_reset", {
     requested_user_id: user.id,
     requested_app_id: appId,
   });
   if (error) throw error;
+  return data as { learningCount: number };
+}
+
+export async function confirmLearningReset(
+  user: TelegramUser,
+  appId: AppId = DEFAULT_APP_ID,
+): Promise<{ learningCount: number }> {
+  await ensureUserAndSeed(user, appId);
+  const { data, error } = await getMementoDb().rpc("confirm_learning_reset", {
+    requested_user_id: user.id,
+    requested_app_id: appId,
+  });
+  if (error) {
+    if (error.message.includes("RESET_CONFIRMATION_EXPIRED")) {
+      throw new AppError(
+        "RESET_CONFIRMATION_EXPIRED",
+        "That reset confirmation has expired. Send /reset to start again.",
+        409,
+      );
+    }
+    throw error;
+  }
+  return data as { learningCount: number };
 }
 
 export async function resetSchedule(vocabularyId: string): Promise<void> {

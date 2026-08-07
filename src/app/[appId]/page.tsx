@@ -34,5 +34,11 @@ export default async function LanguagePage({
   const language = getLanguageFromRoute(routeAppId);
   if (!language || language.id === DEFAULT_APP_ID) notFound();
 
-  return <MementoApp appId={language.id} appName={language.appName} />;
+  return (
+    <MementoApp
+      appId={language.id}
+      appName={language.appName}
+      speakingEnabled={Boolean(language.speaking)}
+    />
+  );
 }

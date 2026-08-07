@@ -3,15 +3,15 @@ import styles from "./vocabulary-screen.module.css";
 function VocabularyTotal({
   count,
   label,
-  learned = false,
+  tone,
 }: {
   count: number;
   label: string;
-  learned?: boolean;
+  tone?: "practicing" | "learned";
 }) {
   return (
     <div className={styles.total}>
-      <p className={learned ? styles.learnedTotal : undefined}>
+      <p className={tone ? styles[`${tone}Total`] : undefined}>
         {count}
       </p>
       <span>{label}</span>
@@ -21,10 +21,14 @@ function VocabularyTotal({
 
 export function VocabularyHeader({
   learningCount,
+  practicingCount,
   learnedCount,
+  speakingEnabled,
 }: {
   learningCount: number;
+  practicingCount: number;
   learnedCount: number;
+  speakingEnabled: boolean;
 }) {
   return (
     <header className={styles.header}>
@@ -33,7 +37,17 @@ export function VocabularyHeader({
         <div className={styles.totals} aria-label="Vocabulary totals">
           <VocabularyTotal count={learningCount} label="learning" />
           <div className={styles.totalDivider} />
-          <VocabularyTotal count={learnedCount} label="Learned" learned />
+          {speakingEnabled && (
+            <>
+              <VocabularyTotal
+                count={practicingCount}
+                label="practicing"
+                tone="practicing"
+              />
+              <div className={styles.totalDivider} />
+            </>
+          )}
+          <VocabularyTotal count={learnedCount} label="learned" tone="learned" />
         </div>
       </div>
     </header>

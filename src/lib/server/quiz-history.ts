@@ -10,7 +10,7 @@ import { normalizeQuizSentence } from "./openai";
 import { getMementoDb } from "./supabase";
 
 const RECENT_ROUND_LIMIT = 10;
-const RECENT_SENTENCE_LIMIT_PER_ITEM = 5;
+const RECENT_SENTENCE_LIMIT_PER_ITEM = 3;
 
 type StoredQuizSentence = {
   vocabulary_id: number | string;

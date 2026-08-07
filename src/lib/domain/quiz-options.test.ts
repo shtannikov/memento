@@ -1,8 +1,21 @@
 import { describe, expect, it, vi } from "vitest";
 
-import { randomizeQuizOptions } from "./quiz-options";
+import { randomizeQuizCards } from "./quiz-options";
 
-describe("quiz option randomization", () => {
+describe("quiz card randomization", () => {
+  it("shuffles the question order without mutating generated cards", () => {
+    const cards = Array.from({ length: 3 }, (_, index) => ({
+      id: String(index),
+      answer: "correct",
+      options: ["correct", "wrong one", "wrong two", "wrong three"],
+    }));
+
+    const randomized = randomizeQuizCards(cards, () => 0);
+
+    expect(randomized.map((card) => card.id)).toEqual(["1", "2", "0"]);
+    expect(cards.map((card) => card.id)).toEqual(["0", "1", "2"]);
+  });
+
   it("balances correct-answer positions across a round", () => {
     const cards = Array.from({ length: 10 }, (_, index) => ({
       id: String(index),
@@ -13,7 +26,7 @@ describe("quiz option randomization", () => {
       Math.floor(maxExclusive / 2),
     );
 
-    const randomized = randomizeQuizOptions(cards, randomIndex);
+    const randomized = randomizeQuizCards(cards, randomIndex);
     const correctPositions = randomized.map((card) =>
       card.options.indexOf(card.answer),
     );
@@ -39,7 +52,7 @@ describe("quiz option randomization", () => {
     ];
     const originalOptions = [...cards[0].options];
 
-    const [randomized] = randomizeQuizOptions(cards, () => 0);
+    const [randomized] = randomizeQuizCards(cards, () => 0);
 
     expect(
       randomized.options.filter(
@@ -53,7 +66,7 @@ describe("quiz option randomization", () => {
 
   it("rejects a card whose options lost the correct answer", () => {
     expect(() =>
-      randomizeQuizOptions(
+      randomizeQuizCards(
         [
           {
             answer: "correct",

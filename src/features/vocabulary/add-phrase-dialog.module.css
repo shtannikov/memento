@@ -153,6 +153,10 @@
   opacity: 0.4;
 }
 
+.importHint {
+  margin-top: 14px;
+}
+
 @media (max-width: 600px) {
   .form input {
     font-size: 1rem;
