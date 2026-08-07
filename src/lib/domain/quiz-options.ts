@@ -9,7 +9,7 @@ type RandomIndex = (maxExclusive: number) => number;
 
 const OPTION_COUNT = 4;
 
-export function randomizeQuizOptions<T extends QuizCardWithOptions>(
+export function randomizeQuizCards<T extends QuizCardWithOptions>(
   cards: T[],
   randomIndex: RandomIndex = randomInt,
 ): T[] {
@@ -18,7 +18,7 @@ export function randomizeQuizOptions<T extends QuizCardWithOptions>(
     randomIndex,
   );
 
-  return cards.map((card, cardIndex) => {
+  const cardsWithRandomizedOptions = cards.map((card, cardIndex) => {
     const options = shuffle(card.options, randomIndex);
     const normalizedAnswer = normalizeOption(card.answer);
     const currentCorrectIndex = options.findIndex(
@@ -35,6 +35,8 @@ export function randomizeQuizOptions<T extends QuizCardWithOptions>(
     ];
     return { ...card, options };
   });
+
+  return shuffle(cardsWithRandomizedOptions, randomIndex);
 }
 
 function shuffle<T>(values: T[], randomIndex: RandomIndex): T[] {

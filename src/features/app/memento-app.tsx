@@ -14,9 +14,11 @@ type Destination = "vocabulary" | "quiz";
 export function MementoApp({
   appId,
   appName,
+  speakingEnabled,
 }: {
   appId: AppId;
   appName: string;
+  speakingEnabled: boolean;
 }) {
   const [destination, setDestination] = useState<Destination>("vocabulary");
   const [initData, setInitData] = useState<string | null>(null);
@@ -72,9 +74,9 @@ export function MementoApp({
 
   return (
     <main className={styles.canvas}>
-      <section className={styles.mobileShell} aria-live="polite">
+      <section className={styles.mobileShell}>
         {(startupError || vocabulary.error) && (
-          <div className={styles.stateScreen}>
+          <div className={styles.stateScreen} role="alert">
             <h1>{appName}</h1>
             <p>{startupError ?? vocabulary.error}</p>
             {vocabulary.error && (
@@ -84,7 +86,11 @@ export function MementoApp({
         )}
 
         {!startupError && !vocabulary.error && vocabulary.loading && (
-          <div className={styles.stateScreen}>
+          <div
+            className={styles.stateScreen}
+            role="status"
+            aria-live="polite"
+          >
             <h1>Loading {appName}…</h1>
           </div>
         )}
@@ -96,10 +102,15 @@ export function MementoApp({
           destination === "vocabulary" && (
             <VocabularyScreen
               learning={vocabulary.learning}
+              practicing={vocabulary.practicing}
               learned={vocabulary.learned}
+              speakingEnabled={speakingEnabled}
               onAdd={vocabulary.add}
               onRemove={vocabulary.remove}
               onChangeStatus={vocabulary.changeStatus}
+              onReorderPracticing={vocabulary.reorderPracticing}
+              mutating={vocabulary.mutating}
+              reordering={vocabulary.reordering}
               onStartQuiz={() => setDestination("quiz")}
             />
           )}

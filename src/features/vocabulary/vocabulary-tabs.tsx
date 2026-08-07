@@ -6,9 +6,11 @@ import type { VocabularyStatus } from "./vocabulary.types";
 export function VocabularyTabs({
   activeTab,
   onChange,
+  speakingEnabled,
 }: {
   activeTab: VocabularyStatus;
   onChange: (tab: VocabularyStatus) => void;
+  speakingEnabled: boolean;
 }) {
   return (
     <Tabs.Root
@@ -20,6 +22,9 @@ export function VocabularyTabs({
         aria-label="Vocabulary status"
       >
         <Tabs.Trigger value="learning">Learning</Tabs.Trigger>
+        {speakingEnabled && (
+          <Tabs.Trigger value="practicing">Practicing</Tabs.Trigger>
+        )}
         <Tabs.Trigger value="learned">Learned</Tabs.Trigger>
       </Tabs.List>
     </Tabs.Root>

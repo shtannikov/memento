@@ -1,5 +1,6 @@
 import { CZECH_LANGUAGE } from "./cz";
 import { ENGLISH_LANGUAGE } from "./en";
+import type { LanguageDefinition } from "./types";
 
 const LANGUAGE_REGISTRY = {
   [ENGLISH_LANGUAGE.id]: ENGLISH_LANGUAGE,
@@ -7,7 +8,7 @@ const LANGUAGE_REGISTRY = {
 } as const;
 
 export type AppId = keyof typeof LANGUAGE_REGISTRY;
-export type Language = (typeof LANGUAGE_REGISTRY)[AppId];
+export type Language = LanguageDefinition<AppId>;
 
 export const APP_IDS = Object.keys(LANGUAGE_REGISTRY) as AppId[];
 

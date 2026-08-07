@@ -6,6 +6,7 @@ export default function Page() {
     <MementoApp
       appId={ENGLISH_LANGUAGE.id}
       appName={ENGLISH_LANGUAGE.appName}
+      speakingEnabled={Boolean(ENGLISH_LANGUAGE.speaking)}
     />
   );
 }

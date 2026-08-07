@@ -18,6 +18,9 @@ export const CZECH_LANGUAGE = {
   appName: "Pomněnka",
   locale: "cs-CZ",
   targetLanguage: "Czech",
+  transcriptionLanguage: "cs",
+  transcriptionPrompt:
+    "Přepiš řeč přesně tak, jak zazněla. Zachovej gramatické chyby, volbu slov, opakování, výplňková slova, falešné začátky a vlastní opravy. Nic nepřeformulovávej ani neopravuj. Doplň běžnou interpunkci a velká písmena pouze podle pauz a intonace.",
   appPath: "/cz",
   webhookPath: "/api/telegram/webhook/cz",
   botTokenEnv: "TELEGRAM_CZ_BOT_TOKEN",
@@ -26,20 +29,24 @@ export const CZECH_LANGUAGE = {
   quizSystemPrompt:
     "You create unambiguous Czech vocabulary exercises and follow the output schema exactly.",
   graderPrompt:
-    "Grade Czech vocabulary exercises strictly. Judge the complete sentence after replacing ___ with the displayed answer. Accept a naturally inflected Czech form of the canonical target, but require correct case, person, number, gender, aspect, word order, preposition, and reflexive particle se/si. A pass requires every filled sentence to be idiomatic Czech, semantically aligned with its possibly non-Czech definition, unambiguous among the four visible options, and not to reveal or translate the definition.",
+    "Grade Czech vocabulary exercises strictly. Replace ___ with the displayed answer exactly as written, without inflecting, deleting, reordering, or supplying any words, and judge the resulting complete sentence. Accept a naturally inflected Czech form of the canonical target as the displayed answer, but require correct case, person, number, gender, aspect, word order, preposition, and exactly one correctly placed reflexive particle se/si. A pass requires every exactly filled sentence to be idiomatic Czech, semantically aligned with its possibly non-Czech definition, unambiguous among the four visible options, and not to reveal or translate the definition.",
   buildQuizPrompt(items, recentSentences) {
     return [
       "Create one Czech multiple-choice vocabulary card for every supplied item.",
       "The target is always Czech. Definitions may be in English, Russian, or another language; use them only as semantic guidance.",
       "Each sentence must contain the exact blank marker ___ once. Replacing ___ with the displayed answer must produce a complete, idiomatic Czech sentence.",
+      "Treat answer as the final displayed replacement string. Insert it into ___ exactly as written: do not inflect it, delete or reorder neighboring words, or imagine any additional words after insertion.",
       "Inflect the canonical target when the sentence requires it. Czech case, person, number, gender, tense, aspect, preposition, and word order must agree with the visible context.",
       "Keep reflexive particles se and si with the expression in their natural Czech position. A particle may be in the visible sentence or in the answer; never omit it or include it in both places.",
       "Dictionary placeholders such as něco and někdo are semantic slots. Replace them with a concrete complement in the sentence instead of displaying a conflicting placeholder.",
+      "Do not repeat the target verb, its negated form, or the same verbal idea outside the blank. If the answer is an infinitive, the blank must occupy a valid infinitive position after a governing verb.",
       "For example, for 'zapamatovat si' use 'Jeho číslo si musím ___' with answer 'zapamatovat'; for 'starat se o někoho' use 'Každý den se ___ nemocnou babičku' with answer 'starám o'.",
       "Short adverbs such as víc, ještě, and už need decisive visible context, especially when they appear together as options. For example, for 'víc' use 'Mám jen jednu židli, ale potřebuji jich ___' with answer 'víc'; for 'už' use 'Včera neuměl plavat, ale dnes ___ ano' with answer 'už'.",
+      "When short adverbs with opposing time meanings are visible options, use decisive syntax and polarity cues so swapping them becomes illogical; do not rely on time-of-day words alone.",
       "Do not replace the supplied target with a more natural synonym. Rewrite the surrounding Czech sentence so a form of the supplied target fits naturally.",
       "The four options must be four distinct displayed forms derived from targets in this input whenever possible.",
       "Substitute all four options into the sentence before returning a card. Exactly one option must be grammatically and semantically best from the visible Czech context.",
+      "As a final check, replace ___ with the exact answer string and read the entire result. If it is not grammatically complete and idiomatic without any hidden transformation, rewrite the card.",
       "Do not translate, reveal, or quote definitions in sentences.",
       "Create fresh situations and wording. For each vocabularyId, do not reuse or closely paraphrase any of its recentSentences.",
       "Return every vocabularyId exactly once and do not add items.",

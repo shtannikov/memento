@@ -8,33 +8,54 @@ import {
 const IMPORT_COMMAND = /^\/import(?:@[a-z0-9_]+)?$/i;
 const IMPORT_COMMAND_PREFIX = /^\/import(?:@[a-z0-9_]+)?(?=$|\s)/i;
 const RESET_COMMAND = /^\/reset(?:@[a-z0-9_]+)?$/i;
+const HELP_COMMAND = /^\/help(?:@[a-z0-9_]+)?$/i;
+const SPEAKING_COMMAND = /^\/speaking(?:@[a-z0-9_]+)?$/i;
 const START_COMMAND = /^\/start(?:@[a-z0-9_]+)?(?:\s.*)?$/i;
 const LIST_MARKER =
   /^(?:(?:[-*+•◦‣⁃∙·▪▫●○■□◆◇▶▷►▸➤➜–—]|[☐☑☒]|\[(?: |x|X)\])[ \t]?|(?:\d{1,3}[.)]|\(\d{1,3}\))[ \t])/u;
 const ITEM_SEPARATOR = / (?:-|—) /u;
+const IMPORT_RULES =
+  "☝️A few rules:\n" +
+  `• A phrase can’t be longer than ${TERM_MAX_LENGTH} characters\n` +
+  `• A description can’t be longer than ${DEFINITION_MAX_LENGTH} characters\n` +
+  `• You can import up to ${IMPORT_MAX_ITEMS} phrases at a time\n\n` +
+  "💡 <b>Tip:</b> ChatGPT can generate and format this list for you. " +
+  "Just paste this message into ChatGPT and ask it to follow the formatting rules.";
 const IMPORT_FORMAT_ERROR =
   "⚠️ I couldn’t import that list.\n\n" +
   "Please use this format:\n" +
   "/import\n" +
   "• phrase — description\n" +
   "• phrase — description\n\n" +
-  "☝️A few rules:\n" +
-  `• A phrase can’t be longer than ${TERM_MAX_LENGTH} characters\n` +
-  `• A description can’t be longer than ${DEFINITION_MAX_LENGTH} characters\n` +
-  `• You can import up to ${IMPORT_MAX_ITEMS} phrases at a time\n\n` +
-  "💡 <b>Tip:</b> ask ChatGPT to convert your vocabulary to this format before importing it.";
+  IMPORT_RULES;
+const EMPTY_IMPORT_HELP =
+  "📥 Ready to add some phrases?\n\n" +
+  "Send everything in one message using this format:\n" +
+  "/import\n" +
+  "• phrase — description\n" +
+  "• phrase — description\n\n" +
+  IMPORT_RULES;
 
 export type ImportParseResult =
   | { ok: true; items: VocabularyInput[] }
   | { ok: false; message: string; formatHelp?: true };
 
-export type VocabularyCommand = "import" | "reset" | "start";
+export type VocabularyCommand =
+  | "help"
+  | "import"
+  | "reset"
+  | "start"
+  | "speaking";
 
 export function readVocabularyCommand(text: string): VocabularyCommand | null {
   const lines = normalizeLines(text);
   const firstLine = lines[0]?.trim() ?? "";
 
   if (IMPORT_COMMAND_PREFIX.test(firstLine)) return "import";
+  if (lines.length === 1 && HELP_COMMAND.test(firstLine)) return "help";
+  if (lines.length === 1 && SPEAKING_COMMAND.test(firstLine)) {
+    return "speaking";
+  }
   if (lines.length === 1 && RESET_COMMAND.test(firstLine)) return "reset";
   if (lines.length === 1 && START_COMMAND.test(firstLine)) return "start";
   return null;
@@ -53,7 +74,7 @@ export function parseImportCommand(text: string): ImportParseResult {
     .filter(({ value }) => value.trim().length > 0);
 
   if (itemLines.length === 0) {
-    return invalidFormat();
+    return { ok: false, message: EMPTY_IMPORT_HELP, formatHelp: true };
   }
   if (itemLines.length > IMPORT_MAX_ITEMS) {
     return {

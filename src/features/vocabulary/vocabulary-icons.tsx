@@ -36,6 +36,25 @@ export function UndoIcon() {
   return <SvgIcon path="M9 7 5 11l4 4M5 11h8a5 5 0 1 1 0 10" />;
 }
 
+export function GripIcon() {
+  return (
+    <svg
+      aria-hidden="true"
+      viewBox="0 0 12 20"
+      width="12"
+      height="20"
+      fill="currentColor"
+    >
+      <circle cx="3" cy="4" r="1.25" />
+      <circle cx="9" cy="4" r="1.25" />
+      <circle cx="3" cy="10" r="1.25" />
+      <circle cx="9" cy="10" r="1.25" />
+      <circle cx="3" cy="16" r="1.25" />
+      <circle cx="9" cy="16" r="1.25" />
+    </svg>
+  );
+}
+
 export function PlusIcon() {
   return <SvgIcon path="M12 5v14M5 12h14" size={20} />;
 }

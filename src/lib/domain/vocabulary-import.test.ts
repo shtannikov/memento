@@ -18,6 +18,10 @@ describe("vocabulary import commands", () => {
     expect(readVocabularyCommand("/imported x")).toBeNull();
     expect(readVocabularyCommand("/reset")).toBe("reset");
     expect(readVocabularyCommand("/reset@MementoBot")).toBe("reset");
+    expect(readVocabularyCommand("/reset confirm")).toBeNull();
+    expect(readVocabularyCommand("/speaking")).toBe("speaking");
+    expect(readVocabularyCommand("/speaking@MementoBot")).toBe("speaking");
+    expect(readVocabularyCommand("/task")).toBeNull();
     expect(readVocabularyCommand("/start")).toBe("start");
     expect(readVocabularyCommand("/start@MementoBot")).toBe("start");
     expect(readVocabularyCommand("/start referral-code")).toBe("start");
@@ -76,7 +80,34 @@ describe("vocabulary import commands", () => {
     });
   });
 
-  it("requires the command, at least one item, and the exact separator", () => {
+  it("guides an empty import without presenting it as an error", () => {
+    const emptyHelp =
+      "📥 Ready to add some phrases?\n\n" +
+      "Send everything in one message using this format:\n" +
+      "/import\n" +
+      "• phrase — description\n" +
+      "• phrase — description\n\n" +
+      "☝️A few rules:\n" +
+      "• A phrase can’t be longer than 35 characters\n" +
+      "• A description can’t be longer than 45 characters\n" +
+      "• You can import up to 50 phrases at a time\n\n" +
+      "💡 <b>Tip:</b> ChatGPT can generate and format this list for you. " +
+      "Just paste this message into ChatGPT and ask it to follow the formatting rules.";
+
+    expect(parseImportCommand("/import")).toEqual({
+      ok: false,
+      message: emptyHelp,
+      formatHelp: true,
+    });
+    expect(parseImportCommand("/import@MementoBot\n\n")).toEqual({
+      ok: false,
+      message: emptyHelp,
+      formatHelp: true,
+    });
+    expect(emptyHelp).not.toContain("⚠️");
+  });
+
+  it("requires the command and exact separator for non-empty imports", () => {
     const formatError = {
       ok: false,
       formatHelp: true,
@@ -90,11 +121,11 @@ describe("vocabulary import commands", () => {
         "• A phrase can’t be longer than 35 characters\n" +
         "• A description can’t be longer than 45 characters\n" +
         "• You can import up to 50 phrases at a time\n\n" +
-        "💡 <b>Tip:</b> ask ChatGPT to convert your vocabulary to this format before importing it.",
+        "💡 <b>Tip:</b> ChatGPT can generate and format this list for you. " +
+        "Just paste this message into ChatGPT and ask it to follow the formatting rules.",
     };
 
     expect(parseImportCommand("phrase - description")).toEqual(formatError);
-    expect(parseImportCommand("/import\n\n")).toEqual(formatError);
     expect(parseImportCommand("/import\nphrase-description")).toEqual(
       formatError,
     );

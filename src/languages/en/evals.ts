@@ -1,4 +1,4 @@
-import type { EvalCase } from "../../../evals/types";
+import type { EvalCase, SpeakingEvalCase } from "../../../evals/types";
 import { ENGLISH_LANGUAGE } from ".";
 
 const russianDefinitions = [
@@ -45,6 +45,34 @@ export const EVAL_CASES: EvalCase[] = [
       id: String(index + 101),
       ...item,
     })),
+  },
+  {
+    id: "auxiliary-compatible-answer-forms",
+    description:
+      "Produces a grammatical sentence after exact answer substitution, including when be offended requires a compatible auxiliary and negation.",
+    appId: ENGLISH_LANGUAGE.id,
+    items: [
+      {
+        id: "151",
+        term: "break a sweat",
+        definition: "Make a noticeable physical effort.",
+      },
+      {
+        id: "152",
+        term: "start over",
+        definition: "Begin again from the beginning.",
+      },
+      {
+        id: "153",
+        term: "be offended",
+        definition: "Feel hurt or upset by someone's words or actions.",
+      },
+      {
+        id: "154",
+        term: "take advantage of",
+        definition: "Use an opportunity for your benefit.",
+      },
+    ],
   },
   {
     id: "avoid-recent-russian-definition-cards",
@@ -109,5 +137,136 @@ export const EVAL_CASES: EvalCase[] = [
       },
       { id: "404", term: "yawn", definition: "Зевнуть." },
     ],
+  },
+];
+
+const speakingTask = {
+  id: "00000000-0000-0000-0000-000000000001",
+  topic: "Changing a team plan",
+  domain: "work and collaboration",
+  grammarFocus: "polite requests and indirect questions",
+  prompt:
+    "Tell a teammate why the plan must change, ask for their input, and agree on the next step.",
+  items: [
+    { vocabularyId: "701", term: "take into account", definition: "consider" },
+    { vocabularyId: "702", term: "be responsible for", definition: "have responsibility" },
+    { vocabularyId: "703", term: "wrap up", definition: "finish" },
+  ],
+};
+
+export const SPEAKING_EVAL_CASES: SpeakingEvalCase[] = [
+  {
+    kind: "topic",
+    id: "speaking-topic-coherence",
+    description:
+      "Creates one coherent public-service scenario around the selected domain, grammar focus, and required phrases.",
+    appId: "en",
+    input: {
+      targetDomain: "public services and civic life",
+      targetGrammarFocus: "polite requests and indirect questions",
+      previousTask: {
+        title: "Changing a project deadline",
+        speakingPrompt:
+          "Ask a teammate to move a deadline and agree on a revised plan.",
+        domain: "work and career",
+        grammarFocus: "future plans and predictions",
+      },
+      recentTopics: [
+        { topic: "Returning a purchase", domain: "shopping", grammarFocus: null },
+      ],
+      recentLearnerExcerpts: [
+        "I had to explain why the appointment time did not work for me.",
+      ],
+      requiredPhrases: ["take into account", "be responsible for", "wrap up"],
+    },
+  },
+  {
+    kind: "topic",
+    id: "speaking-topic-unrelated-phrases-stay-coherent",
+    description:
+      "Keeps one natural mission when the separate practice phrases do not belong to a shared scenario.",
+    appId: "en",
+    input: {
+      targetDomain: "housing and neighbourhood",
+      targetGrammarFocus: "first conditional for realistic consequences",
+      recentTopics: [
+        {
+          topic: "A community repair day",
+          domain: "community and social situations",
+          grammarFocus: "first conditional for realistic consequences",
+        },
+      ],
+      recentLearnerExcerpts: [],
+      requiredPhrases: ["a splinter", "a dead-end job"],
+    },
+  },
+  {
+    kind: "answer",
+    id: "speaking-answer-required-phrase-statuses",
+    description:
+      "Distinguishes correct, incorrect, and missing required-phrase usage without generating recommendations.",
+    appId: "en",
+    task: speakingTask,
+    transcript:
+      "Could you tell me whether we can change the plan? We need to take into account the new deadline. I am responsible of the final report, so I would value your input.",
+    expectedUsage: {
+      "701": "used_correctly",
+      "702": "used_incorrectly",
+      "703": "missed",
+    },
+  },
+  {
+    kind: "answer",
+    id: "speaking-answer-grammar-and-phrase-accuracy",
+    description:
+      "Finds clear grammar errors throughout the transcript and rejects grammatically broken required phrases.",
+    appId: "en",
+    task: speakingTask,
+    transcript:
+      "Yesterday I go to the office. I am responsible of the final report. We didn't took the deadline into account, and then we wrap up the meeting.",
+    expectedUsage: {
+      "701": "used_incorrectly",
+      "702": "used_incorrectly",
+      "703": "used_incorrectly",
+    },
+    expectedCorrectionFragments: [
+      "I go",
+      "responsible of",
+      "didn't took",
+      "we wrap up",
+    ],
+    expectGrammarPriority: true,
+  },
+  {
+    kind: "answer",
+    id: "speaking-answer-rejects-phrase-list-cheating",
+    description:
+      "Rejects a list of definitions and meta-commentary instead of treating isolated phrase mentions as speaking practice.",
+    appId: "en",
+    task: speakingTask,
+    transcript:
+      "First, take into account means consider. Second, be responsible for means have responsibility. And third, wrap up means finish. I hope that's enough to pass this task.",
+    expectedUsage: {
+      "701": "used_incorrectly",
+      "702": "used_incorrectly",
+      "703": "used_incorrectly",
+    },
+    expectedSubstantiveSpeech: false,
+  },
+  {
+    kind: "answer",
+    id: "speaking-answer-allows-any-substantive-topic",
+    description:
+      "Awards natural phrase usage in connected speech even when it does not answer the supplied scene.",
+    appId: "en",
+    task: speakingTask,
+    transcript:
+      "Last weekend our family trip went wrong. We had to take into account the heavy rain, and I was responsible for finding a hotel. Once everyone was safe indoors, we wrapped up the evening with dinner.",
+    expectedUsage: {
+      "701": "used_correctly",
+      "702": "used_correctly",
+      "703": "used_correctly",
+    },
+    expectedSubstantiveSpeech: true,
   },
 ];
