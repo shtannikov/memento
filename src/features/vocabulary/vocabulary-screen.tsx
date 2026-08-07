@@ -302,7 +302,7 @@ export function VocabularyScreen({
             </button>
             <button
               className={styles.floatingButton}
-              disabled={mutating || learning.length === 0}
+              disabled={mutating || learning.length < 2}
               aria-busy={mutating}
               onClick={onStartQuiz}
             >

@@ -18,10 +18,16 @@ afterEach(() => {
 });
 
 describe("VocabularyScreen", () => {
-  it("disables the quiz action when Learning has no phrases", async () => {
+  it("disables the quiz action when Learning has fewer than two phrases", async () => {
     const onStartQuiz = vi.fn();
+    const learning: VocabularyItem = {
+      id: "1",
+      term: "follow up",
+      definition: "continue checking",
+      status: "learning",
+    };
 
-    render(
+    const { rerender } = render(
       <VocabularyScreen
         learning={[]}
         practicing={[]}
@@ -39,6 +45,62 @@ describe("VocabularyScreen", () => {
     expect(quizButton).toBeDisabled();
     expect(quizButton).toHaveAttribute("aria-busy", "false");
     expect(onStartQuiz).not.toHaveBeenCalled();
+
+    rerender(
+      <VocabularyScreen
+        learning={[learning]}
+        practicing={[]}
+        learned={[]}
+        speakingEnabled
+        onAdd={vi.fn()}
+        onRemove={vi.fn()}
+        onChangeStatus={vi.fn()}
+        onReorderPracticing={vi.fn()}
+        onStartQuiz={onStartQuiz}
+      />,
+    );
+
+    expect(screen.getByRole("button", { name: "Start quiz" })).toBeDisabled();
+    expect(onStartQuiz).not.toHaveBeenCalled();
+  });
+
+  it("enables the quiz action when Learning has two phrases", async () => {
+    const user = userEvent.setup();
+    const onStartQuiz = vi.fn();
+    const learning: VocabularyItem[] = [
+      {
+        id: "1",
+        term: "follow up",
+        definition: "continue checking",
+        status: "learning",
+      },
+      {
+        id: "2",
+        term: "take into account",
+        definition: "consider",
+        status: "learning",
+      },
+    ];
+
+    render(
+      <VocabularyScreen
+        learning={learning}
+        practicing={[]}
+        learned={[]}
+        speakingEnabled
+        onAdd={vi.fn()}
+        onRemove={vi.fn()}
+        onChangeStatus={vi.fn()}
+        onReorderPracticing={vi.fn()}
+        onStartQuiz={onStartQuiz}
+      />,
+    );
+
+    const quizButton = screen.getByRole("button", { name: "Start quiz" });
+    expect(quizButton).toBeEnabled();
+
+    await user.click(quizButton);
+    expect(onStartQuiz).toHaveBeenCalledOnce();
   });
 
   it("shows a toast after successful phrase moves and removal", async () => {
