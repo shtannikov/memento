@@ -14,8 +14,6 @@ export function buildSpeakingTaskMessage(task: SpeakingTask): string {
   return [
     "🎯 <b>Your new speaking task</b>",
     "",
-    `✨ <b>${escapeHtml(task.topic)}</b>`,
-    "",
     "🎬 <b>The scene</b>",
     escapeHtml(task.prompt),
     "",
@@ -39,8 +37,14 @@ export function buildSpeakingFeedbackMessage(
   const phrases = evaluation.requiredPhraseUsage
     .map((item) => `${item.status === "used_correctly" ? "✅" : "❌"} ${escapeHtml(item.phrase)}`)
     .join("\n");
+  const hasCorrections =
+    evaluation.corrections.length > 0 || evaluation.grammarPriority !== null;
   const lines = [
-    "<b>Nice work 👏 A few things I’d fix:</b>",
+    ...(hasCorrections
+      ? ["<b>Nice work 👏 A few things I’d fix:</b>"]
+      : [
+        "<b>You nailed it 👏 I wouldn’t change a thing! Here’s your answer:</b>",
+      ]),
     `<blockquote expandable>${formatTranscript(transcript, evaluation)}</blockquote>`,
   ];
   lines.push("", `🎯 <b>Your practice phrases:</b>\n${phrases}`);

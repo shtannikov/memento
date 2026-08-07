@@ -18,11 +18,40 @@ const task: SpeakingTask = {
 };
 
 describe("speaking messages", () => {
-  it("renders an HTML task card with target phrases", () => {
+  it("renders an HTML task card without a separate topic title", () => {
     const message = buildSpeakingTaskMessage(task);
     expect(message).toContain("Your new speaking task");
+    expect(message).toContain("The scene");
+    expect(message).not.toContain(task.topic);
     expect(message).toContain("<i>take into account</i>");
     expect(message).toContain("send a 1–3 minute voice note");
+  });
+
+  it("celebrates an answer that needs no corrections", () => {
+    const evaluation: AnswerEvaluation = {
+      coverageScore: 100,
+      substantiveSpeech: true,
+      corrections: [],
+      requiredPhraseUsage: [{
+        vocabularyId: "1",
+        phrase: "take into account",
+        status: "used_correctly",
+        matchedText: "take it into account",
+      }],
+      grammarPriority: null,
+      telegramFeedback: "Excellent work.",
+    };
+
+    const message = buildSpeakingFeedbackMessage(
+      "I always take it into account.",
+      evaluation,
+    );
+
+    expect(message).toContain(
+      "<b>You nailed it 👏 I wouldn’t change a thing! Here’s your answer:</b>",
+    );
+    expect(message).not.toContain("transcript");
+    expect(message).not.toContain("A few things I’d fix");
   });
 
   it("renders corrections inline and omits quick stats", () => {
@@ -49,6 +78,8 @@ describe("speaking messages", () => {
       "I took it into account.",
       evaluation,
     );
+    expect(message).toContain("Nice work 👏 A few things I’d fix:");
+    expect(message).not.toContain("You nailed it");
     expect(message).toContain(
       "<blockquote expandable>I <u><s>took</s> <b>have taken</b></u><u> it into account</u>.</blockquote>",
     );
