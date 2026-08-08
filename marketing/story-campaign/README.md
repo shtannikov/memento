@@ -10,8 +10,10 @@ python3 -m pip install -r marketing/story-campaign/requirements.txt
 python3 marketing/story-campaign/generate.py marketing/story-campaign/campaigns/en.json --platform telegram
 ```
 
-The full-size slides, lightweight previews, and contact sheet are written to
-`marketing/story-campaign/output/en/telegram/`.
+The full-size slides, lightweight previews, contact sheet, and Telegram-only
+`chat-cover.jpg` are written to `marketing/story-campaign/output/en/telegram/`.
+The chat cover is 1280×720 (16:9), with a 640×360 preview for quick inspection;
+its companion description is written to `chat-copy.txt` for direct reuse.
 
 The platform argument is required so the intended header treatment is always
 explicit:
@@ -35,7 +37,7 @@ python3 marketing/story-campaign/generate.py marketing/story-campaign/campaigns/
 - `bezel` controls the dark phone frame around each screenshot.
 - `palette` controls the shared dark-blue background and accent colors.
 - `platforms` controls platform-specific treatment such as whether the brand
-  header is shown.
+  header is shown and whether an additional chat image is generated.
 - The official full-resolution logo lives at `assets/logo.png`. Its campaign
   presentation is controlled by `brand.logo_mask`; use `circle` for the current
   lockup or `none` to preserve the square artwork.

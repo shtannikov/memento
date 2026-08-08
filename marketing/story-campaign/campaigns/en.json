@@ -9,7 +9,45 @@
   },
   "platforms": {
     "telegram": {
-      "show_brand": false
+      "show_brand": false,
+      "chat_copy": {
+        "headline": "Save it. Learn it. Use it.",
+        "body": "Add English words and phrases, learn them with quick quizzes, then master their use in real conversations."
+      },
+      "chat_image": {
+        "filename": "chat-cover.jpg",
+        "width": 1280,
+        "height": 720,
+        "copy": {
+          "x": 790,
+          "top": 170,
+          "headline": "Stop collecting\nEnglish words.",
+          "size": 68,
+          "support_top": 365,
+          "support": "Start using it.",
+          "support_size": 68
+        },
+        "fan": [
+          {
+            "screenshot": "vocabulary.png",
+            "width": 450,
+            "x": 35,
+            "top": 75,
+            "angle": -3,
+            "crop_top": 0,
+            "bezel": 9
+          },
+          {
+            "screenshot": "quiz.png",
+            "width": 410,
+            "x": 330,
+            "top": 115,
+            "angle": 3,
+            "crop_top": 0,
+            "bezel": 10
+          }
+        ]
+      }
     },
     "instagram": {
       "show_brand": true

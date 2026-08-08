@@ -77,6 +77,34 @@ def make_background(seed: int, palette: dict[str, str]) -> Image.Image:
     return Image.fromarray(np.clip(base + grain, 0, 255).astype(np.uint8), "RGB").convert("RGBA")
 
 
+def make_chat_background(
+    seed: int,
+    palette: dict[str, str],
+    width: int,
+    height: int,
+) -> Image.Image:
+    """Render the landscape gradient used by Telegram's bot-description image."""
+    top = np.array(color(palette["top"]), dtype=np.float32)[None, None, :]
+    bottom = np.array(color(palette["bottom"]), dtype=np.float32)[None, None, :]
+    y = np.linspace(0, 1, height, dtype=np.float32)[:, None, None]
+    base = top * (1 - y) + bottom * y
+    base = np.repeat(base, width, axis=1)
+
+    yy, xx = np.mgrid[0:height, 0:width]
+    glows = (
+        (round(width * 0.77), round(height * 0.16), round(width * 0.62), color(palette["glow_primary"]), 0.62),
+        (round(width * 0.15), round(height * 0.78), round(width * 0.54), color(palette["glow_secondary"]), 0.28),
+    )
+    for center_x, center_y, radius, glow_color, strength in glows:
+        distance = np.sqrt((xx - center_x) ** 2 + (yy - center_y) ** 2) / radius
+        amount = np.clip(1 - distance, 0, 1) ** 1.8 * strength
+        base = base * (1 - amount[..., None]) + np.array(glow_color) * amount[..., None]
+
+    rng = np.random.default_rng(seed)
+    grain = rng.normal(0, 5.5, (height, width, 1)).astype(np.float32)
+    return Image.fromarray(np.clip(base + grain, 0, 255).astype(np.uint8), "RGB").convert("RGBA")
+
+
 def draw_text(
     canvas: Image.Image,
     position: tuple[int, int],
@@ -293,6 +321,62 @@ def draw_finale_slide(
         paste_with_shadow(canvas, card, position, blur=30, offset_y=22)
 
 
+def render_chat_image(
+    chat: dict[str, Any],
+    output_dir: Path,
+    asset_root: Path,
+    palette: dict[str, str],
+) -> Path:
+    width = chat.get("width", 1280)
+    height = chat.get("height", 720)
+    canvas = make_chat_background(709, palette, width, height)
+
+    for item in chat["fan"]:
+        card = phone_frame(
+            asset_root / item["screenshot"],
+            width=item["width"],
+            crop_top=item.get("crop_top", 0),
+            crop_height=item.get("crop_height"),
+            radius=item.get("radius", 38),
+            bezel=item.get("bezel", 8),
+        )
+        angle = item.get("angle", 0)
+        if angle:
+            card = card.rotate(angle, expand=True, resample=Image.Resampling.BICUBIC)
+        paste_with_shadow(
+            canvas,
+            card,
+            (item["x"], item["top"]),
+            blur=item.get("shadow_blur", 26),
+            offset_y=item.get("shadow_offset_y", 18),
+        )
+
+    copy = chat.get("copy")
+    if copy:
+        draw_text(
+            canvas,
+            (copy["x"], copy["top"]),
+            copy["headline"],
+            copy.get("size", 68),
+            (255, 255, 255, 255),
+            spacing=copy.get("spacing", -3),
+        )
+        draw_text(
+            canvas,
+            (copy.get("support_x", copy["x"] + 4), copy["support_top"]),
+            copy["support"],
+            copy.get("support_size", 36),
+            (*color(palette["accent"]), 235),
+        )
+
+    filename = chat.get("filename", "chat-cover.jpg")
+    destination = output_dir / filename
+    canvas.convert("RGB").save(destination, quality=94, subsampling=0, optimize=True)
+    preview = canvas.convert("RGB").resize((640, 360), Image.Resampling.LANCZOS)
+    preview.save(output_dir / f"{Path(filename).stem}-preview.jpg", quality=86, optimize=True)
+    return destination
+
+
 def render_campaign(config: dict[str, Any], output_dir: Path, platform: str) -> list[Path]:
     if platform not in config["platforms"]:
         available = ", ".join(sorted(config["platforms"]))
@@ -325,6 +409,14 @@ def render_campaign(config: dict[str, Any], output_dir: Path, platform: str) -> 
         thumbnail = canvas.convert("RGB").resize((270, 480), Image.Resampling.LANCZOS)
         contact.paste(thumbnail, (24 + index * 294, 24))
     contact.save(output_dir / "contact-sheet.jpg", quality=91, optimize=True)
+
+    chat = platform_config.get("chat_image")
+    if chat:
+        paths.append(render_chat_image(chat, output_dir, asset_root, config["palette"]))
+    chat_copy = platform_config.get("chat_copy")
+    if chat_copy:
+        copy = f'{chat_copy["headline"]}\n{chat_copy["body"]}\n'
+        (output_dir / "chat-copy.txt").write_text(copy, encoding="utf-8")
     return paths
 
 
@@ -334,7 +426,7 @@ def main() -> None:
     config = load_config(config_path)
     output_dir = args.output.resolve() if args.output else ROOT / "output" / config["id"] / args.platform
     paths = render_campaign(config, output_dir, args.platform)
-    print(f"Generated {len(paths)} slides in {output_dir}")
+    print(f"Generated {len(paths)} campaign images in {output_dir}")
 
 
 if __name__ == "__main__":
