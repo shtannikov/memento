@@ -547,6 +547,66 @@ describe("VocabularyScreen", () => {
     ).not.toBeInTheDocument();
   });
 
+  it("switches tabs from the vocabulary totals", async () => {
+    const user = userEvent.setup();
+    const learning: VocabularyItem = {
+      id: "1",
+      term: "follow up",
+      definition: "continue checking",
+      status: "learning",
+    };
+    const practicing: VocabularyItem = {
+      id: "2",
+      term: "make up my mind",
+      definition: "decide",
+      status: "practicing",
+    };
+    const learned: VocabularyItem = {
+      id: "3",
+      term: "take into account",
+      definition: "consider",
+      status: "learned",
+    };
+
+    render(
+      <VocabularyScreen
+        learning={[learning]}
+        practicing={[practicing]}
+        learned={[learned]}
+        speakingEnabled
+        onAdd={vi.fn()}
+        onRemove={vi.fn()}
+        onChangeStatus={vi.fn()}
+        onReorderPracticing={vi.fn()}
+        onStartQuiz={vi.fn()}
+      />,
+    );
+
+    const learningTotal = screen.getByRole("button", {
+      name: "Show learning phrases (1)",
+    });
+    const practicingTotal = screen.getByRole("button", {
+      name: "Show practicing phrases (1)",
+    });
+    const learnedTotal = screen.getByRole("button", {
+      name: "Show learned phrases (1)",
+    });
+
+    expect(learningTotal).toHaveAttribute("aria-pressed", "true");
+
+    await user.click(practicingTotal);
+    expect(practicingTotal).toHaveAttribute("aria-pressed", "true");
+    expect(
+      screen.getByRole("tabpanel", { name: "Practicing" }),
+    ).toBeInTheDocument();
+
+    await user.click(learnedTotal);
+    expect(learnedTotal).toHaveAttribute("aria-pressed", "true");
+    expect(
+      screen.getByRole("tabpanel", { name: "Learned" }),
+    ).toBeInTheDocument();
+  });
+
   it("stays on Learned while restoring several phrases", async () => {
     const user = userEvent.setup();
     const onChangeStatus = vi.fn();

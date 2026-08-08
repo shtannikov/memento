@@ -152,6 +152,8 @@ export function VocabularyScreen({
           practicingCount={practicing.length}
           learnedCount={learned.length}
           speakingEnabled={speakingEnabled}
+          activeTab={activeTab}
+          onTabChange={changeTab}
         />
 
         <div
