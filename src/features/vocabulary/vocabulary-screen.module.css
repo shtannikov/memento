@@ -49,9 +49,7 @@
   background: transparent;
   text-align: center;
   cursor: pointer;
-  transition:
-    background 160ms ease,
-    transform 100ms ease;
+  transition: transform 100ms ease;
 }
 
 .totalCount {
@@ -78,10 +76,6 @@
   font-weight: 500;
   letter-spacing: 0.025em;
   text-transform: uppercase;
-}
-
-.total:hover {
-  background: #f8fafc;
 }
 
 .total:active {
