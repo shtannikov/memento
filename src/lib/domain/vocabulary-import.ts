@@ -40,12 +40,28 @@ export type ImportParseResult =
   | { ok: true; items: VocabularyInput[] }
   | { ok: false; message: string; formatHelp?: true };
 
-export type VocabularyCommand =
-  | "help"
-  | "import"
-  | "reset"
-  | "start"
-  | "speaking";
+export const SUPPORTED_TELEGRAM_COMMANDS = [
+  "help",
+  "import",
+  "reset",
+  "speaking",
+  "start",
+] as const;
+
+export type VocabularyCommand = typeof SUPPORTED_TELEGRAM_COMMANDS[number];
+
+const SUPPORTED_TELEGRAM_COMMAND_SET = new Set<string>(
+  SUPPORTED_TELEGRAM_COMMANDS,
+);
+
+export function isSupportedTelegramCommand(text: string): boolean {
+  const match = /^\/([a-z0-9_]+)(?:@[a-z0-9_]+)?(?=$|\s)/i.exec(
+    text.trimStart(),
+  );
+  return Boolean(
+    match?.[1] && SUPPORTED_TELEGRAM_COMMAND_SET.has(match[1].toLowerCase()),
+  );
+}
 
 export function readVocabularyCommand(text: string): VocabularyCommand | null {
   const lines = normalizeLines(text);

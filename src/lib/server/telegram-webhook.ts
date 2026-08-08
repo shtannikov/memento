@@ -6,6 +6,7 @@ import { MAX_SPEAKING_TASKS_PER_DAY } from "@/lib/domain/speaking";
 import { getLanguage } from "@/languages/registry";
 
 import {
+  isSupportedTelegramCommand,
   parseImportCommand,
   readVocabularyCommand,
 } from "@/lib/domain/vocabulary-import";
@@ -25,6 +26,7 @@ import {
 } from "./vocabulary";
 import { processSpeakingVoiceAnswer } from "./speaking/answers";
 import {
+  hasActiveSpeakingTask,
   regenerateSpeakingTaskCommand,
   runSpeakingTaskCommand,
 } from "./speaking/tasks";
@@ -104,6 +106,7 @@ type TelegramCommandDependencies = {
   prepareReset: typeof prepareLearningReset;
   confirmReset: typeof confirmLearningReset;
   ensureUser: typeof ensureUserAndSeed;
+  hasActiveSpeakingTask: typeof hasActiveSpeakingTask;
   runSpeaking: typeof runSpeakingTaskCommand;
   regenerateSpeaking: typeof regenerateSpeakingTaskCommand;
   processVoice: typeof processSpeakingVoiceAnswer;
@@ -117,6 +120,7 @@ const defaultDependencies: TelegramCommandDependencies = {
   prepareReset: prepareLearningReset,
   confirmReset: confirmLearningReset,
   ensureUser: ensureUserAndSeed,
+  hasActiveSpeakingTask,
   runSpeaking: runSpeakingTaskCommand,
   regenerateSpeaking: regenerateSpeakingTaskCommand,
   processVoice: processSpeakingVoiceAnswer,
@@ -209,6 +213,12 @@ export async function processTelegramUpdate(
   const command = readVocabularyCommand(message.text);
   const fallbackMessage = buildFallbackMessage(appId);
   if (!command) {
+    if (
+      !isSupportedTelegramCommand(message.text) &&
+      await dependencies.hasActiveSpeakingTask(user.id, appId)
+    ) {
+      return reply("🎙️Send a voice message to complete your speaking task.");
+    }
     return {
       ...reply(fallbackMessage, "HTML"),
       followUps: [{ text: IMPORT_HELP_MESSAGE, parseMode: "HTML" }],
