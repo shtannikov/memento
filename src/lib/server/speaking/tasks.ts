@@ -32,6 +32,23 @@ export type StoredTaskRow = {
   created_at?: string;
 };
 
+export async function hasActiveSpeakingTask(
+  userId: number,
+  appId: AppId,
+): Promise<boolean> {
+  if (!getLanguage(appId).speaking) return false;
+  const { data, error } = await getMementoDb()
+    .from("speaking_tasks")
+    .select("id")
+    .eq("user_id", userId)
+    .eq("app_id", appId)
+    .eq("status", "active")
+    .limit(1)
+    .maybeSingle();
+  if (error) throw error;
+  return Boolean(data);
+}
+
 export async function runSpeakingTaskCommand(
   userId: number,
   appId: AppId,

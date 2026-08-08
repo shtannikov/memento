@@ -20,6 +20,7 @@ vi.mock("../telegram-bot", () => ({
 
 import {
   getOrCreateSpeakingTask,
+  hasActiveSpeakingTask,
   regenerateSpeakingTaskCommand,
   runSpeakingTaskCommand,
 } from "./tasks";
@@ -30,6 +31,22 @@ beforeEach(() => {
 });
 
 describe("speaking task workflow", () => {
+  it("detects whether the learner has an active speaking task", async () => {
+    const activeDb = database([result({ id: "task-1" }, "single")]);
+    mocks.getMementoDb.mockReturnValue(activeDb);
+
+    await expect(hasActiveSpeakingTask(42, "en")).resolves.toBe(true);
+    expect(activeDb.queries[0]?.eq).toHaveBeenCalledWith("status", "active");
+
+    mocks.getMementoDb.mockReturnValue(database([result(null, "single")]));
+    await expect(hasActiveSpeakingTask(42, "en")).resolves.toBe(false);
+  });
+
+  it("does not query speaking tasks for a language without speaking practice", async () => {
+    await expect(hasActiveSpeakingTask(42, "cz")).resolves.toBe(false);
+    expect(mocks.getMementoDb).not.toHaveBeenCalled();
+  });
+
   it("returns an existing ready task without calling topic generation", async () => {
     mocks.getMementoDb.mockReturnValue(database([
       result({
