@@ -1,0 +1,174 @@
+{
+  "id": "en",
+  "locale": "en",
+  "assets_dir": "assets",
+  "brand": {
+    "name": "Memento",
+    "logo": "logo.png",
+    "logo_mask": "circle"
+  },
+  "platforms": {
+    "telegram": {
+      "show_brand": false,
+      "chat_copy": {
+        "headline": "Save it. Learn it. Use it.",
+        "body": "Add English words and phrases, learn them with quick quizzes, then master their use in real conversations."
+      },
+      "chat_image": {
+        "filename": "chat-cover.jpg",
+        "width": 1280,
+        "height": 720,
+        "copy": {
+          "x": 790,
+          "top": 170,
+          "headline": "Stop collecting\nEnglish words.",
+          "size": 68,
+          "support_top": 365,
+          "support": "Start using it.",
+          "support_size": 68
+        },
+        "fan": [
+          {
+            "screenshot": "vocabulary.png",
+            "width": 450,
+            "x": 35,
+            "top": 75,
+            "angle": -3,
+            "crop_top": 0,
+            "bezel": 9
+          },
+          {
+            "screenshot": "quiz.png",
+            "width": 410,
+            "x": 330,
+            "top": 115,
+            "angle": 3,
+            "crop_top": 0,
+            "bezel": 10
+          }
+        ]
+      }
+    },
+    "instagram": {
+      "show_brand": true
+    },
+    "linkedin": {
+      "show_brand": true
+    }
+  },
+  "palette": {
+    "top": "#0B2D79",
+    "middle": "#071943",
+    "bottom": "#020817",
+    "glow_primary": "#1268FF",
+    "glow_secondary": "#18A9EF",
+    "accent": "#77C8FF"
+  },
+  "slides": [
+    {
+      "layout": "headline-top",
+      "screenshot": "vocabulary.png",
+      "copy": {
+        "top": 195,
+        "headline": "Stop collecting\nEnglish words.",
+        "support_top": 495,
+        "support": "Start using them."
+      },
+      "image": {
+        "width": 760,
+        "top": 615,
+        "crop_top": 0,
+        "bezel": 12
+      }
+    },
+    {
+      "layout": "image-top",
+      "screenshot": "add-phrase.png",
+      "copy": {
+        "top": 1535,
+        "headline": "Save what you\nwant to say.",
+        "size": 108,
+        "support_top": 1790,
+        "support": "Words, phrases, even whole lists."
+      },
+      "image": {
+        "width": 600,
+        "top": 170,
+        "crop_top": 0,
+        "bezel": 12
+      }
+    },
+    {
+      "layout": "headline-top",
+      "screenshot": "quiz.png",
+      "copy": {
+        "top": 195,
+        "headline": "Learn it in\nquick quizzes.",
+        "support_top": 445,
+        "support": "A few minutes at a time."
+      },
+      "image": {
+        "width": 760,
+        "top": 660,
+        "crop_top": 0,
+        "bezel": 12
+      }
+    },
+    {
+      "layout": "image-top",
+      "screenshot": "speaking-practice.png",
+      "copy": {
+        "top": 1535,
+        "headline": "Then use it\nout loud.",
+        "support_top": 1790,
+        "support": "Speaking practice with feedback."
+      },
+      "image": {
+        "width": 620,
+        "top": 165,
+        "crop_top": 0,
+        "bezel": 12
+      }
+    },
+    {
+      "layout": "finale",
+      "copy": {
+        "top": 205,
+        "headline": "Save it.\nLearn it.",
+        "accent_top": 495,
+        "accent_line": "Use it.",
+        "support_top": 700,
+        "support": "English that makes it into conversation."
+      },
+      "fan": [
+        {
+          "screenshot": "vocabulary.png",
+          "width": 430,
+          "x": -45,
+          "top": 1190,
+          "angle": -10,
+          "crop_top": 0,
+          "bezel": 8
+        },
+        {
+          "screenshot": "quiz.png",
+          "width": 430,
+          "x": 325,
+          "top": 1155,
+          "angle": 0,
+          "crop_top": 0,
+          "bezel": 8
+        },
+        {
+          "screenshot": "speaking-practice.png",
+          "width": 430,
+          "x": 710,
+          "top": 1190,
+          "angle": 10,
+          "crop_top": 0,
+          "bezel": 8
+        }
+      ]
+    }
+  ]
+}
