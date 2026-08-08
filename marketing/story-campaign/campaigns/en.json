@@ -7,6 +7,17 @@
     "logo": "logo.png",
     "logo_mask": "circle"
   },
+  "platforms": {
+    "telegram": {
+      "show_brand": false
+    },
+    "instagram": {
+      "show_brand": true
+    },
+    "linkedin": {
+      "show_brand": true
+    }
+  },
   "palette": {
     "top": "#0B2D79",
     "middle": "#071943",
@@ -27,7 +38,7 @@
       },
       "image": {
         "width": 760,
-        "top": 615,
+        "top": 645,
         "crop_top": 0,
         "bezel": 12
       }
@@ -60,7 +71,7 @@
       },
       "image": {
         "width": 760,
-        "top": 560,
+        "top": 590,
         "crop_top": 0,
         "bezel": 12
       }

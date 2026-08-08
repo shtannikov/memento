@@ -21,13 +21,14 @@ FONT_PATH = Path("/System/Library/Fonts/SFNS.ttf")
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("config", type=Path, help="Campaign JSON file")
+    parser.add_argument("--platform", required=True, help="Target platform configured by the campaign")
     parser.add_argument("--output", type=Path, help="Override the output directory")
     return parser.parse_args()
 
 
 def load_config(path: Path) -> dict[str, Any]:
     config = json.loads(path.read_text(encoding="utf-8"))
-    required = {"id", "brand", "palette", "slides"}
+    required = {"id", "brand", "palette", "platforms", "slides"}
     missing = sorted(required - config.keys())
     if missing:
         raise ValueError(f"Missing campaign fields: {', '.join(missing)}")
@@ -292,7 +293,11 @@ def draw_finale_slide(
         paste_with_shadow(canvas, card, position, blur=30, offset_y=22)
 
 
-def render_campaign(config: dict[str, Any], output_dir: Path) -> list[Path]:
+def render_campaign(config: dict[str, Any], output_dir: Path, platform: str) -> list[Path]:
+    if platform not in config["platforms"]:
+        available = ", ".join(sorted(config["platforms"]))
+        raise ValueError(f"Unknown platform {platform!r}. Available platforms: {available}")
+    platform_config = config["platforms"][platform]
     output_dir.mkdir(parents=True, exist_ok=True)
     asset_root = ROOT / config.get("assets_dir", "assets")
     accent = color(config["palette"]["accent"])
@@ -301,7 +306,8 @@ def render_campaign(config: dict[str, Any], output_dir: Path) -> list[Path]:
 
     for index, slide in enumerate(config["slides"], start=1):
         canvas = make_background(index * 101, config["palette"])
-        draw_brand(canvas, config, asset_root)
+        if platform_config.get("show_brand", True):
+            draw_brand(canvas, config, asset_root)
         if slide["layout"] == "finale":
             draw_finale_slide(canvas, slide, asset_root, accent)
         else:
@@ -326,8 +332,8 @@ def main() -> None:
     args = parse_args()
     config_path = args.config.resolve()
     config = load_config(config_path)
-    output_dir = args.output.resolve() if args.output else ROOT / "output" / config["id"]
-    paths = render_campaign(config, output_dir)
+    output_dir = args.output.resolve() if args.output else ROOT / "output" / config["id"] / args.platform
+    paths = render_campaign(config, output_dir, args.platform)
     print(f"Generated {len(paths)} slides in {output_dir}")
 
 

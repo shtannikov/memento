@@ -7,11 +7,23 @@ Copy and layout live in JSON, while `generate.py` owns the shared visual system.
 
 ```sh
 python3 -m pip install -r marketing/story-campaign/requirements.txt
-python3 marketing/story-campaign/generate.py marketing/story-campaign/campaigns/en.json
+python3 marketing/story-campaign/generate.py marketing/story-campaign/campaigns/en.json --platform telegram
 ```
 
-The full-size slides, lightweight previews, and a contact sheet are written to
-`marketing/story-campaign/output/en/`.
+The full-size slides, lightweight previews, and contact sheet are written to
+`marketing/story-campaign/output/en/telegram/`.
+
+The platform argument is required so the intended header treatment is always
+explicit:
+
+```sh
+# Omits the Memento logo/wordmark because Telegram already supplies app context.
+python3 marketing/story-campaign/generate.py marketing/story-campaign/campaigns/en.json --platform telegram
+
+# Keeps the Memento logo/wordmark for standalone social posts.
+python3 marketing/story-campaign/generate.py marketing/story-campaign/campaigns/en.json --platform instagram
+python3 marketing/story-campaign/generate.py marketing/story-campaign/campaigns/en.json --platform linkedin
+```
 
 ## Make a change
 
@@ -22,6 +34,8 @@ The full-size slides, lightweight previews, and a contact sheet are written to
   campaign intentionally needs to remove system chrome.
 - `bezel` controls the dark phone frame around each screenshot.
 - `palette` controls the shared dark-blue background and accent colors.
+- `platforms` controls platform-specific treatment such as whether the brand
+  header is shown.
 - The official full-resolution logo lives at `assets/logo.png`. Its campaign
   presentation is controlled by `brand.logo_mask`; use `circle` for the current
   lockup or `none` to preserve the square artwork.
@@ -30,4 +44,5 @@ The full-size slides, lightweight previews, and a contact sheet are written to
 
 Duplicate `campaigns/en.json` as `campaigns/cs.json`, set `id` and `locale` to
 `cs`, translate the copy, and point at Czech screenshots. The same generator
-will write the campaign to `output/cs/` without changing the layouts.
+will write each platform campaign beneath `output/cs/<platform>/` without
+changing the layouts.
