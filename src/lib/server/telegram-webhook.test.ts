@@ -46,6 +46,7 @@ function dependencies(
       learningCount: 2,
     }),
     ensureUser: vi.fn().mockResolvedValue(undefined),
+    hasActiveSpeakingTask: vi.fn().mockResolvedValue(false),
     runSpeaking: vi.fn().mockResolvedValue("created"),
     regenerateSpeaking: vi.fn().mockResolvedValue("created"),
     processVoice: vi.fn().mockResolvedValue("completed"),
@@ -365,6 +366,70 @@ describe("Telegram webhook workflow", () => {
     expect(reply?.text).toContain("— add phrases to your vocabulary");
     expect(reply?.text).toContain("— get your speaking task");
     expect(reply?.text).toContain("— remove all phrases from Learning");
+    expect(reply?.followUps?.[0]?.text).toContain("<b>How to import</b>");
+  });
+
+  it("asks for a voice note when plain text arrives during an active speaking task", async () => {
+    const parsed = parseTelegramUpdate(update("Here is my answer"));
+    if (!parsed) throw new Error("Expected update to parse");
+    const hasActiveSpeakingTask = vi.fn().mockResolvedValue(true);
+
+    await expect(processTelegramUpdate(
+      parsed,
+      dependencies({ hasActiveSpeakingTask }),
+    )).resolves.toEqual({
+      chatId: 42,
+      replyToMessageId: 7,
+      text: "🎙️Send a voice message to complete your speaking task.",
+    });
+    expect(hasActiveSpeakingTask).toHaveBeenCalledWith(42, "en");
+  });
+
+  it("keeps help behavior for supported commands while a speaking task is active", async () => {
+    const hasActiveSpeakingTask = vi.fn().mockResolvedValue(true);
+    const help = parseTelegramUpdate(update("/help"));
+    const malformedReset = parseTelegramUpdate(update("/reset confirm"));
+    if (!help || !malformedReset) throw new Error("Expected updates to parse");
+
+    const helpReply = await processTelegramUpdate(
+      help,
+      dependencies({ hasActiveSpeakingTask }),
+    );
+    const malformedResetReply = await processTelegramUpdate(
+      malformedReset,
+      dependencies({ hasActiveSpeakingTask }),
+    );
+
+    expect(helpReply?.text).toContain("Here’s what I can help with");
+    expect(malformedResetReply?.text).toContain("Here’s what I can help with");
+    expect(hasActiveSpeakingTask).not.toHaveBeenCalled();
+  });
+
+  it("treats an unsupported slash token as text during an active speaking task", async () => {
+    const parsed = parseTelegramUpdate(update("/unknown"));
+    if (!parsed) throw new Error("Expected update to parse");
+    const hasActiveSpeakingTask = vi.fn().mockResolvedValue(true);
+
+    await expect(processTelegramUpdate(
+      parsed,
+      dependencies({ hasActiveSpeakingTask }),
+    )).resolves.toMatchObject({
+      text: "🎙️Send a voice message to complete your speaking task.",
+    });
+    expect(hasActiveSpeakingTask).toHaveBeenCalledWith(42, "en");
+  });
+
+  it("keeps fallback help for plain text without an active speaking task", async () => {
+    const parsed = parseTelegramUpdate(update("Hello"));
+    if (!parsed) throw new Error("Expected update to parse");
+    const hasActiveSpeakingTask = vi.fn().mockResolvedValue(false);
+
+    const reply = await processTelegramUpdate(
+      parsed,
+      dependencies({ hasActiveSpeakingTask }),
+    );
+
+    expect(reply?.text).toContain("Here’s what I can help with");
     expect(reply?.followUps?.[0]?.text).toContain("<b>How to import</b>");
   });
 

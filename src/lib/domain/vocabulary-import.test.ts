@@ -1,8 +1,10 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  isSupportedTelegramCommand,
   parseImportCommand,
   readVocabularyCommand,
+  SUPPORTED_TELEGRAM_COMMANDS,
 } from "./vocabulary-import";
 
 describe("vocabulary import commands", () => {
@@ -27,6 +29,23 @@ describe("vocabulary import commands", () => {
     expect(readVocabularyCommand("/start referral-code")).toBe("start");
     expect(readVocabularyCommand("/reset\nunexpected")).toBeNull();
     expect(readVocabularyCommand("/unknown")).toBeNull();
+  });
+
+  it("identifies command tokens from the supported command collection", () => {
+    expect(SUPPORTED_TELEGRAM_COMMANDS).toEqual([
+      "help",
+      "import",
+      "reset",
+      "speaking",
+      "start",
+    ]);
+    expect(isSupportedTelegramCommand("/help")).toBe(true);
+    expect(isSupportedTelegramCommand(" /speaking@MementoBot")).toBe(true);
+    expect(isSupportedTelegramCommand("/reset confirm")).toBe(true);
+    expect(isSupportedTelegramCommand("/import\nphrase - description")).toBe(true);
+    expect(isSupportedTelegramCommand("/unknown")).toBe(false);
+    expect(isSupportedTelegramCommand("/imported")).toBe(false);
+    expect(isSupportedTelegramCommand("ordinary text")).toBe(false);
   });
 
   it("parses plain and marked list lines while preserving descriptions", () => {
