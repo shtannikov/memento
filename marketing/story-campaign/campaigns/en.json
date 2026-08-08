@@ -38,7 +38,7 @@
       },
       "image": {
         "width": 760,
-        "top": 645,
+        "top": 615,
         "crop_top": 0,
         "bezel": 12
       }
@@ -71,7 +71,7 @@
       },
       "image": {
         "width": 760,
-        "top": 590,
+        "top": 660,
         "crop_top": 0,
         "bezel": 12
       }
