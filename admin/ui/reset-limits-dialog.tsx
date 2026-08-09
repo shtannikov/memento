@@ -23,7 +23,7 @@ export function ResetLimitsDialog({
         <Dialog.Overlay className={styles.backdrop} />
         <Dialog.Content className={styles.dialog}>
           <Dialog.Title>Reset today’s limits?</Dialog.Title>
-          <p>{name} · {row.appId.toUpperCase()}</p>
+          <p>{name} · {app.name}</p>
           <dl className={styles.confirmationStats}>
             <div><dt>Quiz</dt><dd>{row.quizAttemptsToday} / 5</dd></div>
             <div><dt>Speaking</dt><dd>{app.speakingEnabled ? `${row.speakingAttemptsToday} / 5` : "—"}</dd></div>

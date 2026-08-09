@@ -35,7 +35,7 @@ describe("reset limits dialog", () => {
       />,
     );
 
-    expect(screen.getByText("Ada Lovelace · EN")).toBeInTheDocument();
+    expect(screen.getByText("Ada Lovelace · Memento")).toBeInTheDocument();
     expect(screen.queryByText(/Telegram ID/i)).not.toBeInTheDocument();
     expect(screen.queryByText("42")).not.toBeInTheDocument();
     expect(
