@@ -15,7 +15,7 @@ export function ResetLimitsDialog({
   onCancel(): void;
   onConfirm(): void;
 }) {
-  const name = [row.firstName, row.lastName].filter(Boolean).join(" ") || `User ${row.telegramUserId}`;
+  const name = [row.firstName, row.lastName].filter(Boolean).join(" ") || "Unnamed user";
   const app = getAdminApp(row.appId);
   return (
     <Dialog.Root open onOpenChange={(open) => !open && !pending && onCancel()}>
@@ -23,14 +23,14 @@ export function ResetLimitsDialog({
         <Dialog.Overlay className={styles.backdrop} />
         <Dialog.Content className={styles.dialog}>
           <Dialog.Title>Reset today’s limits?</Dialog.Title>
-          <Dialog.Description>
-            {name} · {row.appId.toUpperCase()} · Telegram ID {row.telegramUserId}
-          </Dialog.Description>
+          <p>{name} · {row.appId.toUpperCase()}</p>
           <dl className={styles.confirmationStats}>
             <div><dt>Quiz</dt><dd>{row.quizAttemptsToday} / 5</dd></div>
             <div><dt>Speaking</dt><dd>{app.speakingEnabled ? `${row.speakingAttemptsToday} / 5` : "—"}</dd></div>
           </dl>
-          <p className={styles.dialogNote}>Words, rounds, speaking lessons, and progress will stay unchanged.</p>
+          <Dialog.Description className={styles.dialogNote}>
+            Resetting limits doesn’t delete data.
+          </Dialog.Description>
           <div className={styles.dialogActions}>
             <Dialog.Close asChild>
               <button className={styles.secondaryButton} disabled={pending}>Cancel</button>
