@@ -8,7 +8,8 @@ and points every Stage bot at that deployment. It updates and verifies:
 
 English uses the Preview root and `/api/telegram/webhook`. Czech uses `/cz` and
 `/api/telegram/webhook/cz`. The script derives these paths and secret names from
-the language registry.
+the language registry. The separate admin bot has no webhook; the same script
+sets and verifies its `App` menu button at `/admin`.
 
 ## One-time manual setup
 
@@ -16,8 +17,9 @@ the language registry.
    **Stage**.
 2. Add these environment secrets using the Stage bots' values (never Production):
    `TELEGRAM_BOT_TOKEN`, `TELEGRAM_WEBHOOK_SECRET`,
-   `TELEGRAM_CZ_BOT_TOKEN`, and `TELEGRAM_CZ_WEBHOOK_SECRET`.
-3. Use the same four Stage values for the corresponding Vercel **Preview**
+   `TELEGRAM_CZ_BOT_TOKEN`, `TELEGRAM_CZ_WEBHOOK_SECRET`, and
+   `TELEGRAM_ADMIN_BOT_TOKEN`.
+3. Use the same five Stage values for the corresponding Vercel **Preview**
    environment variables. Vercel and GitHub cannot copy Sensitive values from
    each other, so this duplication is manual.
 4. Make sure each webhook secret contains only `A-Z`, `a-z`, `0-9`, `_`, and

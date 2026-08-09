@@ -1,0 +1,2 @@
+-- Reserved migration version. Failure statuses do not reliably represent
+-- generation errors, so no Production schema change is required.
