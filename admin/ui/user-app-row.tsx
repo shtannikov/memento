@@ -33,7 +33,7 @@ export function UserAppRow({
       {expanded && (
         <div className={styles.details}>
           <div className={styles.profileMetrics}>
-            <Metric label="Joined" value={formatDate(row.joinedAt)} emphasize={false} />
+            <Metric label="Joined" value={formatDate(row.joinedAt)} />
             <Metric
               label="Vocabulary"
               value={`${row.vocabularyTotal} total`}
@@ -44,13 +44,11 @@ export function UserAppRow({
             title="Quizzes"
             total={String(row.quizzesCompleted)}
             today={`${row.quizAttemptsToday} / 5`}
-            lastCompletedAt={row.lastQuizCompletedAt}
           />
           <ActivityGroup
             title="Speaking"
             total={app.speakingEnabled ? String(row.speakingCompleted) : "—"}
             today={app.speakingEnabled ? `${row.speakingAttemptsToday} / 5` : "—"}
-            lastCompletedAt={app.speakingEnabled ? row.lastSpeakingCompletedAt : null}
           />
           <button className={styles.resetButton} onClick={onReset}>Reset limits</button>
         </div>
@@ -63,22 +61,16 @@ function ActivityGroup({
   title,
   total,
   today,
-  lastCompletedAt,
 }: {
   title: string;
   total: string;
   today: string;
-  lastCompletedAt: string | null;
 }) {
   return (
     <section className={styles.activityGroup} aria-label={title}>
       <h3>{title}</h3>
       <div className={styles.activityMetrics}>
-        <Metric
-          label="Total"
-          value={total}
-          note={total === "—" ? undefined : lastCompleted(lastCompletedAt)}
-        />
+        <Metric label="Total" value={total} />
         <Metric label="Today" value={today} />
       </div>
     </section>
@@ -103,10 +95,6 @@ function Metric({
       {note && <small>{note}</small>}
     </div>
   );
-}
-
-function lastCompleted(value: string | null): string {
-  return value ? `Last ${formatDate(value)}` : "Never completed";
 }
 
 function formatDate(value: string): string {

@@ -56,5 +56,10 @@ describe("admin users table", () => {
     expect(screen.getByRole("region", { name: "Quizzes" })).toBeInTheDocument();
     expect(screen.getByRole("region", { name: "Speaking" })).toBeInTheDocument();
     expect(screen.queryByText("Failed")).not.toBeInTheDocument();
+    expect(screen.getByText(/Aug 1, 2026/)).toHaveAttribute(
+      "data-emphasized",
+      "true",
+    );
+    expect(screen.queryByText("Never completed")).not.toBeInTheDocument();
   });
 });
