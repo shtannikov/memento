@@ -9,7 +9,7 @@ and points every Stage bot at that deployment. It updates and verifies:
 English uses the Preview root and `/api/telegram/webhook`. Czech uses `/cz` and
 `/api/telegram/webhook/cz`. The script derives these paths and secret names from
 the language registry. The separate admin bot has no webhook; the same script
-sets and verifies its `Admin` menu button at `/admin`.
+sets and verifies its `App` menu button at `/admin`.
 
 ## One-time manual setup
 

@@ -29,7 +29,6 @@ export type StageTelegramTarget = {
   appId: string;
   appName: string;
   token: string;
-  menuButtonText: string;
   miniAppUrl: string;
   webhookSecret?: string;
   webhookUrl?: string;
@@ -98,7 +97,6 @@ export function createStageTargets(
       appId,
       appName: language.appName,
       token,
-      menuButtonText: "App",
       webhookSecret,
       webhookUrl: new URL(language.webhookPath, origin).toString(),
       miniAppUrl: new URL(language.appPath, origin).toString(),
@@ -115,7 +113,6 @@ export function createStageTargets(
       appId: "admin",
       appName: "Memento Admin",
       token: adminToken,
-      menuButtonText: "Admin",
       miniAppUrl: new URL("/admin", origin).toString(),
     },
   ];
@@ -156,7 +153,7 @@ export async function configureStageTelegram(
       {
         menu_button: {
           type: "web_app",
-          text: target.menuButtonText,
+          text: "App",
           web_app: { url: target.miniAppUrl },
         },
       },
@@ -183,7 +180,7 @@ export async function configureStageTelegram(
     }
     if (
       menuButton.type !== "web_app" ||
-      menuButton.text !== target.menuButtonText ||
+      menuButton.text !== "App" ||
       menuButton.web_app?.url !== target.miniAppUrl
     ) {
       throw new Error(`Menu button verification failed for ${target.appName}.`);

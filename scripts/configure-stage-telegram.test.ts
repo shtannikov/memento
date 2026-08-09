@@ -37,7 +37,6 @@ describe("Stage Telegram configuration", () => {
       }),
       expect.objectContaining({
         appId: "admin",
-        menuButtonText: "Admin",
         miniAppUrl:
           "https://memento-feature-abc-monologxbot.vercel.app/admin",
       }),
@@ -102,7 +101,7 @@ describe("Stage Telegram configuration", () => {
         ok: true,
         result: {
           type: "web_app",
-          text: "Admin",
+          text: "App",
           web_app: { url: target.miniAppUrl },
         },
       },
