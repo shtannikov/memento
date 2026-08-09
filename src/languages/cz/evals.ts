@@ -33,4 +33,16 @@ export const EVAL_CASES: EvalCase[] = [
       },
     ],
   },
+  {
+    id: "czech-lexically-diverse-options",
+    description:
+      "Uses distinct Czech vocabulary targets as options instead of testing four inflections of kufr, noviny, or another single word.",
+    appId: CZECH_LANGUAGE.id,
+    items: [
+      { id: "701", term: "kufr", definition: "suitcase" },
+      { id: "702", term: "noviny", definition: "newspaper" },
+      { id: "703", term: "pas", definition: "passport" },
+      { id: "704", term: "letenka", definition: "ticket" },
+    ],
+  },
 ];

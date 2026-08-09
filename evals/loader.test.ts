@@ -9,7 +9,7 @@ describe("language eval loader", () => {
     const cases = await loadEvalCases();
 
     expect(cases.filter((evalCase) => evalCase.appId === "en")).toHaveLength(7);
-    expect(cases.filter((evalCase) => evalCase.appId === "cz")).toHaveLength(2);
+    expect(cases.filter((evalCase) => evalCase.appId === "cz")).toHaveLength(3);
   });
 
   it("loads speaking evals only for languages with that capability", async () => {

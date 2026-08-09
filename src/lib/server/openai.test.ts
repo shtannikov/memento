@@ -69,6 +69,11 @@ describe("quiz generation contract", () => {
     expect(prompt).toContain("A particle may be in the visible sentence");
     expect(prompt).toContain("Jeho číslo si musím ___");
     expect(prompt).toContain("Mám jen jednu židli");
+    expect(prompt).toContain("tests recognition of Czech words and meanings");
+    expect(prompt).toContain("Prefer lexical diversity");
+    expect(prompt).toContain("four different supplied targets");
+    expect(prompt).toContain("kufr / kufry / kufrem / kufru");
+    expect(prompt).toContain("Distractors may be grammatically incompatible");
     expect(prompt).not.toContain("target is always English");
   });
 
@@ -247,6 +252,9 @@ describe("quiz generation contract", () => {
     );
     expect(instructions).toContain(
       "exactly one correctly placed reflexive particle se/si",
+    );
+    expect(instructions).toContain(
+      "merely different inflections or grammatical forms of one lexical target",
     );
   });
 
