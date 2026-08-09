@@ -1,0 +1,61 @@
+.page {
+  min-height: 100dvh;
+  padding: 24px 16px 48px;
+  color: #18181b;
+  background: #f4f4f5;
+}
+
+.header {
+  width: min(100%, 1040px);
+  margin: 0 auto 18px;
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+}
+
+.header p, .header h1 { margin: 0; }
+.header p { color: #71717a; font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: .12em; }
+.header h1 { margin-top: 2px; font-size: 32px; letter-spacing: -.04em; }
+.header span { color: #71717a; font-size: 13px; }
+
+.table { width: min(100%, 1040px); margin: 0 auto; display: grid; gap: 10px; }
+.row { overflow: hidden; content-visibility: auto; contain-intrinsic-size: auto 82px; border: 1px solid #e4e4e7; border-radius: 18px; background: #fff; box-shadow: 0 1px 2px rgb(0 0 0 / 4%); }
+.rowSummary { width: 100%; min-height: 82px; padding: 15px 16px; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px 12px; align-items: center; color: inherit; text-align: left; border: 0; background: transparent; cursor: pointer; }
+.identity { min-width: 0; display: grid; gap: 3px; }
+.identity strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 16px; }
+.identity small, .lastUsed small { color: #71717a; }
+.appBadge { justify-self: end; padding: 5px 9px; color: #5b21b6; background: #ede9fe; border-radius: 999px; font-size: 12px; font-weight: 750; }
+.lastUsed { display: grid; gap: 2px; font-size: 13px; }
+.chevron { justify-self: end; color: #71717a; transition: transform .16s ease; }
+.row[data-expanded="true"] .chevron { transform: rotate(180deg); }
+.details { padding: 4px 16px 16px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; border-top: 1px solid #f4f4f5; }
+.metric { min-width: 0; padding-top: 12px; display: grid; gap: 3px; }
+.metric > span { color: #71717a; font-size: 12px; }
+.metric strong { font-size: 14px; }
+.metric small { color: #71717a; font-size: 11px; line-height: 1.35; }
+.resetButton { grid-column: 1 / -1; min-height: 44px; margin-top: 6px; color: #b91c1c; border: 1px solid #fecaca; border-radius: 12px; background: #fff7f7; font-weight: 750; cursor: pointer; }
+.empty, .loading, .error { width: min(100%, 1040px); margin: 0 auto; padding: 28px; text-align: center; border-radius: 18px; background: #fff; }
+.error { margin-bottom: 12px; color: #991b1b; border: 1px solid #fecaca; background: #fff7f7; }
+.backdrop { position: fixed; inset: 0; z-index: 20; background: rgb(24 24 27 / 44%); }
+.dialog { position: fixed; z-index: 21; right: 12px; bottom: 12px; left: 12px; width: min(calc(100% - 24px), 460px); margin: 0 auto; padding: 22px; border-radius: 22px; background: #fff; box-shadow: 0 24px 80px rgb(0 0 0 / 24%); }
+.dialog h2, .dialog p { margin: 0; }
+.dialog > p { margin-top: 8px; color: #52525b; line-height: 1.45; }
+.confirmationStats { margin: 18px 0 0; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.confirmationStats div { padding: 12px; border-radius: 12px; background: #f4f4f5; }
+.confirmationStats dt { color: #71717a; font-size: 12px; }
+.confirmationStats dd { margin: 4px 0 0; font-weight: 750; }
+.dialogNote { font-size: 13px; }
+.dialogActions { margin-top: 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.dialogActions button { min-height: 46px; border-radius: 12px; font-weight: 750; cursor: pointer; }
+.dialogActions button:disabled { cursor: wait; opacity: .6; }
+.secondaryButton { color: #27272a; border: 1px solid #d4d4d8; background: #fff; }
+.dangerButton { color: #fff; border: 1px solid #b91c1c; background: #b91c1c; }
+
+@media (min-width: 760px) {
+  .page { padding: 38px 28px 64px; }
+  .rowSummary { grid-template-columns: minmax(220px, 1.5fr) 130px 180px 24px; }
+  .appBadge { justify-self: start; }
+  .details { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .resetButton { grid-column: auto; align-self: end; }
+  .dialog { top: 50%; right: auto; bottom: auto; left: 50%; transform: translate(-50%, -50%); }
+}

@@ -29,9 +29,10 @@ export type StageTelegramTarget = {
   appId: string;
   appName: string;
   token: string;
-  webhookSecret: string;
-  webhookUrl: string;
+  menuButtonText: string;
   miniAppUrl: string;
+  webhookSecret?: string;
+  webhookUrl?: string;
 };
 
 const PRODUCTION_HOSTNAMES = new Set([
@@ -76,7 +77,7 @@ export function createStageTargets(
   origin: URL,
   environment: Record<string, string | undefined> = process.env,
 ): StageTelegramTarget[] {
-  return APP_IDS.map((appId) => {
+  const languageTargets = APP_IDS.map((appId) => {
     const language = getLanguage(appId);
     const token = requireSecret(environment, language.botTokenEnv);
     const webhookSecret = requireSecret(
@@ -97,11 +98,27 @@ export function createStageTargets(
       appId,
       appName: language.appName,
       token,
+      menuButtonText: "App",
       webhookSecret,
       webhookUrl: new URL(language.webhookPath, origin).toString(),
       miniAppUrl: new URL(language.appPath, origin).toString(),
     };
   });
+
+  const adminToken = requireSecret(environment, "TELEGRAM_ADMIN_BOT_TOKEN");
+  if (!/^\d+:[A-Za-z0-9_-]+$/.test(adminToken)) {
+    throw new Error("TELEGRAM_ADMIN_BOT_TOKEN is not a valid bot token.");
+  }
+  return [
+    ...languageTargets,
+    {
+      appId: "admin",
+      appName: "Memento Admin",
+      token: adminToken,
+      menuButtonText: "Admin",
+      miniAppUrl: new URL("/admin", origin).toString(),
+    },
+  ];
 }
 
 export async function configureStageTelegram(
@@ -122,34 +139,38 @@ export async function configureStageTelegram(
 
   const configured: string[] = [];
   for (const { target, user } of bots) {
-    await callTelegram(
-      target.token,
-      "setWebhook",
-      {
-        url: target.webhookUrl,
-        secret_token: target.webhookSecret,
-      },
-      fetchImpl,
-    );
+    if (target.webhookUrl && target.webhookSecret) {
+      await callTelegram(
+        target.token,
+        "setWebhook",
+        {
+          url: target.webhookUrl,
+          secret_token: target.webhookSecret,
+        },
+        fetchImpl,
+      );
+    }
     await callTelegram(
       target.token,
       "setChatMenuButton",
       {
         menu_button: {
           type: "web_app",
-          text: "App",
+          text: target.menuButtonText,
           web_app: { url: target.miniAppUrl },
         },
       },
       fetchImpl,
     );
 
-    const webhook = await callTelegram<WebhookInfo>(
-      target.token,
-      "getWebhookInfo",
-      {},
-      fetchImpl,
-    );
+    const webhook = target.webhookUrl
+      ? await callTelegram<WebhookInfo>(
+          target.token,
+          "getWebhookInfo",
+          {},
+          fetchImpl,
+        )
+      : null;
     const menuButton = await callTelegram<MenuButton>(
       target.token,
       "getChatMenuButton",
@@ -157,12 +178,12 @@ export async function configureStageTelegram(
       fetchImpl,
     );
 
-    if (webhook.url !== target.webhookUrl) {
+    if (webhook && webhook.url !== target.webhookUrl) {
       throw new Error(`Webhook verification failed for ${target.appName}.`);
     }
     if (
       menuButton.type !== "web_app" ||
-      menuButton.text !== "App" ||
+      menuButton.text !== target.menuButtonText ||
       menuButton.web_app?.url !== target.miniAppUrl
     ) {
       throw new Error(`Menu button verification failed for ${target.appName}.`);
