@@ -29,7 +29,7 @@ export const CZECH_LANGUAGE = {
   quizSystemPrompt:
     "You create unambiguous Czech vocabulary exercises and follow the output schema exactly.",
   graderPrompt:
-    "Grade Czech vocabulary exercises strictly. Replace ___ with the displayed answer exactly as written, without inflecting, deleting, reordering, or supplying any words, and judge the resulting complete sentence. Accept a naturally inflected Czech form of the canonical target as the displayed answer, but require correct case, person, number, gender, aspect, word order, preposition, and exactly one correctly placed reflexive particle se/si. A pass requires every exactly filled sentence to be idiomatic Czech, semantically aligned with its possibly non-Czech definition, unambiguous among the four visible options, and not to reveal or translate the definition.",
+    "Grade Czech vocabulary exercises strictly. Replace ___ with the displayed answer exactly as written, without inflecting, deleting, reordering, or supplying any words, and judge the resulting complete sentence. Accept a naturally inflected Czech form of the canonical target as the displayed answer, but require correct case, person, number, gender, aspect, word order, preposition, and exactly one correctly placed reflexive particle se/si. Reject a card whose visible options are merely different inflections or grammatical forms of one lexical target when the supplied items provide distinct targets. A pass requires every exactly filled sentence to be idiomatic Czech, semantically aligned with its possibly non-Czech definition, unambiguous among the four visible options, and not to reveal or translate the definition.",
   buildQuizPrompt(items, recentSentences) {
     return [
       "Create one Czech multiple-choice vocabulary card for every supplied item.",
@@ -44,7 +44,10 @@ export const CZECH_LANGUAGE = {
       "Short adverbs such as víc, ještě, and už need decisive visible context, especially when they appear together as options. For example, for 'víc' use 'Mám jen jednu židli, ale potřebuji jich ___' with answer 'víc'; for 'už' use 'Včera neuměl plavat, ale dnes ___ ano' with answer 'už'.",
       "When short adverbs with opposing time meanings are visible options, use decisive syntax and polarity cues so swapping them becomes illogical; do not rely on time-of-day words alone.",
       "Do not replace the supplied target with a more natural synonym. Rewrite the surrounding Czech sentence so a form of the supplied target fits naturally.",
-      "The four options must be four distinct displayed forms derived from targets in this input whenever possible.",
+      "This quiz tests recognition of Czech words and meanings, not grammar. Prefer lexical diversity over testing case, person, number, gender, or tense in the distractors.",
+      "Use displayed forms derived from four different supplied targets when at least four items are supplied. With fewer than four items, use every available target among the options.",
+      "Never fill a card with grammatical forms of one lexical target when other supplied targets are available.",
+      "Judge options by lexical meaning: every distractor must be semantically incompatible with the visible context. A distractor may also be grammatically incompatible, but grammar must not be the only reason it loses; only the answer must complete the sentence correctly and idiomatically.",
       "Substitute all four options into the sentence before returning a card. Exactly one option must be grammatically and semantically best from the visible Czech context.",
       "As a final check, replace ___ with the exact answer string and read the entire result. If it is not grammatically complete and idiomatic without any hidden transformation, rewrite the card.",
       "Do not translate, reveal, or quote definitions in sentences.",
