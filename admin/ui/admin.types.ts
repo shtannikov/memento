@@ -11,8 +11,12 @@ export type AdminUserAppRow = {
   vocabularyPracticing: number;
   vocabularyLearned: number;
   quizzesCompleted: number;
+  quizFailuresTotal: number;
+  quizFailuresToday: number;
   lastQuizCompletedAt: string | null;
   speakingCompleted: number;
+  speakingFailuresTotal: number;
+  speakingFailuresToday: number;
   lastSpeakingCompletedAt: string | null;
   quizAttemptsToday: number;
   speakingAttemptsToday: number;

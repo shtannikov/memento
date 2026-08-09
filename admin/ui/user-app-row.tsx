@@ -20,7 +20,7 @@ export function UserAppRow({
       <button className={styles.rowSummary} onClick={onToggle} aria-expanded={expanded}>
         <span className={styles.identity}>
           <strong>{name}</strong>
-          <small>{row.username ? `@${row.username}` : `ID ${row.telegramUserId}`}</small>
+          <small>{row.username ? `@${row.username}` : "No username"}</small>
         </span>
         <span className={styles.appBadge}>{app.name}</span>
         <span className={styles.lastUsed}>
@@ -32,32 +32,69 @@ export function UserAppRow({
 
       {expanded && (
         <div className={styles.details}>
-          <Metric label="Telegram ID" value={String(row.telegramUserId)} />
-          <Metric label="Joined" value={formatDate(row.joinedAt)} />
-          <Metric
-            label="Vocabulary"
-            value={`${row.vocabularyTotal} total`}
-            note={`${row.vocabularyLearning} Learning · ${row.vocabularyPracticing} Practicing · ${row.vocabularyLearned} Learned`}
+          <div className={styles.profileMetrics}>
+            <Metric label="Joined" value={formatDate(row.joinedAt)} />
+            <Metric
+              label="Vocabulary"
+              value={`${row.vocabularyTotal} total`}
+              note={`${row.vocabularyLearning} Learning · ${row.vocabularyPracticing} Practicing · ${row.vocabularyLearned} Learned`}
+            />
+          </div>
+          <ActivityGroup
+            title="Quizzes"
+            total={String(row.quizzesCompleted)}
+            today={`${row.quizAttemptsToday} / 5`}
+            failed={String(row.quizFailuresTotal)}
+            failedToday={row.quizFailuresToday}
+            lastCompletedAt={row.lastQuizCompletedAt}
           />
-          <Metric
-            label="Quizzes"
-            value={`${row.quizzesCompleted} completed`}
-            note={lastCompleted(row.lastQuizCompletedAt)}
-          />
-          <Metric
-            label="Speaking"
-            value={app.speakingEnabled ? `${row.speakingCompleted} completed` : "Not available"}
-            note={app.speakingEnabled ? lastCompleted(row.lastSpeakingCompletedAt) : undefined}
-          />
-          <Metric label="Quiz today" value={`${row.quizAttemptsToday} / 5`} />
-          <Metric
-            label="Speaking today"
-            value={app.speakingEnabled ? `${row.speakingAttemptsToday} / 5` : "—"}
+          <ActivityGroup
+            title="Speaking"
+            total={app.speakingEnabled ? String(row.speakingCompleted) : "—"}
+            today={app.speakingEnabled ? `${row.speakingAttemptsToday} / 5` : "—"}
+            failed={app.speakingEnabled ? String(row.speakingFailuresTotal) : "—"}
+            failedToday={app.speakingEnabled ? row.speakingFailuresToday : null}
+            lastCompletedAt={app.speakingEnabled ? row.lastSpeakingCompletedAt : null}
           />
           <button className={styles.resetButton} onClick={onReset}>Reset limits</button>
         </div>
       )}
     </article>
+  );
+}
+
+function ActivityGroup({
+  title,
+  total,
+  today,
+  failed,
+  failedToday,
+  lastCompletedAt,
+}: {
+  title: string;
+  total: string;
+  today: string;
+  failed: string;
+  failedToday: number | null;
+  lastCompletedAt: string | null;
+}) {
+  return (
+    <section className={styles.activityGroup} aria-label={title}>
+      <h3>{title}</h3>
+      <div className={styles.activityMetrics}>
+        <Metric
+          label="Total"
+          value={total}
+          note={total === "—" ? undefined : lastCompleted(lastCompletedAt)}
+        />
+        <Metric label="Today" value={today} />
+        <Metric
+          label="Failed"
+          value={failed}
+          note={failedToday === null ? undefined : `${failedToday} today`}
+        />
+      </div>
+    </section>
   );
 }
 

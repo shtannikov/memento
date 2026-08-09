@@ -16,8 +16,12 @@ type StatsRow = {
   vocabulary_practicing: number;
   vocabulary_learned: number;
   quizzes_completed: number;
+  quiz_failures_total: number;
+  quiz_failures_today: number;
   last_quiz_completed_at: string | null;
   speaking_completed: number;
+  speaking_failures_total: number;
+  speaking_failures_today: number;
   last_speaking_completed_at: string | null;
   quiz_attempts_today: number;
   speaking_attempts_today: number;
@@ -43,8 +47,12 @@ export function mapStatsRow(row: StatsRow): AdminUserAppRow {
     vocabularyPracticing: Number(row.vocabulary_practicing),
     vocabularyLearned: Number(row.vocabulary_learned),
     quizzesCompleted: Number(row.quizzes_completed),
+    quizFailuresTotal: Number(row.quiz_failures_total),
+    quizFailuresToday: Number(row.quiz_failures_today),
     lastQuizCompletedAt: row.last_quiz_completed_at,
     speakingCompleted: Number(row.speaking_completed),
+    speakingFailuresTotal: Number(row.speaking_failures_total),
+    speakingFailuresToday: Number(row.speaking_failures_today),
     lastSpeakingCompletedAt: row.last_speaking_completed_at,
     quizAttemptsToday: Number(row.quiz_attempts_today),
     speakingAttemptsToday: Number(row.speaking_attempts_today),
