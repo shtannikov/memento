@@ -33,7 +33,7 @@ export function UserAppRow({
       {expanded && (
         <div className={styles.details}>
           <div className={styles.profileMetrics}>
-            <Metric label="Joined" value={formatDate(row.joinedAt)} />
+            <Metric label="Joined" value={formatDate(row.joinedAt)} emphasize={false} />
             <Metric
               label="Vocabulary"
               value={`${row.vocabularyTotal} total`}
@@ -44,16 +44,12 @@ export function UserAppRow({
             title="Quizzes"
             total={String(row.quizzesCompleted)}
             today={`${row.quizAttemptsToday} / 5`}
-            failed={String(row.quizFailuresTotal)}
-            failedToday={row.quizFailuresToday}
             lastCompletedAt={row.lastQuizCompletedAt}
           />
           <ActivityGroup
             title="Speaking"
             total={app.speakingEnabled ? String(row.speakingCompleted) : "—"}
             today={app.speakingEnabled ? `${row.speakingAttemptsToday} / 5` : "—"}
-            failed={app.speakingEnabled ? String(row.speakingFailuresTotal) : "—"}
-            failedToday={app.speakingEnabled ? row.speakingFailuresToday : null}
             lastCompletedAt={app.speakingEnabled ? row.lastSpeakingCompletedAt : null}
           />
           <button className={styles.resetButton} onClick={onReset}>Reset limits</button>
@@ -67,15 +63,11 @@ function ActivityGroup({
   title,
   total,
   today,
-  failed,
-  failedToday,
   lastCompletedAt,
 }: {
   title: string;
   total: string;
   today: string;
-  failed: string;
-  failedToday: number | null;
   lastCompletedAt: string | null;
 }) {
   return (
@@ -88,21 +80,26 @@ function ActivityGroup({
           note={total === "—" ? undefined : lastCompleted(lastCompletedAt)}
         />
         <Metric label="Today" value={today} />
-        <Metric
-          label="Failed"
-          value={failed}
-          note={failedToday === null ? undefined : `${failedToday} today`}
-        />
       </div>
     </section>
   );
 }
 
-function Metric({ label, value, note }: { label: string; value: string; note?: string }) {
+function Metric({
+  label,
+  value,
+  note,
+  emphasize = true,
+}: {
+  label: string;
+  value: string;
+  note?: string;
+  emphasize?: boolean;
+}) {
   return (
     <div className={styles.metric}>
-      <span>{label}</span>
-      <strong>{value}</strong>
+      <span className={styles.metricLabel}>{label}</span>
+      <span className={styles.metricValue} data-emphasized={emphasize}>{value}</span>
       {note && <small>{note}</small>}
     </div>
   );

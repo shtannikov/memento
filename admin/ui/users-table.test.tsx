@@ -17,12 +17,8 @@ const row: AdminUserAppRow = {
   vocabularyPracticing: 4,
   vocabularyLearned: 3,
   quizzesCompleted: 8,
-  quizFailuresTotal: 3,
-  quizFailuresToday: 1,
   lastQuizCompletedAt: null,
   speakingCompleted: 2,
-  speakingFailuresTotal: 1,
-  speakingFailuresToday: 0,
   lastSpeakingCompletedAt: null,
   quizAttemptsToday: 4,
   speakingAttemptsToday: 1,
@@ -59,6 +55,6 @@ describe("admin users table", () => {
     expect(screen.queryByText("42")).not.toBeInTheDocument();
     expect(screen.getByRole("region", { name: "Quizzes" })).toBeInTheDocument();
     expect(screen.getByRole("region", { name: "Speaking" })).toBeInTheDocument();
-    expect(screen.getAllByText("Failed")).toHaveLength(2);
+    expect(screen.queryByText("Failed")).not.toBeInTheDocument();
   });
 });
