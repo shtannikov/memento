@@ -1,7 +1,9 @@
-# Memento story campaign generator
+# Marketing
 
-This folder generates the reusable 1080×1920 marketing slides for Memento.
-Copy and layout live in JSON, while `generate.py` owns the shared visual system.
+The marketing source files live under `marketing/`. The current
+`marketing/story-campaign/` project generates reusable 1080×1920 campaign
+slides for Memento. Copy and layout live in JSON, while `generate.py` owns the
+shared visual system.
 
 ## Generate the English campaign
 
@@ -29,22 +31,25 @@ python3 marketing/story-campaign/generate.py marketing/story-campaign/campaigns/
 
 ## Make a change
 
-- Edit wording, screenshot placement, or colors in `campaigns/en.json`.
-- Replace screenshots in `assets/` while keeping the same filenames, or update
-  the filenames in the campaign JSON.
+- Edit wording, screenshot placement, or colors in
+  `marketing/story-campaign/campaigns/en.json`.
+- Replace screenshots in `marketing/story-campaign/assets/` while keeping the
+  same filenames, or update the filenames in the campaign JSON.
 - Set `crop_top` to `0` to preserve the iOS status bar, or raise it when a
   campaign intentionally needs to remove system chrome.
 - `bezel` controls the dark phone frame around each screenshot.
 - `palette` controls the shared dark-blue background and accent colors.
 - `platforms` controls platform-specific treatment such as whether the brand
   header is shown and whether an additional chat image is generated.
-- The official full-resolution logo lives at `assets/logo.png`. Its campaign
-  presentation is controlled by `brand.logo_mask`; use `circle` for the current
-  lockup or `none` to preserve the square artwork.
+- The official full-resolution logo lives at
+  `marketing/story-campaign/assets/logo.png`. Its campaign presentation is
+  controlled by `brand.logo_mask`; use `circle` for the current lockup or
+  `none` to preserve the square artwork.
 
 ## Add Czech later
 
-Duplicate `campaigns/en.json` as `campaigns/cs.json`, set `id` and `locale` to
-`cs`, translate the copy, and point at Czech screenshots. The same generator
-will write each platform campaign beneath `output/cs/<platform>/` without
-changing the layouts.
+Duplicate `marketing/story-campaign/campaigns/en.json` as
+`marketing/story-campaign/campaigns/cs.json`, set `id` and `locale` to `cs`,
+translate the copy, and point at Czech screenshots. The same generator will
+write each platform campaign beneath
+`marketing/story-campaign/output/cs/<platform>/` without changing the layouts.
