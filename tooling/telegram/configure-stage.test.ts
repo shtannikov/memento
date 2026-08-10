@@ -4,7 +4,7 @@ import {
   configureStageTelegram,
   createStageTargets,
   parseStageOrigin,
-} from "./configure-stage-telegram";
+} from "./configure-stage";
 
 const environment = {
   TELEGRAM_BOT_TOKEN: "100:english_stage",

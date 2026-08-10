@@ -1,7 +1,7 @@
 import { pathToFileURL } from "node:url";
 import { resolve } from "node:path";
 
-import { APP_IDS } from "../src/languages/registry";
+import { APP_IDS } from "../../src/languages/registry";
 import type { EvalCase, SpeakingEvalCase } from "./types";
 
 type EvalModule = { EVAL_CASES?: unknown; SPEAKING_EVAL_CASES?: unknown };

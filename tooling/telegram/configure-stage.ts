@@ -1,6 +1,6 @@
 import { pathToFileURL } from "node:url";
 
-import { APP_IDS, getLanguage } from "../src/languages/registry";
+import { APP_IDS, getLanguage } from "../../src/languages/registry";
 
 type Fetch = typeof fetch;
 

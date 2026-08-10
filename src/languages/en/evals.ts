@@ -1,4 +1,4 @@
-import type { EvalCase, SpeakingEvalCase } from "../../../evals/types";
+import type { EvalCase, SpeakingEvalCase } from "../../../tooling/evals/types";
 import { ENGLISH_LANGUAGE } from ".";
 
 const russianDefinitions = [

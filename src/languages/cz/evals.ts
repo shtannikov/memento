@@ -1,4 +1,4 @@
-import type { EvalCase } from "../../../evals/types";
+import type { EvalCase } from "../../../tooling/evals/types";
 import { CZECH_LANGUAGE } from ".";
 
 export const EVAL_CASES: EvalCase[] = [

@@ -20,7 +20,7 @@
     ],
     "paths": {
       "@/*": ["./src/*"],
-      "@admin/*": ["./admin/*"]
+      "@admin/*": ["./src/admin/*"]
     }
   },
   "include": [

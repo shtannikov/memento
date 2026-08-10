@@ -10,8 +10,8 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
-    "eval": "node --conditions=react-server --import tsx evals/runner.ts",
-    "stage:telegram": "tsx scripts/configure-stage-telegram.ts",
+    "eval": "node --conditions=react-server --import tsx tooling/evals/runner.ts",
+    "stage:telegram": "tsx tooling/telegram/configure-stage.ts",
     "ci": "npm run lint && npm run typecheck && npm run test:coverage && npm run build"
   },
   "dependencies": {

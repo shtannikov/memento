@@ -1,5 +1,5 @@
 import { createHmac } from "node:crypto";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const { maybeSingle } = vi.hoisted(() => ({ maybeSingle: vi.fn() }));
 
@@ -22,7 +22,13 @@ import {
 const token = "100:admin-token";
 const now = new Date("2026-08-09T12:00:00.000Z");
 
+beforeEach(() => {
+  vi.useFakeTimers();
+  vi.setSystemTime(now);
+});
+
 afterEach(() => {
+  vi.useRealTimers();
   vi.unstubAllEnvs();
   maybeSingle.mockReset();
 });
