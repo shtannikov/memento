@@ -5,15 +5,15 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": fileURLToPath(new URL("./src", import.meta.url)),
-      "@admin": fileURLToPath(new URL("./admin", import.meta.url)),
+      "@admin": fileURLToPath(new URL("./src/admin", import.meta.url)),
       "server-only": fileURLToPath(
-        new URL("./test/server-only.ts", import.meta.url),
+        new URL("./tooling/vitest/server-only.ts", import.meta.url),
       ),
     },
   },
   test: {
     environment: "jsdom",
-    setupFiles: ["./test/setup.ts"],
+    setupFiles: ["./tooling/vitest/setup.ts"],
     coverage: {
       provider: "v8",
       reporter: ["text", "lcov"],

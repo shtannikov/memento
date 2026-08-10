@@ -1,12 +1,12 @@
-import type { AppId } from "../src/languages/registry";
+import type { AppId } from "../../src/languages/registry";
 import type {
   LanguageRecentSentence,
   LanguageVocabularyItem,
-} from "../src/languages/types";
+} from "../../src/languages/types";
 import type {
   SpeakingTask,
   TopicGenerationInput,
-} from "../src/lib/domain/speaking";
+} from "../../src/lib/domain/speaking";
 
 export type EvalCase = {
   id: string;

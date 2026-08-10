@@ -4,7 +4,7 @@ import { loadEvalCases, loadSpeakingEvalCases } from "./loader";
 import type { EvalCase, SpeakingEvalCase } from "./types";
 
 loadEnvConfig(process.cwd());
-const openaiClient = import("../src/lib/server/openai");
+const openaiClient = import("../../src/lib/server/openai");
 
 const MAX_TRANSIENT_RETRIES = 2;
 const QUALITY_RETRIES = 2;
