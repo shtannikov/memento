@@ -5,8 +5,8 @@ import {
   apiError,
   AppError,
   authenticateRequest,
-} from "@/server/api";
-import { getMementoDb } from "@/server/supabase";
+} from "@/app/_server/api";
+import { getMementoDb } from "@/app/_server/supabase";
 
 type RouteContext = { params: Promise<{ id: string }> };
 

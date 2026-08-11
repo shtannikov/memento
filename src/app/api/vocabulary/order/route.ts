@@ -5,12 +5,12 @@ import {
   apiError,
   authenticateRequest,
   parseJson,
-} from "@/server/api";
+} from "@/app/_server/api";
 import {
   ensureUserAndSeed,
   loadVocabulary,
   reorderPracticingVocabulary,
-} from "@/features/vocabulary/server/vocabulary";
+} from "@/app/_features/vocabulary/server/vocabulary";
 
 const PracticingOrderSchema = z
   .object({

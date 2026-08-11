@@ -3,7 +3,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 const purge = vi.hoisted(() => vi.fn());
-vi.mock("@/features/speaking/server/retention", () => ({
+vi.mock("@/app/_features/speaking/server/retention", () => ({
   purgeExpiredSpeakingTranscripts: purge,
 }));
 

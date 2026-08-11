@@ -6,8 +6,8 @@ import {
   AppError,
   authenticateRequest,
   parseJson,
-} from "@/server/api";
-import { getMementoDb } from "@/server/supabase";
+} from "@/app/_server/api";
+import { getMementoDb } from "@/app/_server/supabase";
 
 const CompletionSchema = z.object({
   firstAttempts: z

@@ -1,7 +1,7 @@
 import { pathToFileURL } from "node:url";
 import { resolve } from "node:path";
 
-import { APP_IDS } from "../../src/languages/registry";
+import { APP_IDS } from "../../src/app/_languages/registry";
 import type { EvalCase, SpeakingEvalCase } from "./types";
 
 type EvalModule = { EVAL_CASES?: unknown; SPEAKING_EVAL_CASES?: unknown };
@@ -10,7 +10,7 @@ export async function loadEvalCases(): Promise<EvalCase[]> {
   const suites = await Promise.all(
     APP_IDS.map(async (appId) => {
       const modulePath = pathToFileURL(
-        resolve(process.cwd(), "src/languages", appId, "evals.ts"),
+        resolve(process.cwd(), "src/app/_languages", appId, "evals.ts"),
       ).href;
       const evalModule = (await import(modulePath)) as EvalModule;
       if (!Array.isArray(evalModule.EVAL_CASES)) {
@@ -30,7 +30,7 @@ export async function loadSpeakingEvalCases(): Promise<SpeakingEvalCase[]> {
   const suites = await Promise.all(
     APP_IDS.map(async (appId) => {
       const modulePath = pathToFileURL(
-        resolve(process.cwd(), "src/languages", appId, "evals.ts"),
+        resolve(process.cwd(), "src/app/_languages", appId, "evals.ts"),
       ).href;
       const evalModule = (await import(modulePath)) as EvalModule;
       if (evalModule.SPEAKING_EVAL_CASES === undefined) return [];

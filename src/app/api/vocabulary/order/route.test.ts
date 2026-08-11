@@ -9,11 +9,11 @@ const mocks = vi.hoisted(() => ({
   reorderPracticingVocabulary: vi.fn(),
 }));
 
-vi.mock("@/server/api", async (importOriginal) => ({
-  ...(await importOriginal<typeof import("@/server/api")>()),
+vi.mock("@/app/_server/api", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@/app/_server/api")>()),
   authenticateRequest: mocks.authenticateRequest,
 }));
-vi.mock("@/features/vocabulary/server/vocabulary", () => ({
+vi.mock("@/app/_features/vocabulary/server/vocabulary", () => ({
   ensureUserAndSeed: mocks.ensureUserAndSeed,
   loadVocabulary: mocks.loadVocabulary,
   reorderPracticingVocabulary: mocks.reorderPracticingVocabulary,

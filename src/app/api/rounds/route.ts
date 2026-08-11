@@ -5,9 +5,9 @@ import {
   apiError,
   authenticateRequest,
   parseJson,
-} from "@/server/api";
-import { createRound } from "@/features/quiz/server/rounds";
-import { ensureUserAndSeed } from "@/features/vocabulary/server/vocabulary";
+} from "@/app/_server/api";
+import { createRound } from "@/app/_features/quiz/server/rounds";
+import { ensureUserAndSeed } from "@/app/_features/vocabulary/server/vocabulary";
 
 const CreateRoundSchema = z.object({
   retryRoundId: z.string().uuid().optional(),

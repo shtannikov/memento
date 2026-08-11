@@ -18,9 +18,11 @@ export default defineConfig({
       provider: "v8",
       reporter: ["text", "lcov"],
       include: [
-        "src/lib/domain/**/*.ts",
-        "src/features/speaking/domain.ts",
-        "src/server/telegram/auth.ts",
+        "src/app/app-config.ts",
+        "src/app/_features/quiz/domain/**/*.ts",
+        "src/app/_features/vocabulary/domain/**/*.ts",
+        "src/app/_features/speaking/domain.ts",
+        "src/app/_server/telegram/auth.ts",
       ],
       thresholds: {
         statements: 85,

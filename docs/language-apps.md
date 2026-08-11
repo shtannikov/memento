@@ -60,10 +60,10 @@ BotFather's `/setmenubutton`.
 
 ## Adding another language
 
-Create `src/languages/<app-id>/index.ts` with the product name, language
+Create `src/app/_languages/<app-id>/index.ts` with the product name, language
 manifest, bot env names, routes, starter vocabulary, generation prompt, and
-grader. Put its live cases beside it in `src/languages/<app-id>/evals.ts`, then
-add the language manifest once to `src/languages/registry.ts`. The eval loader
+grader. Put its live cases beside it in `src/app/_languages/<app-id>/evals.ts`, then
+add the language manifest once to `src/app/_languages/registry.ts`. The eval loader
 discovers its cases by convention; the dynamic Mini App page and webhook
 consume the language registry automatically.
 

@@ -1,4 +1,4 @@
-import { handleTelegramWebhook } from "@/server/telegram/route";
+import { handleTelegramWebhook } from "@/app/_server/telegram/route";
 
 export const maxDuration = 300;
 
