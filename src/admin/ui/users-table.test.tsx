@@ -83,4 +83,26 @@ describe("admin users table", () => {
     expect(speaking).toHaveTextContent("Not available");
     expect(speaking).not.toHaveTextContent("generated");
   });
+
+  it("renders missing activity counts as zero", () => {
+    const rowWithMissingCounts = {
+      ...row,
+      quizzesCompleted: null,
+      quizzesCompletedToday: null,
+      quizGenerationsToday: null,
+    } as unknown as AdminUserAppRow;
+    const { container } = render(
+      <UsersTable
+        rows={[rowWithMissingCounts]}
+        expandedKey="42:en"
+        onToggle={vi.fn()}
+        onReset={vi.fn()}
+      />,
+    );
+
+    const quizzes = within(container).getByRole("region", { name: "Quizzes" });
+    expect(quizzes).toHaveTextContent("0 completed");
+    expect(quizzes).toHaveTextContent("0 completed · 0/5 generated");
+    expect(quizzes).not.toHaveTextContent("null");
+  });
 });

@@ -68,22 +68,22 @@ function ActivityGroup({
   enabled = true,
 }: {
   title: string;
-  completed: number;
-  completedToday: number;
-  generatedToday: number;
+  completed: number | null | undefined;
+  completedToday: number | null | undefined;
+  generatedToday: number | null | undefined;
   enabled?: boolean;
 }) {
   return (
     <section className={styles.activityGroup} aria-label={title}>
       <div className={styles.activityHeader}>
         <h3>{title}</h3>
-        <strong>{enabled ? `${completed} completed` : "—"}</strong>
+        <strong>{enabled ? `${completed ?? 0} completed` : "—"}</strong>
       </div>
       <div className={styles.activityToday}>
         <span>Today</span>
         <span>
           {enabled
-            ? `${completedToday} completed · ${generatedToday}/5 generated`
+            ? `${completedToday ?? 0} completed · ${generatedToday ?? 0}/5 generated`
             : "Not available"}
         </span>
       </div>
