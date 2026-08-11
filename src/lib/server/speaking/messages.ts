@@ -23,7 +23,7 @@ export function buildSpeakingTaskMessage(task: SpeakingTask): string {
     "💬 <b>Try these phrases</b>",
     phrases,
     "",
-    "🚀 <b>Hit reply and send a 1–3 minute voice message.</b>",
+    "🚀 <b>Ready? Send a 1–3 min voice message!</b>",
   ].join("\n");
 }
 
