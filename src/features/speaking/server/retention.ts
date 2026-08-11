@@ -1,6 +1,6 @@
 import "server-only";
 
-import { getMementoDb } from "../supabase";
+import { getMementoDb } from "@/lib/server/supabase";
 
 export async function purgeExpiredSpeakingTranscripts(): Promise<number> {
   const { data, error } = await getMementoDb().rpc(

@@ -17,7 +17,11 @@ export default defineConfig({
     coverage: {
       provider: "v8",
       reporter: ["text", "lcov"],
-      include: ["src/lib/domain/**/*.ts", "src/lib/server/telegram-auth.ts"],
+      include: [
+        "src/lib/domain/**/*.ts",
+        "src/features/speaking/domain.ts",
+        "src/lib/server/telegram-auth.ts",
+      ],
       thresholds: {
         statements: 85,
         branches: 80,

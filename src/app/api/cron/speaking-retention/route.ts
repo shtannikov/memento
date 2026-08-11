@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-import { purgeExpiredSpeakingTranscripts } from "@/lib/server/speaking/retention";
+import { purgeExpiredSpeakingTranscripts } from "@/features/speaking/server/retention";
 
 export async function GET(request: Request) {
   const secret = process.env.CRON_SECRET;

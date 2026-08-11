@@ -2,7 +2,7 @@
 
 import { describe, expect, it } from "vitest";
 
-import type { AnswerEvaluation, SpeakingTask } from "@/lib/domain/speaking";
+import type { AnswerEvaluation, SpeakingTask } from "../domain";
 import {
   buildSpeakingFeedbackMessage,
   buildSpeakingTaskMessage,

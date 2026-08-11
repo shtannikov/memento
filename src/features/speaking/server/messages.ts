@@ -1,7 +1,7 @@
 import type {
   AnswerEvaluation,
   SpeakingTask,
-} from "@/lib/domain/speaking";
+} from "../domain";
 import { formatInlineCorrection } from "./inline-correction";
 
 export const NON_SUBSTANTIVE_SPEAKING_FEEDBACK =

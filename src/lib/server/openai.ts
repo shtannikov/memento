@@ -16,7 +16,7 @@ import type {
   GeneratedTopic,
   SpeakingTask,
   TopicGenerationInput,
-} from "@/lib/domain/speaking";
+} from "@/features/speaking/domain";
 import { AppError } from "./api";
 
 export type GenerationVocabularyItem = LanguageVocabularyItem;

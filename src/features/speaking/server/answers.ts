@@ -4,15 +4,15 @@ import type { AppId } from "@/lib/domain/app";
 import {
   MAX_VOICE_DURATION_SECONDS,
   MIN_VOICE_DURATION_SECONDS,
-} from "@/lib/domain/speaking";
-import { AppError } from "../api";
-import { evaluateSpeakingAnswer, transcribeVoice } from "../openai";
-import { getMementoDb } from "../supabase";
+} from "../domain";
+import { AppError } from "@/lib/server/api";
+import { evaluateSpeakingAnswer, transcribeVoice } from "@/lib/server/openai";
+import { getMementoDb } from "@/lib/server/supabase";
 import {
   downloadTelegramFile,
   getTelegramFile,
   sendTelegramMessage,
-} from "../telegram-bot";
+} from "@/lib/server/telegram-bot";
 import { buildSpeakingFeedbackMessage } from "./messages";
 import { loadSpeakingTask, type StoredTaskRow } from "./tasks";
 import { runWithTelegramTyping } from "./typing-indicator";

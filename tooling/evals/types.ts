@@ -6,7 +6,7 @@ import type {
 import type {
   SpeakingTask,
   TopicGenerationInput,
-} from "../../src/lib/domain/speaking";
+} from "../../src/features/speaking/domain";
 
 export type EvalCase = {
   id: string;

@@ -2,7 +2,13 @@ import "server-only";
 
 import { z } from "zod";
 import { DEFAULT_APP_ID, type AppId } from "@/lib/domain/app";
-import { MAX_SPEAKING_TASKS_PER_DAY } from "@/lib/domain/speaking";
+import { MAX_SPEAKING_TASKS_PER_DAY } from "@/features/speaking/domain";
+import { processSpeakingVoiceAnswer } from "@/features/speaking/server/answers";
+import {
+  hasActiveSpeakingTask,
+  regenerateSpeakingTaskCommand,
+  runSpeakingTaskCommand,
+} from "@/features/speaking/server/tasks";
 import { getLanguage } from "@/languages/registry";
 
 import {
@@ -24,12 +30,6 @@ import {
   ensureUserAndSeed,
   prepareLearningReset,
 } from "./vocabulary";
-import { processSpeakingVoiceAnswer } from "./speaking/answers";
-import {
-  hasActiveSpeakingTask,
-  regenerateSpeakingTaskCommand,
-  runSpeakingTaskCommand,
-} from "./speaking/tasks";
 import {
   answerTelegramCallbackQuery,
   editTelegramMessage,

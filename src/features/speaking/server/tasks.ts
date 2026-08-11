@@ -8,12 +8,12 @@ import {
   type SpeakingTask,
   type SpeakingVocabularyItem,
   type TopicGenerationInput,
-} from "@/lib/domain/speaking";
+} from "../domain";
 import { getLanguage } from "@/languages/registry";
-import { AppError } from "../api";
-import { generateSpeakingTopic } from "../openai";
-import { getMementoDb } from "../supabase";
-import { sendTelegramMessage } from "../telegram-bot";
+import { AppError } from "@/lib/server/api";
+import { generateSpeakingTopic } from "@/lib/server/openai";
+import { getMementoDb } from "@/lib/server/supabase";
+import { sendTelegramMessage } from "@/lib/server/telegram-bot";
 import { buildSpeakingTaskMessage } from "./messages";
 import { runWithTelegramTyping } from "./typing-indicator";
 
