@@ -2,6 +2,7 @@ export type TelegramWebApp = {
   initData: string;
   ready(): void;
   expand(): void;
+  disableVerticalSwipes?(): void;
   requestFullscreen?(): void;
   setBackgroundColor?(color: string): void;
   setHeaderColor?(color: string): void;
@@ -33,13 +34,8 @@ export function initializeTelegram(appName: string): string {
   setTelegramColor(APP_BACKGROUND);
   webApp?.ready();
   webApp?.expand();
-  if (supports(webApp, "8.0")) {
-    try {
-      webApp?.requestFullscreen?.();
-    } catch {
-      // Expanded mode remains usable in clients without fullscreen support.
-    }
-  }
+  invokeIfSupported(webApp, "7.7", webApp?.disableVerticalSwipes);
+  invokeIfSupported(webApp, "8.0", webApp?.requestFullscreen);
   const initData = webApp?.initData?.trim() ?? "";
   if (!initData) {
     throw new ClientError(
@@ -76,4 +72,17 @@ function supports(
   version: string,
 ): boolean {
   return !webApp?.isVersionAtLeast || webApp.isVersionAtLeast(version);
+}
+
+function invokeIfSupported(
+  webApp: TelegramWebApp | undefined,
+  version: string,
+  action: (() => void) | undefined,
+): void {
+  if (!supports(webApp, version)) return;
+  try {
+    action?.call(webApp);
+  } catch {
+    // Older and partially implemented Telegram clients remain usable.
+  }
 }
