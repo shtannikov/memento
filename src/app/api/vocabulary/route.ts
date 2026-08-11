@@ -5,16 +5,16 @@ import {
   apiError,
   authenticateRequest,
   parseJson,
-} from "@/lib/server/api";
+} from "@/app/api/_server/api";
 import {
   ensureUserAndSeed,
   importVocabularyItems,
   loadVocabulary,
-} from "@/lib/server/vocabulary";
+} from "@/app/_features/vocabulary/server/vocabulary";
 import {
   DEFINITION_MAX_LENGTH,
   TERM_MAX_LENGTH,
-} from "@/lib/domain/vocabulary";
+} from "@/app/_features/vocabulary/domain/vocabulary";
 
 const NewVocabularySchema = z.object({
   term: z.string().trim().min(1).max(TERM_MAX_LENGTH),

@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 
-import { DEFAULT_APP_ID } from "@/lib/domain/app";
-import { handleTelegramWebhook } from "@/lib/server/telegram-route";
-import { getLanguageFromRoute } from "@/languages/registry";
+import { DEFAULT_APP_ID } from "@/app/app-config";
+import { handleTelegramWebhook } from "@/app/api/_server/telegram/route";
+import { getLanguageFromRoute } from "@/app/_languages/registry";
 
 export const maxDuration = 300;
 

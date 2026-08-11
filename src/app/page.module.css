@@ -24,31 +24,3 @@
   min-height: 0;
   overflow: hidden;
 }
-
-.stateScreen {
-  min-height: 100%;
-  display: grid;
-  place-content: center;
-  gap: 12px;
-  padding: 32px;
-  text-align: center;
-  background: #ffffff;
-}
-
-.stateScreen h1,
-.stateScreen p {
-  margin: 0;
-}
-
-.stateScreen p {
-  color: var(--muted);
-}
-
-.stateScreen button {
-  min-height: 44px;
-  color: white;
-  border: 0;
-  border-radius: 12px;
-  background: var(--violet);
-  font-weight: 700;
-}

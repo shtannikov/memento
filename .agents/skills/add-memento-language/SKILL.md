@@ -49,16 +49,16 @@ into the other.
 
 Read the current implementations; file names may have evolved:
 
-- `src/languages/registry.ts`
-- `src/languages/types.ts`
-- `src/languages/en/`
-- `src/languages/cz/`
-- `src/lib/server/openai.ts`
-- `src/lib/server/vocabulary.ts`
-- `src/lib/server/rounds.ts`
-- `src/lib/server/telegram-route.ts`
+- `src/app/_languages/registry.ts`
+- `src/app/_languages/types.ts`
+- `src/app/_languages/en/`
+- `src/app/_languages/cz/`
+- `src/app/api/_server/openai.ts`
+- `src/app/_features/vocabulary/server/vocabulary.ts`
+- `src/app/_features/quiz/server/rounds.ts`
+- `src/app/api/_server/telegram/route.ts`
 - `src/app/api/telegram/webhook/`
-- `evals/runner.ts`
+- `tooling/evals/runner.ts`
 - `docs/language-apps.md`
 - `supabase/migrations/`
 
@@ -105,11 +105,11 @@ where app_id = '<app-id>';
 
 ## Add the application
 
-- Create `src/languages/<app-id>/index.ts` containing the complete language
+- Create `src/app/_languages/<app-id>/index.ts` containing the complete language
   manifest: ID, product name, locale, app/webhook paths, env-variable names,
   starters, native grammar rules and examples, generation prompt, and grader
   prompt.
-- Add the definition once to `src/languages/registry.ts`. The shared dynamic
+- Add the definition once to `src/app/_languages/registry.ts`. The shared dynamic
   Mini App page and webhook route must discover it from that registry; do not
   add language-specific Next.js route files.
 - Thread the app ID through client requests, Telegram auth, vocabulary, rounds,
@@ -134,8 +134,8 @@ convention says otherwise. Never print or commit credentials.
   webhook secret selection, direct Telegram import/reset routing, starters,
   prompt selection, and cross-app rejection.
 - Add live eval cases beside the manifest in
-  `src/languages/<app-id>/evals.ts` using production client methods. Export them
-  as `EVAL_CASES`; `evals/loader.ts` discovers every registered language by
+  `src/app/_languages/<app-id>/evals.ts` using production client methods. Export them
+  as `EVAL_CASES`; `tooling/evals/loader.ts` discovers every registered language by
   convention, so do not add another central eval import. Cover the complete
   starter set, a smaller set, realistic morphology/grammar traps, multilingual
   definitions, and Russian definitions.

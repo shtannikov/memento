@@ -9,11 +9,11 @@ const { parseTelegramUpdate, processTelegramUpdate, sendTelegramMessage } =
     sendTelegramMessage: vi.fn(),
   }));
 
-vi.mock("@/lib/server/telegram-webhook", () => ({
+vi.mock("@/app/api/_server/telegram/webhook", () => ({
   parseTelegramUpdate,
   processTelegramUpdate,
 }));
-vi.mock("@/lib/server/telegram-bot", () => ({
+vi.mock("@/app/api/_server/telegram/bot", () => ({
   sendTelegramMessage,
 }));
 

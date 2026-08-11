@@ -6,7 +6,7 @@ const { handleTelegramWebhook } = vi.hoisted(() => ({
   handleTelegramWebhook: vi.fn(),
 }));
 
-vi.mock("@/lib/server/telegram-route", () => ({ handleTelegramWebhook }));
+vi.mock("@/app/api/_server/telegram/route", () => ({ handleTelegramWebhook }));
 
 import { POST } from "./route";
 
