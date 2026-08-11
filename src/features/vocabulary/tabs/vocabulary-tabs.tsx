@@ -1,24 +1,22 @@
 import * as Tabs from "@radix-ui/react-tabs";
 import type { CSSProperties } from "react";
 
-import styles from "./vocabulary-screen.module.css";
-import type { VocabularyStatus } from "./vocabulary.types";
+import styles from "../vocabulary-screen.module.css";
+import type { VocabularyStatus } from "../vocabulary.types";
 
 export function VocabularyTabs({
   activeTab,
   onChange,
-  speakingEnabled,
+  tabCount,
   indicatorPosition,
   dragging,
 }: {
   activeTab: VocabularyStatus;
   onChange: (tab: VocabularyStatus) => void;
-  speakingEnabled: boolean;
+  tabCount: number;
   indicatorPosition: number;
   dragging: boolean;
 }) {
-  const tabCount = speakingEnabled ? 3 : 2;
-
   return (
     <Tabs.Root
       value={activeTab}
@@ -37,7 +35,7 @@ export function VocabularyTabs({
       >
         <span className={styles.tabIndicator} aria-hidden="true" />
         <Tabs.Trigger value="learning">Learning</Tabs.Trigger>
-        {speakingEnabled && (
+        {tabCount === 3 && (
           <Tabs.Trigger value="practicing">Practicing</Tabs.Trigger>
         )}
         <Tabs.Trigger value="learned">Learned</Tabs.Trigger>

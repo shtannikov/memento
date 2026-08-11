@@ -1,13 +1,8 @@
-import {
-  useRef,
-  useState,
-  type ReactNode,
-  type TouchEvent,
-} from "react";
+import { useRef, useState, type ReactNode, type TouchEvent } from "react";
 
-import styles from "./vocabulary-screen.module.css";
+import styles from "../vocabulary-screen.module.css";
+import type { VocabularyStatus } from "../vocabulary.types";
 import { VocabularyTabs } from "./vocabulary-tabs";
-import type { VocabularyStatus } from "./vocabulary.types";
 
 const TAB_SWIPE_AXIS_RATIO = 1.25;
 const TAB_SWIPE_LOCK_DISTANCE = 8;
@@ -25,26 +20,27 @@ type TabSwipe = {
   width: number;
 };
 
+export type SwipeableVocabularyTabPage = {
+  value: VocabularyStatus;
+  content: ReactNode;
+};
+
 export function SwipeableVocabularyTabs({
   activeTab,
-  tabs,
-  speakingEnabled,
+  pages,
   onChange,
-  children,
 }: {
   activeTab: VocabularyStatus;
-  tabs: VocabularyStatus[];
-  speakingEnabled: boolean;
+  pages: readonly SwipeableVocabularyTabPage[];
   onChange: (tab: VocabularyStatus) => void;
-  children: ReactNode[];
 }) {
   const [dragOffset, setDragOffset] = useState(0);
   const [dragWidth, setDragWidth] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
   const swipeRef = useRef<TabSwipe | null>(null);
-  const activeIndex = tabs.indexOf(activeTab);
+  const activeIndex = pages.findIndex((page) => page.value === activeTab);
   const indicatorPosition = Math.min(
-    tabs.length - 1,
+    pages.length - 1,
     Math.max(
       0,
       activeIndex -
@@ -109,7 +105,7 @@ export function SwipeableVocabularyTabs({
     }
 
     const pullingPastStart = activeIndex === 0 && deltaX > 0;
-    const pullingPastEnd = activeIndex === tabs.length - 1 && deltaX < 0;
+    const pullingPastEnd = activeIndex === pages.length - 1 && deltaX < 0;
     setDragOffset(
       pullingPastStart || pullingPastEnd
         ? deltaX * TAB_SWIPE_EDGE_RESISTANCE
@@ -144,7 +140,7 @@ export function SwipeableVocabularyTabs({
         (horizontalDistance >= TAB_SWIPE_MIN_FLICK_DISTANCE &&
           horizontalDistance / elapsed >= TAB_SWIPE_VELOCITY));
     const targetTab = shouldChangeTab
-      ? tabs[activeIndex + (deltaX < 0 ? 1 : -1)]
+      ? pages[activeIndex + (deltaX < 0 ? 1 : -1)]?.value
       : undefined;
 
     if (targetTab) {
@@ -165,17 +161,17 @@ export function SwipeableVocabularyTabs({
       <VocabularyTabs
         activeTab={activeTab}
         onChange={settleOnTab}
-        speakingEnabled={speakingEnabled}
+        tabCount={pages.length}
         indicatorPosition={indicatorPosition}
         dragging={isDragging}
       />
       <div className={styles.tabViewport} data-dragging={isDragging}>
-        {tabs.map((tab, index) => {
-          const isActive = tab === activeTab;
+        {pages.map((page, index) => {
+          const isActive = page.value === activeTab;
           const pageOffset = index - activeIndex;
           return (
             <div
-              key={tab}
+              key={page.value}
               className={`${styles.tabPage} ${
                 isActive ? styles.tabPageActive : ""
               }`}
@@ -185,7 +181,7 @@ export function SwipeableVocabularyTabs({
               aria-hidden={!isActive}
               inert={!isActive}
             >
-              {children[index]}
+              {page.content}
             </div>
           );
         })}
