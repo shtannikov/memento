@@ -49,6 +49,8 @@ export function VocabularyTabPage({
           placeholder="Search phrases"
           aria-label="Search phrases"
           autoComplete="off"
+          autoCorrect="off"
+          autoCapitalize="none"
           spellCheck={false}
         />
         {searchQuery && (

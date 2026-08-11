@@ -52,6 +52,9 @@ describe("VocabularyTabPage", () => {
     render(<SearchablePage />);
     const search = screen.getByRole("searchbox", { name: "Search phrases" });
 
+    expect(search).toHaveAttribute("autocorrect", "off");
+    expect(search).toHaveAttribute("autocapitalize", "none");
+
     await user.type(search, "FOLLOW");
     expect(screen.getByRole("heading", { name: "Follow up" })).toBeVisible();
     expect(
