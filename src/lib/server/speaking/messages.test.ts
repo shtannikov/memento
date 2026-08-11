@@ -25,7 +25,7 @@ describe("speaking messages", () => {
     expect(message).not.toContain(task.topic);
     expect(message).toContain("<i>take into account</i>");
     expect(message).toContain(
-      "🚀 <b>Ready? Send a 1–3 min voice message!</b>",
+      "🚀 <b>Ready to answer the task?\nSend a 1–3 min voice message!</b>",
     );
   });
 
