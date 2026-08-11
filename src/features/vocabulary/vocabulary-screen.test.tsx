@@ -1,5 +1,6 @@
 import {
   cleanup,
+  fireEvent,
   render,
   screen,
   waitFor,
@@ -18,6 +19,43 @@ afterEach(() => {
 });
 
 describe("VocabularyScreen", () => {
+  it("keeps the adjacent tab search empty while swiping", async () => {
+    const user = userEvent.setup();
+    render(
+      <VocabularyScreen
+        learning={[]}
+        practicing={[]}
+        learned={[]}
+        speakingEnabled
+        onAdd={vi.fn()}
+        onRemove={vi.fn()}
+        onChangeStatus={vi.fn()}
+        onReorderPracticing={vi.fn()}
+        onStartQuiz={vi.fn()}
+      />,
+    );
+
+    const learningSearch = screen.getByRole("searchbox", {
+      name: "Search phrases",
+    });
+    await user.type(learningSearch, "follow");
+
+    const learningPanel = screen.getByRole("tabpanel", { name: "Learning" });
+    fireEvent.touchStart(learningPanel, {
+      touches: [{ clientX: 250, clientY: 100 }],
+    });
+    fireEvent.touchMove(learningPanel, {
+      touches: [{ clientX: 160, clientY: 104 }],
+    });
+
+    const searches = screen.getAllByRole("searchbox", {
+      name: "Search phrases",
+      hidden: true,
+    });
+    expect(searches[0]).toHaveValue("follow");
+    expect(searches[1]).toHaveValue("");
+  });
+
   it("disables the quiz action when Learning has fewer than two phrases", async () => {
     const onStartQuiz = vi.fn();
     const learning: VocabularyItem = {
@@ -487,9 +525,10 @@ describe("VocabularyScreen", () => {
     await user.clear(search);
     await user.type(search, "missing phrase");
 
-    expect(screen.getByText("No matches found")).toBeInTheDocument();
+    const activePanel = screen.getByRole("tabpanel", { name: "Learning" });
+    expect(within(activePanel).getByText("No matches found")).toBeInTheDocument();
     expect(
-      screen.getByText("Try a different word or definition."),
+      within(activePanel).getByText("Try a different word or definition."),
     ).toBeInTheDocument();
   });
 
