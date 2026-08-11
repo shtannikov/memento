@@ -15,7 +15,7 @@ const TAB_SWIPE_MIN_FLICK_DISTANCE = 50;
 const TAB_SWIPE_MAX_SETTLE_DISTANCE = 90;
 const TAB_SWIPE_VELOCITY = 0.5;
 const TAB_SWIPE_EDGE_RESISTANCE = 0.24;
-const TAB_PAGE_GUTTER = 16;
+const TAB_PAGE_GUTTER = 24;
 
 type TabSwipe = {
   axis: "pending" | "horizontal" | "vertical";
