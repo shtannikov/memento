@@ -65,7 +65,7 @@ export function buildSpeakingFeedbackMessage(
   }
   lines.push(
     "",
-    "🏁 That’s all for this task.\nWhen you’re ready for another one, send /speaking",
+    "🏁 That’s all for this task.\nReady for more? Send /speaking",
   );
   return lines.join("\n");
 }

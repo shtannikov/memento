@@ -55,7 +55,7 @@ describe("speaking messages", () => {
     expect(message).not.toContain("transcript");
     expect(message).not.toContain("A few things I’d fix");
     expect(message).toContain(
-      "🏁 That’s all for this task.\nWhen you’re ready for another one, send /speaking",
+      "🏁 That’s all for this task.\nReady for more? Send /speaking",
     );
   });
 
