@@ -11,11 +11,13 @@ export type AdminUserAppRow = {
   vocabularyPracticing: number;
   vocabularyLearned: number;
   quizzesCompleted: number;
+  quizzesCompletedToday: number;
   lastQuizCompletedAt: string | null;
   speakingCompleted: number;
+  speakingCompletedToday: number;
   lastSpeakingCompletedAt: string | null;
-  quizAttemptsToday: number;
-  speakingAttemptsToday: number;
+  quizGenerationsToday: number;
+  speakingGenerationsToday: number;
 };
 
 export type ResetLimitsResult = {

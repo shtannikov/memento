@@ -42,13 +42,16 @@ export function UserAppRow({
           </div>
           <ActivityGroup
             title="Quizzes"
-            total={String(row.quizzesCompleted)}
-            today={`${row.quizAttemptsToday} / 5`}
+            completed={row.quizzesCompleted}
+            completedToday={row.quizzesCompletedToday}
+            generatedToday={row.quizGenerationsToday}
           />
           <ActivityGroup
             title="Speaking"
-            total={app.speakingEnabled ? String(row.speakingCompleted) : "—"}
-            today={app.speakingEnabled ? `${row.speakingAttemptsToday} / 5` : "—"}
+            completed={row.speakingCompleted}
+            completedToday={row.speakingCompletedToday}
+            generatedToday={row.speakingGenerationsToday}
+            enabled={app.speakingEnabled}
           />
           <button className={styles.resetButton} onClick={onReset}>Reset limits</button>
         </div>
@@ -59,19 +62,30 @@ export function UserAppRow({
 
 function ActivityGroup({
   title,
-  total,
-  today,
+  completed,
+  completedToday,
+  generatedToday,
+  enabled = true,
 }: {
   title: string;
-  total: string;
-  today: string;
+  completed: number;
+  completedToday: number;
+  generatedToday: number;
+  enabled?: boolean;
 }) {
   return (
     <section className={styles.activityGroup} aria-label={title}>
-      <h3>{title}</h3>
-      <div className={styles.activityMetrics}>
-        <Metric label="Total" value={total} />
-        <Metric label="Today" value={today} />
+      <div className={styles.activityHeader}>
+        <h3>{title}</h3>
+        <strong>{enabled ? `${completed} completed` : "—"}</strong>
+      </div>
+      <div className={styles.activityToday}>
+        <span>Today</span>
+        <span>
+          {enabled
+            ? `${completedToday} completed · ${generatedToday}/5 generated`
+            : "Not available"}
+        </span>
       </div>
     </section>
   );

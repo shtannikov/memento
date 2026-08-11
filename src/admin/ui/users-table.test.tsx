@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, within } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 
 import type { AdminUserAppRow } from "./admin.types";
@@ -17,11 +17,13 @@ const row: AdminUserAppRow = {
   vocabularyPracticing: 4,
   vocabularyLearned: 3,
   quizzesCompleted: 8,
+  quizzesCompletedToday: 1,
   lastQuizCompletedAt: null,
   speakingCompleted: 2,
+  speakingCompletedToday: 0,
   lastSpeakingCompletedAt: null,
-  quizAttemptsToday: 4,
-  speakingAttemptsToday: 1,
+  quizGenerationsToday: 4,
+  speakingGenerationsToday: 1,
 };
 
 describe("admin users table", () => {
@@ -55,11 +57,30 @@ describe("admin users table", () => {
     expect(screen.queryByText("42")).not.toBeInTheDocument();
     expect(screen.getByRole("region", { name: "Quizzes" })).toBeInTheDocument();
     expect(screen.getByRole("region", { name: "Speaking" })).toBeInTheDocument();
+    expect(screen.getByText("8 completed")).toBeInTheDocument();
+    expect(screen.getByText("1 completed · 4/5 generated")).toBeInTheDocument();
+    expect(screen.getByText("0 completed · 1/5 generated")).toBeInTheDocument();
+    expect(screen.queryByText("Total")).not.toBeInTheDocument();
     expect(screen.queryByText("Failed")).not.toBeInTheDocument();
     expect(screen.getByText(/Aug 1, 2026/)).toHaveAttribute(
       "data-emphasized",
       "true",
     );
     expect(screen.queryByText("Never completed")).not.toBeInTheDocument();
+  });
+
+  it("marks speaking activity unavailable for an app without speaking", () => {
+    const { container } = render(
+      <UsersTable
+        rows={[{ ...row, appId: "cz" }]}
+        expandedKey="42:cz"
+        onToggle={vi.fn()}
+        onReset={vi.fn()}
+      />,
+    );
+
+    const speaking = within(container).getByRole("region", { name: "Speaking" });
+    expect(speaking).toHaveTextContent("Not available");
+    expect(speaking).not.toHaveTextContent("generated");
   });
 });

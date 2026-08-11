@@ -1,6 +1,13 @@
 .page {
   min-height: 100dvh;
-  padding: 24px 16px 48px;
+  padding:
+    max(
+      76px,
+      calc(var(--tg-content-safe-area-inset-top, 0px) + 44px),
+      calc(var(--tg-safe-area-inset-top, 0px) + 44px),
+      calc(env(safe-area-inset-top, 0px) + 44px)
+    )
+    16px 48px;
   color: #18181b;
   background: #f4f4f5;
 }
@@ -30,11 +37,14 @@
 .row[data-expanded="true"] .chevron { transform: rotate(180deg); }
 .details { padding: 16px; display: grid; gap: 16px; border-top: 1px solid #f4f4f5; }
 .profileMetrics { display: grid; gap: 10px; }
-.activityGroup { padding: 14px; border: 1px solid #e4e4e7; border-radius: 14px; background: #fafafa; }
-.activityGroup h3 { margin: 0 0 10px; font-size: 14px; }
-.activityMetrics { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.activityGroup { padding: 12px 14px; border: 1px solid #e4e4e7; border-radius: 14px; background: #fafafa; }
+.activityHeader, .activityToday { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+.activityHeader h3 { margin: 0; font-size: 14px; }
+.activityHeader strong { font-size: 13px; white-space: nowrap; }
+.activityToday { margin-top: 8px; padding-top: 8px; color: #52525b; border-top: 1px solid #e4e4e7; font-size: 12px; }
+.activityToday > :first-child { color: #71717a; }
+.activityToday > :last-child { text-align: right; }
 .metric { min-width: 0; padding-top: 12px; display: grid; gap: 3px; }
-.activityMetrics .metric { padding-top: 0; }
 .metricLabel { color: #71717a; font-size: 12px; }
 .metricValue { font-size: 14px; }
 .metricValue[data-emphasized="true"] { font-weight: 700; }
@@ -58,7 +68,16 @@
 .dangerButton { color: #fff; border: 1px solid #b91c1c; background: #b91c1c; }
 
 @media (min-width: 760px) {
-  .page { padding: 38px 28px 64px; }
+  .page {
+    padding:
+      max(
+        76px,
+        calc(var(--tg-content-safe-area-inset-top, 0px) + 44px),
+        calc(var(--tg-safe-area-inset-top, 0px) + 44px),
+        calc(env(safe-area-inset-top, 0px) + 44px)
+      )
+      28px 64px;
+  }
   .rowSummary { grid-template-columns: minmax(220px, 1.5fr) 130px 180px 24px; }
   .appBadge { justify-self: start; }
   .details { grid-template-columns: repeat(2, minmax(0, 1fr)); }
