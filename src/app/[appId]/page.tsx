@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
-import { MementoApp } from "@/features/app/memento-app";
+import { MementoApp } from "@/app/memento-app";
 import { DEFAULT_APP_ID } from "@/lib/domain/app";
 import { APP_IDS, getLanguageFromRoute } from "@/languages/registry";
 

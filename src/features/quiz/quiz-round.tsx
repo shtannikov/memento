@@ -1,4 +1,4 @@
-import { PreparingScreen } from "./preparing-screen";
+import { StatusScreen } from "@/ui/status-screen";
 import { QuizScreen } from "./quiz-screen";
 import { RoundResult } from "./round-result";
 import { useQuizRound } from "./use-quiz-round";
@@ -25,29 +25,35 @@ export function QuizRound({
 
   if (round.phase === "preparing" || round.phase === "saving") {
     return (
-      <PreparingScreen
-        onCancel={leaveRound}
+      <StatusScreen
+        onBack={leaveRound}
+        backLabel="Vocabulary"
         title={
           round.phase === "saving"
             ? "Saving your progress"
             : "Preparing your quiz"
         }
+        supportingCopy="Turning your words into questions."
+        role="status"
       />
     );
   }
 
   if (round.phase === "error") {
     return (
-      <PreparingScreen
-        onCancel={leaveRound}
+      <StatusScreen
+        onBack={leaveRound}
+        backLabel="Vocabulary"
         title="Quiz unavailable"
         animatedEllipsis={false}
-        error={round.error ?? "Please try again."}
-        onRetry={
+        supportingCopy={round.error ?? "Please try again."}
+        onAction={
           round.errorCode === "DAILY_GENERATION_LIMIT"
             ? undefined
             : round.restart
         }
+        actionLabel="Try again"
+        role="alert"
       />
     );
   }

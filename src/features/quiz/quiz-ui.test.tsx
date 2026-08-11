@@ -1,43 +1,10 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 
-import { PreparingScreen } from "./preparing-screen";
 import { QuizScreen } from "./quiz-screen";
 import { RoundResult } from "./round-result";
 
 describe("quiz UI", () => {
-  it("animates the preparing-screen ellipsis", () => {
-    render(<PreparingScreen onCancel={vi.fn()} />);
-
-    const heading = screen.getByRole("heading", {
-      name: "Preparing your quiz...",
-    });
-    expect(heading).toBeVisible();
-
-    const ellipsis = heading.querySelector("[aria-hidden='true']");
-    expect(ellipsis).toHaveTextContent("...");
-    expect(ellipsis?.children).toHaveLength(3);
-  });
-
-  it("reuses the preparing screen for app loading", () => {
-    render(
-      <PreparingScreen
-        title="Loading Pomněnka"
-        supportingCopy="Getting your vocabulary ready."
-        status
-      />,
-    );
-
-    expect(
-      screen.getByRole("heading", { name: "Loading Pomněnka..." }),
-    ).toBeVisible();
-    const loadingStatus = screen.getByRole("status");
-    expect(loadingStatus).toHaveTextContent(
-      "Getting your vocabulary ready.",
-    );
-    expect(loadingStatus.querySelector("button")).not.toBeInTheDocument();
-  });
-
   it("reuses the home play icon for another successful quiz", () => {
     render(
       <RoundResult

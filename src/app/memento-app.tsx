@@ -3,12 +3,12 @@
 import { useEffect, useState } from "react";
 
 import styles from "@/app/page.module.css";
-import { PreparingScreen } from "@/features/quiz/preparing-screen";
 import { QuizRound } from "@/features/quiz/quiz-round";
 import { useVocabulary } from "@/features/vocabulary/use-vocabulary";
 import { VocabularyScreen } from "@/features/vocabulary/vocabulary-screen";
 import { initializeTelegram } from "@/lib/client/telegram";
 import type { AppId } from "@/lib/domain/app";
+import { StatusScreen } from "@/ui/status-screen";
 
 type Destination = "vocabulary" | "quiz";
 
@@ -89,10 +89,10 @@ export function MementoApp({
         {!startupError &&
           !vocabulary.error &&
           (!initData || vocabulary.loading) && (
-            <PreparingScreen
+            <StatusScreen
               title={`Loading ${appName}`}
               supportingCopy="Getting your vocabulary ready."
-              status
+              role="status"
             />
           )}
 

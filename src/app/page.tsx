@@ -1,4 +1,4 @@
-import { MementoApp } from "@/features/app/memento-app";
+import { MementoApp } from "@/app/memento-app";
 import { ENGLISH_LANGUAGE } from "@/languages/en";
 
 export default function Page() {
