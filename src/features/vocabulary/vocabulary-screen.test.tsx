@@ -1,5 +1,6 @@
 import {
   cleanup,
+  fireEvent,
   render,
   screen,
   waitFor,
@@ -18,6 +19,167 @@ afterEach(() => {
 });
 
 describe("VocabularyScreen", () => {
+  it("switches between available tabs with horizontal swipes", () => {
+    render(
+      <VocabularyScreen
+        learning={[]}
+        practicing={[]}
+        learned={[]}
+        speakingEnabled
+        onAdd={vi.fn()}
+        onRemove={vi.fn()}
+        onChangeStatus={vi.fn()}
+        onReorderPracticing={vi.fn()}
+        onStartQuiz={vi.fn()}
+      />,
+    );
+
+    const swipe = (startX: number, endX: number) => {
+      const panel = screen.getByRole("tabpanel");
+      fireEvent.touchStart(panel, {
+        touches: [{ clientX: startX, clientY: 100 }],
+      });
+      fireEvent.touchEnd(panel, {
+        changedTouches: [{ clientX: endX, clientY: 105 }],
+      });
+    };
+
+    swipe(250, 100);
+    expect(
+      screen.getByRole("tabpanel", { name: "Practicing" }),
+    ).toBeInTheDocument();
+
+    swipe(250, 100);
+    expect(
+      screen.getByRole("tabpanel", { name: "Learned" }),
+    ).toBeInTheDocument();
+
+    swipe(100, 250);
+    expect(
+      screen.getByRole("tabpanel", { name: "Practicing" }),
+    ).toBeInTheDocument();
+  });
+
+  it("moves the current and adjacent tab content with the finger", () => {
+    render(
+      <VocabularyScreen
+        learning={[]}
+        practicing={[]}
+        learned={[]}
+        speakingEnabled
+        onAdd={vi.fn()}
+        onRemove={vi.fn()}
+        onChangeStatus={vi.fn()}
+        onReorderPracticing={vi.fn()}
+        onStartQuiz={vi.fn()}
+      />,
+    );
+
+    const learningPanel = screen.getByRole("tabpanel", { name: "Learning" });
+    const practicingPanel = screen.getByRole("tabpanel", {
+      name: "Practicing",
+      hidden: true,
+    });
+
+    fireEvent.touchStart(learningPanel, {
+      touches: [{ clientX: 250, clientY: 100 }],
+    });
+    fireEvent.touchMove(learningPanel, {
+      touches: [{ clientX: 160, clientY: 104 }],
+    });
+
+    const learningPage = learningPanel.parentElement?.parentElement;
+    const practicingPage = practicingPanel.parentElement?.parentElement;
+    expect(learningPage).toHaveStyle({
+      transform: "translate3d(calc(0% + -90px), 0, 0)",
+    });
+    expect(practicingPage).toHaveStyle({
+      transform: "translate3d(calc(100% + -90px), 0, 0)",
+    });
+    expect(learningPage?.parentElement).toHaveAttribute(
+      "data-dragging",
+      "true",
+    );
+
+    fireEvent.touchEnd(learningPanel, {
+      changedTouches: [{ clientX: 100, clientY: 105 }],
+    });
+
+    expect(
+      screen.getByRole("tabpanel", { name: "Practicing" }),
+    ).toBeInTheDocument();
+  });
+
+  it("ignores short, vertical, and interactive-control gestures", () => {
+    render(
+      <VocabularyScreen
+        learning={[]}
+        practicing={[]}
+        learned={[]}
+        speakingEnabled
+        onAdd={vi.fn()}
+        onRemove={vi.fn()}
+        onChangeStatus={vi.fn()}
+        onReorderPracticing={vi.fn()}
+        onStartQuiz={vi.fn()}
+      />,
+    );
+
+    const panel = screen.getByRole("tabpanel", { name: "Learning" });
+    fireEvent.touchStart(panel, {
+      touches: [{ clientX: 200, clientY: 100 }],
+    });
+    fireEvent.touchEnd(panel, {
+      changedTouches: [{ clientX: 165, clientY: 102 }],
+    });
+    fireEvent.touchStart(panel, {
+      touches: [{ clientX: 200, clientY: 100 }],
+    });
+    fireEvent.touchEnd(panel, {
+      changedTouches: [{ clientX: 120, clientY: 220 }],
+    });
+
+    const search = screen.getByRole("searchbox", { name: "Search phrases" });
+    fireEvent.touchStart(search, {
+      touches: [{ clientX: 200, clientY: 100 }],
+    });
+    fireEvent.touchEnd(search, {
+      changedTouches: [{ clientX: 80, clientY: 100 }],
+    });
+
+    expect(
+      screen.getByRole("tabpanel", { name: "Learning" }),
+    ).toBeInTheDocument();
+  });
+
+  it("swipes directly between Learning and Learned when speaking is unavailable", () => {
+    render(
+      <VocabularyScreen
+        learning={[]}
+        practicing={[]}
+        learned={[]}
+        speakingEnabled={false}
+        onAdd={vi.fn()}
+        onRemove={vi.fn()}
+        onChangeStatus={vi.fn()}
+        onReorderPracticing={vi.fn()}
+        onStartQuiz={vi.fn()}
+      />,
+    );
+
+    const learningPanel = screen.getByRole("tabpanel", { name: "Learning" });
+    fireEvent.touchStart(learningPanel, {
+      touches: [{ clientX: 220, clientY: 100 }],
+    });
+    fireEvent.touchEnd(learningPanel, {
+      changedTouches: [{ clientX: 100, clientY: 100 }],
+    });
+
+    expect(
+      screen.getByRole("tabpanel", { name: "Learned" }),
+    ).toBeInTheDocument();
+  });
+
   it("disables the quiz action when Learning has fewer than two phrases", async () => {
     const onStartQuiz = vi.fn();
     const learning: VocabularyItem = {
@@ -487,9 +649,10 @@ describe("VocabularyScreen", () => {
     await user.clear(search);
     await user.type(search, "missing phrase");
 
-    expect(screen.getByText("No matches found")).toBeInTheDocument();
+    const activePanel = screen.getByRole("tabpanel", { name: "Learning" });
+    expect(within(activePanel).getByText("No matches found")).toBeInTheDocument();
     expect(
-      screen.getByText("Try a different word or definition."),
+      within(activePanel).getByText("Try a different word or definition."),
     ).toBeInTheDocument();
   });
 

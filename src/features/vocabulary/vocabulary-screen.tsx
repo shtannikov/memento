@@ -18,7 +18,7 @@ import {
   SearchIcon,
 } from "./vocabulary-icons";
 import styles from "./vocabulary-screen.module.css";
-import { VocabularyTabs } from "./vocabulary-tabs";
+import { SwipeableVocabularyTabs } from "./swipeable-vocabulary-tabs";
 import type {
   NewVocabularyItem,
   VocabularyItem,
@@ -70,22 +70,15 @@ export function VocabularyScreen({
   );
   const searchInputRef = useRef<HTMLInputElement>(null);
   const toastTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const visibleItems =
-    activeTab === "learning"
-      ? learning
-      : activeTab === "practicing"
-        ? practicing
-        : learned;
+  const availableTabs: VocabularyStatus[] = speakingEnabled
+    ? ["learning", "practicing", "learned"]
+    : ["learning", "learned"];
+  const itemsByTab: Record<VocabularyStatus, VocabularyItem[]> = {
+    learning,
+    practicing,
+    learned,
+  };
   const normalizedQuery = searchQuery.trim().toLocaleLowerCase();
-  const filteredItems = normalizedQuery
-    ? visibleItems.filter(
-        (item) =>
-          item.term.toLocaleLowerCase().includes(normalizedQuery) ||
-          item.definition
-            .toLocaleLowerCase()
-            .includes(normalizedQuery),
-      )
-    : visibleItems;
 
   useEffect(
     () => () => {
@@ -161,134 +154,158 @@ export function VocabularyScreen({
             activeTab === "learning"
               ? `${styles.content} ${styles.contentWithActions}`
               : styles.content
-          }
+            }
         >
-          <VocabularyTabs
+          <SwipeableVocabularyTabs
             activeTab={activeTab}
             onChange={changeTab}
             speakingEnabled={speakingEnabled}
-          />
-          <div
-            className={`${styles.search} ${
-              activeTab === "learning" ||
-              (speakingEnabled && activeTab === "practicing")
-                ? styles.searchBeforeHint
-                : ""
-            }`}
+            tabs={availableTabs}
           >
-            <SearchIcon />
-            <input
-              ref={searchInputRef}
-              type="search"
-              value={searchQuery}
-              onChange={(event) => setSearchQuery(event.target.value)}
-              placeholder="Search phrases"
-              aria-label="Search phrases"
-              autoComplete="off"
-              spellCheck={false}
-            />
-            {searchQuery && (
-              <button
-                type="button"
-                className={styles.searchClear}
-                aria-label="Clear search"
-                onClick={clearSearch}
-              >
-                <CloseIcon />
-              </button>
-            )}
-          </div>
-          {activeTab === "learning" && (
-            <div className={styles.progressHint}>
-              <ChatCommandHint>
-                A phrase moves to {speakingEnabled ? "Practicing" : "Learned"}{" "}
-                after 3 completed quizzes.
-              </ChatCommandHint>
-            </div>
-          )}
-          {activeTab === "practicing" && (
-            <div className={styles.progressHint}>
-              <ChatCommandHint>
-                Use a phrase correctly in three speaking tasks to move
-                it to Learned. Send <ChatCommand>/speaking</ChatCommand>{" "}
-                in the chat to get your speaking task.
-              </ChatCommandHint>
-            </div>
-          )}
-          <section
-            id={`${activeTab}-panel`}
-            role="tabpanel"
-            aria-label={
-              activeTab === "learning"
-                ? "Learning"
-                : activeTab === "practicing"
-                  ? "Practicing"
-                  : "Learned"
-            }
-            className={styles.list}
-          >
-            {activeTab === "practicing" &&
-            !normalizedQuery &&
-            practicing.length > 0 ? (
-              <PracticingQueue
-                items={practicing}
-                reordering={reordering || mutating}
-                onReorder={onReorderPracticing}
-                onRestore={(item) =>
-                  void changeItemStatus(item, "learning")
-                }
-                onDelete={removeItem}
-              />
-            ) : (
-              filteredItems.map((item) => (
-                <VocabularyCard
-                  key={item.id}
-                  item={item}
-                  speakingEnabled={speakingEnabled}
-                  disabled={mutating || reordering}
-                  onLearn={() =>
-                    void changeItemStatus(
-                      item,
-                      speakingEnabled ? "practicing" : "learned",
-                    )
-                  }
-                  onRestore={() =>
-                    void changeItemStatus(
-                      item,
-                      item.status === "practicing"
-                        ? "learning"
-                        : speakingEnabled
-                          ? "practicing"
-                          : "learning",
-                    )
-                  }
-                  onDelete={() => removeItem(item)}
-                />
-              ))
-            )}
-            {filteredItems.length === 0 && (
-              <VocabularyEmptyState
-                title={
-                  normalizedQuery
-                    ? "No matches found"
-                    : activeTab === "learning"
-                    ? "Nothing to learn yet"
-                    : activeTab === "practicing"
-                      ? "Nothing to practice yet"
-                      : "No learned phrases yet"
-                }
-                text={
-                  normalizedQuery
-                    ? "Try a different word or definition."
-                    : activeTab === "learning"
-                    ? "Add a phrase to start your list."
-                    : activeTab === "practicing"
-                      ? "Keep practicing in quizzes, or tap Done on a Learning phrase when it feels ready."
-                      : "Phrases used correctly three times will appear here."
-                }
-              />
-            )}
-          </section>
+            {availableTabs.map((tab) => {
+              const tabItems = itemsByTab[tab];
+              const filteredItems = normalizedQuery
+                ? tabItems.filter(
+                    (item) =>
+                      item.term
+                        .toLocaleLowerCase()
+                        .includes(normalizedQuery) ||
+                      item.definition
+                        .toLocaleLowerCase()
+                        .includes(normalizedQuery),
+                  )
+                : tabItems;
+              const isActive = tab === activeTab;
+
+              return (
+                <div key={tab}>
+                  <div
+                    className={`${styles.search} ${
+                      tab === "learning" ||
+                      (speakingEnabled && tab === "practicing")
+                        ? styles.searchBeforeHint
+                        : ""
+                    }`}
+                  >
+                    <SearchIcon />
+                    <input
+                      ref={isActive ? searchInputRef : undefined}
+                      type="search"
+                      value={searchQuery}
+                      onChange={(event) => setSearchQuery(event.target.value)}
+                      placeholder="Search phrases"
+                      aria-label="Search phrases"
+                      autoComplete="off"
+                      spellCheck={false}
+                    />
+                    {searchQuery && (
+                      <button
+                        type="button"
+                        className={styles.searchClear}
+                        aria-label="Clear search"
+                        onClick={clearSearch}
+                      >
+                        <CloseIcon />
+                      </button>
+                    )}
+                  </div>
+                  {tab === "learning" && (
+                    <div className={styles.progressHint}>
+                      <ChatCommandHint>
+                        A phrase moves to{" "}
+                        {speakingEnabled ? "Practicing" : "Learned"} after 3
+                        completed quizzes.
+                      </ChatCommandHint>
+                    </div>
+                  )}
+                  {tab === "practicing" && (
+                    <div className={styles.progressHint}>
+                      <ChatCommandHint>
+                        Use a phrase correctly in three speaking tasks to move
+                        it to Learned. Send{" "}
+                        <ChatCommand>/speaking</ChatCommand> in the chat to get
+                        your speaking task.
+                      </ChatCommandHint>
+                    </div>
+                  )}
+                  <section
+                    id={`${tab}-panel`}
+                    role="tabpanel"
+                    aria-label={
+                      tab === "learning"
+                        ? "Learning"
+                        : tab === "practicing"
+                          ? "Practicing"
+                          : "Learned"
+                    }
+                    className={styles.list}
+                  >
+                    {tab === "practicing" &&
+                    !normalizedQuery &&
+                    practicing.length > 0 ? (
+                      <PracticingQueue
+                        items={practicing}
+                        reordering={reordering || mutating}
+                        onReorder={onReorderPracticing}
+                        onRestore={(item) =>
+                          void changeItemStatus(item, "learning")
+                        }
+                        onDelete={removeItem}
+                      />
+                    ) : (
+                      filteredItems.map((item) => (
+                        <VocabularyCard
+                          key={item.id}
+                          item={item}
+                          speakingEnabled={speakingEnabled}
+                          disabled={mutating || reordering}
+                          onLearn={() =>
+                            void changeItemStatus(
+                              item,
+                              speakingEnabled ? "practicing" : "learned",
+                            )
+                          }
+                          onRestore={() =>
+                            void changeItemStatus(
+                              item,
+                              item.status === "practicing"
+                                ? "learning"
+                                : speakingEnabled
+                                  ? "practicing"
+                                  : "learning",
+                            )
+                          }
+                          onDelete={() => removeItem(item)}
+                        />
+                      ))
+                    )}
+                    {filteredItems.length === 0 && (
+                      <VocabularyEmptyState
+                        title={
+                          normalizedQuery
+                            ? "No matches found"
+                            : tab === "learning"
+                              ? "Nothing to learn yet"
+                              : tab === "practicing"
+                                ? "Nothing to practice yet"
+                                : "No learned phrases yet"
+                        }
+                        text={
+                          normalizedQuery
+                            ? "Try a different word or definition."
+                            : tab === "learning"
+                              ? "Add a phrase to start your list."
+                              : tab === "practicing"
+                                ? "Keep practicing in quizzes, or tap Done on a Learning phrase when it feels ready."
+                                : "Phrases used correctly three times will appear here."
+                        }
+                      />
+                    )}
+                  </section>
+                </div>
+              );
+            })}
+          </SwipeableVocabularyTabs>
         </div>
 
         {activeTab === "learning" && (
