@@ -91,10 +91,10 @@ describe("VocabularyScreen", () => {
     const learningPage = learningPanel.parentElement?.parentElement;
     const practicingPage = practicingPanel.parentElement?.parentElement;
     expect(learningPage).toHaveStyle({
-      transform: "translate3d(calc(0% + -90px), 0, 0)",
+      transform: "translate3d(calc(0% + 0px + -90px), 0, 0)",
     });
     expect(practicingPage).toHaveStyle({
-      transform: "translate3d(calc(100% + -90px), 0, 0)",
+      transform: "translate3d(calc(100% + 16px + -90px), 0, 0)",
     });
     expect(learningPage?.parentElement).toHaveAttribute(
       "data-dragging",

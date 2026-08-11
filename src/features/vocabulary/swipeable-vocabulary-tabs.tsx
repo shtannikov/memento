@@ -15,6 +15,7 @@ const TAB_SWIPE_MIN_FLICK_DISTANCE = 50;
 const TAB_SWIPE_MAX_SETTLE_DISTANCE = 90;
 const TAB_SWIPE_VELOCITY = 0.5;
 const TAB_SWIPE_EDGE_RESISTANCE = 0.24;
+const TAB_PAGE_GUTTER = 16;
 
 type TabSwipe = {
   axis: "pending" | "horizontal" | "vertical";
@@ -44,7 +45,11 @@ export function SwipeableVocabularyTabs({
   const activeIndex = tabs.indexOf(activeTab);
   const indicatorPosition = Math.min(
     tabs.length - 1,
-    Math.max(0, activeIndex - (dragWidth ? dragOffset / dragWidth : 0)),
+    Math.max(
+      0,
+      activeIndex -
+        (dragWidth ? dragOffset / (dragWidth + TAB_PAGE_GUTTER) : 0),
+    ),
   );
 
   function resetSwipe() {
@@ -130,7 +135,7 @@ export function SwipeableVocabularyTabs({
         horizontalDistance >= Math.abs(deltaY) * TAB_SWIPE_AXIS_RATIO);
     const elapsed = Math.max(1, Date.now() - swipe.startedAt);
     const settleDistance = Math.min(
-      swipe.width * 0.22,
+      (swipe.width + TAB_PAGE_GUTTER) * 0.22,
       TAB_SWIPE_MAX_SETTLE_DISTANCE,
     );
     const shouldChangeTab =
@@ -167,6 +172,7 @@ export function SwipeableVocabularyTabs({
       <div className={styles.tabViewport} data-dragging={isDragging}>
         {tabs.map((tab, index) => {
           const isActive = tab === activeTab;
+          const pageOffset = index - activeIndex;
           return (
             <div
               key={tab}
@@ -174,7 +180,7 @@ export function SwipeableVocabularyTabs({
                 isActive ? styles.tabPageActive : ""
               }`}
               style={{
-                transform: `translate3d(calc(${(index - activeIndex) * 100}% + ${dragOffset}px), 0, 0)`,
+                transform: `translate3d(calc(${pageOffset * 100}% + ${pageOffset * TAB_PAGE_GUTTER}px + ${dragOffset}px), 0, 0)`,
               }}
               aria-hidden={!isActive}
               inert={!isActive}
