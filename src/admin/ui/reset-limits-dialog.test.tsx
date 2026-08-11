@@ -17,11 +17,13 @@ const row: AdminUserAppRow = {
   vocabularyPracticing: 4,
   vocabularyLearned: 3,
   quizzesCompleted: 8,
+  quizzesCompletedToday: 1,
   lastQuizCompletedAt: null,
   speakingCompleted: 2,
+  speakingCompletedToday: 0,
   lastSpeakingCompletedAt: null,
-  quizAttemptsToday: 4,
-  speakingAttemptsToday: 1,
+  quizGenerationsToday: 4,
+  speakingGenerationsToday: 1,
 };
 
 describe("reset limits dialog", () => {
@@ -41,6 +43,8 @@ describe("reset limits dialog", () => {
     expect(
       screen.getByText("Resetting limits doesn’t delete data."),
     ).toBeInTheDocument();
+    expect(screen.getByText("Quiz generations")).toBeInTheDocument();
+    expect(screen.getByText("Speaking generations")).toBeInTheDocument();
     expect(screen.queryByText(/Words, rounds/i)).not.toBeInTheDocument();
   });
 });

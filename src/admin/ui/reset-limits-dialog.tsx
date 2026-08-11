@@ -25,8 +25,8 @@ export function ResetLimitsDialog({
           <Dialog.Title>Reset today’s limits?</Dialog.Title>
           <p>{name} · {app.name}</p>
           <dl className={styles.confirmationStats}>
-            <div><dt>Quiz</dt><dd>{row.quizAttemptsToday} / 5</dd></div>
-            <div><dt>Speaking</dt><dd>{app.speakingEnabled ? `${row.speakingAttemptsToday} / 5` : "—"}</dd></div>
+            <div><dt>Quiz generations</dt><dd>{row.quizGenerationsToday} / 5</dd></div>
+            <div><dt>Speaking generations</dt><dd>{app.speakingEnabled ? `${row.speakingGenerationsToday} / 5` : "—"}</dd></div>
           </dl>
           <Dialog.Description className={styles.dialogNote}>
             Resetting limits doesn’t delete data.
