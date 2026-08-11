@@ -1,11 +1,11 @@
-import type { TelegramUser } from "@/app/_server/telegram/auth";
+import type { TelegramUser } from "@/app/api/_server/telegram/auth";
 import { DEFAULT_APP_ID, type AppId } from "@/app/app-config";
-import { getMementoDb } from "@/app/_server/supabase";
+import { getMementoDb } from "@/app/api/_server/supabase";
 import {
   VOCABULARY_MAX_ITEMS,
   type VocabularyInput,
 } from "@/app/_features/vocabulary/domain/vocabulary";
-import { AppError } from "@/app/_server/api";
+import { AppError } from "@/app/api/_server/api";
 import { getLanguage } from "@/app/_languages/registry";
 
 export type StoredVocabularyItem = {

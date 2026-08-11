@@ -5,7 +5,7 @@ import {
   apiError,
   authenticateRequest,
   parseJson,
-} from "@/app/_server/api";
+} from "@/app/api/_server/api";
 import {
   ensureUserAndSeed,
   importVocabularyItems,

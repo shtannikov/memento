@@ -6,7 +6,7 @@ import {
   loadVocabulary,
   removeVocabularyItem,
   reorderPracticingVocabulary,
-} from "@/app/_client/api";
+} from "@/app/_clients/api";
 import type { AppId } from "@/app/app-config";
 import type {
   NewVocabularyItem,

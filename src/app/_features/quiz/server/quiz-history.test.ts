@@ -4,7 +4,7 @@ const { getMementoDb } = vi.hoisted(() => ({
   getMementoDb: vi.fn(),
 }));
 
-vi.mock("@/app/_server/supabase", () => ({ getMementoDb }));
+vi.mock("@/app/api/_server/supabase", () => ({ getMementoDb }));
 
 import {
   collectRecentQuizSentences,

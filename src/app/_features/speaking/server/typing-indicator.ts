@@ -1,5 +1,5 @@
 import type { AppId } from "@/app/app-config";
-import { sendTelegramTyping } from "@/app/_server/telegram/bot";
+import { sendTelegramTyping } from "@/app/api/_server/telegram/bot";
 
 const TYPING_REFRESH_INTERVAL_MS = 4000;
 

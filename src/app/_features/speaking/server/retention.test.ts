@@ -3,7 +3,7 @@
 import { describe, expect, it, vi } from "vitest";
 
 const rpc = vi.hoisted(() => vi.fn());
-vi.mock("@/app/_server/supabase", () => ({
+vi.mock("@/app/api/_server/supabase", () => ({
   getMementoDb: () => ({ rpc }),
 }));
 

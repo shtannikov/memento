@@ -53,10 +53,10 @@ Read the current implementations; file names may have evolved:
 - `src/app/_languages/types.ts`
 - `src/app/_languages/en/`
 - `src/app/_languages/cz/`
-- `src/app/_server/openai.ts`
+- `src/app/api/_server/openai.ts`
 - `src/app/_features/vocabulary/server/vocabulary.ts`
 - `src/app/_features/quiz/server/rounds.ts`
-- `src/app/_server/telegram/route.ts`
+- `src/app/api/_server/telegram/route.ts`
 - `src/app/api/telegram/webhook/`
 - `tooling/evals/runner.ts`
 - `docs/language-apps.md`

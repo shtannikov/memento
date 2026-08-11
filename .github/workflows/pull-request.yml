@@ -25,7 +25,7 @@ jobs:
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
         run: |
           changed="$(git diff --name-only "$BASE_SHA" "$HEAD_SHA")"
-          if echo "$changed" | grep -qE '^(src/app/_server/openai\.ts|src/app/_languages/|tooling/evals/)'; then
+          if echo "$changed" | grep -qE '^(src/app/api/_server/openai\.ts|src/app/_languages/|tooling/evals/)'; then
             echo "evals-required=true" >> "$GITHUB_OUTPUT"
           else
             echo "evals-required=false" >> "$GITHUB_OUTPUT"

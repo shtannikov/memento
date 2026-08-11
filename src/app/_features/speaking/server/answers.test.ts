@@ -11,12 +11,12 @@ const mocks = vi.hoisted(() => ({
   sendTelegramMessage: vi.fn(),
   sendTelegramTyping: vi.fn(),
 }));
-vi.mock("@/app/_server/supabase", () => ({ getMementoDb: mocks.getMementoDb }));
-vi.mock("@/app/_server/openai", () => ({
+vi.mock("@/app/api/_server/supabase", () => ({ getMementoDb: mocks.getMementoDb }));
+vi.mock("@/app/api/_server/openai", () => ({
   evaluateSpeakingAnswer: mocks.evaluateSpeakingAnswer,
   transcribeVoice: mocks.transcribeVoice,
 }));
-vi.mock("@/app/_server/telegram/bot", () => ({
+vi.mock("@/app/api/_server/telegram/bot", () => ({
   downloadTelegramFile: mocks.downloadTelegramFile,
   getTelegramFile: mocks.getTelegramFile,
   sendTelegramMessage: mocks.sendTelegramMessage,

@@ -1,14 +1,14 @@
 import { DAILY_GENERATION_LIMIT, ROUND_SIZE } from "@/app/_features/quiz/domain/round";
 import type { AppId } from "@/app/app-config";
 import { randomizeQuizCards } from "@/app/_features/quiz/domain/quiz-options";
-import { AppError } from "@/app/_server/api";
+import { AppError } from "@/app/api/_server/api";
 import {
   generateQuizCards,
   getOpenAIClient,
   type GenerationVocabularyItem,
-} from "@/app/_server/openai";
+} from "@/app/api/_server/openai";
 import { loadRecentQuizSentences } from "./quiz-history";
-import { getMementoDb } from "@/app/_server/supabase";
+import { getMementoDb } from "@/app/api/_server/supabase";
 
 export type ClientQuizCard = {
   id: string;

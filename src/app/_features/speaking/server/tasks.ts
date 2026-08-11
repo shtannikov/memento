@@ -10,10 +10,10 @@ import {
   type TopicGenerationInput,
 } from "../domain";
 import { getLanguage } from "@/app/_languages/registry";
-import { AppError } from "@/app/_server/api";
-import { generateSpeakingTopic } from "@/app/_server/openai";
-import { getMementoDb } from "@/app/_server/supabase";
-import { sendTelegramMessage } from "@/app/_server/telegram/bot";
+import { AppError } from "@/app/api/_server/api";
+import { generateSpeakingTopic } from "@/app/api/_server/openai";
+import { getMementoDb } from "@/app/api/_server/supabase";
+import { sendTelegramMessage } from "@/app/api/_server/telegram/bot";
 import { buildSpeakingTaskMessage } from "./messages";
 import { runWithTelegramTyping } from "./typing-indicator";
 

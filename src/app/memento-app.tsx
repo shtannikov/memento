@@ -6,9 +6,9 @@ import styles from "@/app/page.module.css";
 import { QuizRound } from "@/app/_features/quiz/quiz-round";
 import { useVocabulary } from "@/app/_features/vocabulary/use-vocabulary";
 import { VocabularyScreen } from "@/app/_features/vocabulary/vocabulary-screen";
-import { initializeTelegram } from "@/app/_client/telegram";
+import { initializeTelegram } from "@/app/_clients/telegram";
 import type { AppId } from "@/app/app-config";
-import { StatusScreen } from "@/app/_ui/status-screen";
+import { StatusScreen } from "@/app/_components/status-screen";
 
 type Destination = "vocabulary" | "quiz";
 

@@ -5,7 +5,7 @@ import {
   apiError,
   authenticateRequest,
   parseJson,
-} from "@/app/_server/api";
+} from "@/app/api/_server/api";
 import { createRound } from "@/app/_features/quiz/server/rounds";
 import { ensureUserAndSeed } from "@/app/_features/vocabulary/server/vocabulary";
 

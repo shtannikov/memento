@@ -4,8 +4,8 @@ import {
   completeRound,
   failRound,
   prepareRound,
-} from "@/app/_client/api";
-import { ClientError } from "@/app/_client/telegram";
+} from "@/app/_clients/api";
+import { ClientError } from "@/app/_clients/telegram";
 import { ROUND_LIVES } from "@/app/_features/quiz/domain/round";
 import type { AppId } from "@/app/app-config";
 import type { QuizCard, QuizFeedback } from "./quiz.types";

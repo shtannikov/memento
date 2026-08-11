@@ -1,6 +1,6 @@
 import styles from "./vocabulary-screen.module.css";
 import type { VocabularyItem } from "./vocabulary.types";
-import { CheckIcon, TrashIcon, UndoIcon } from "@/app/_ui/icons";
+import { CheckIcon, TrashIcon, UndoIcon } from "@/app/_components/icons";
 
 function IconButton({
   label,

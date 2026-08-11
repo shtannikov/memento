@@ -3,7 +3,7 @@ import {
   Trophy,
 } from "lucide-react";
 
-import { PlayIcon } from "@/app/_ui/icons";
+import { PlayIcon } from "@/app/_components/icons";
 
 import styles from "./round-result.module.css";
 

@@ -13,7 +13,7 @@ import { join } from "node:path";
 import {
   APP_BACKGROUND,
   DIALOG_BACKDROP_SOLID,
-} from "@/app/_client/telegram";
+} from "@/app/_clients/telegram";
 
 import { AddPhraseDialog } from "./add-phrase-dialog";
 import styles from "./add-phrase-dialog.module.css";

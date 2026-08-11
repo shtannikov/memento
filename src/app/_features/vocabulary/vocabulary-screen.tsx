@@ -10,7 +10,7 @@ import {
   type SwipeableVocabularyTabPage,
 } from "./tabs/swipeable-vocabulary-tabs";
 import { VocabularyHeader } from "./vocabulary-header";
-import { CheckIcon, PlayIcon, PlusIcon } from "@/app/_ui/icons";
+import { CheckIcon, PlayIcon, PlusIcon } from "@/app/_components/icons";
 import styles from "./vocabulary-screen.module.css";
 import type {
   NewVocabularyItem,

@@ -22,7 +22,7 @@ export default defineConfig({
         "src/app/_features/quiz/domain/**/*.ts",
         "src/app/_features/vocabulary/domain/**/*.ts",
         "src/app/_features/speaking/domain.ts",
-        "src/app/_server/telegram/auth.ts",
+        "src/app/api/_server/telegram/auth.ts",
       ],
       thresholds: {
         statements: 85,

@@ -9,11 +9,11 @@ const mocks = vi.hoisted(() => ({
   sendTelegramTyping: vi.fn(),
 }));
 
-vi.mock("@/app/_server/supabase", () => ({ getMementoDb: mocks.getMementoDb }));
-vi.mock("@/app/_server/openai", () => ({
+vi.mock("@/app/api/_server/supabase", () => ({ getMementoDb: mocks.getMementoDb }));
+vi.mock("@/app/api/_server/openai", () => ({
   generateSpeakingTopic: mocks.generateSpeakingTopic,
 }));
-vi.mock("@/app/_server/telegram/bot", () => ({
+vi.mock("@/app/api/_server/telegram/bot", () => ({
   sendTelegramMessage: mocks.sendTelegramMessage,
   sendTelegramTyping: mocks.sendTelegramTyping,
 }));

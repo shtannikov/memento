@@ -9,11 +9,11 @@ const mocks = vi.hoisted(() => ({
   rpc: vi.fn(),
 }));
 
-vi.mock("@/app/_server/api", async (importOriginal) => ({
-  ...(await importOriginal<typeof import("@/app/_server/api")>()),
+vi.mock("@/app/api/_server/api", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@/app/api/_server/api")>()),
   authenticateRequest: mocks.authenticateRequest,
 }));
-vi.mock("@/app/_server/supabase", () => ({
+vi.mock("@/app/api/_server/supabase", () => ({
   getMementoDb: () => ({ rpc: mocks.rpc }),
 }));
 vi.mock("@/app/_features/vocabulary/server/vocabulary", () => ({

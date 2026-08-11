@@ -7,7 +7,7 @@ import {
   APP_BACKGROUND,
   DIALOG_BACKDROP_SOLID,
   setTelegramColor,
-} from "@/app/_client/telegram";
+} from "@/app/_clients/telegram";
 import type { NewVocabularyItem } from "./vocabulary.types";
 import {
   ChatCommand,

@@ -6,7 +6,7 @@ const mocks = vi.hoisted(() => ({
   getMementoDb: vi.fn(),
 }));
 
-vi.mock("@/app/_server/supabase", () => ({
+vi.mock("@/app/api/_server/supabase", () => ({
   getMementoDb: mocks.getMementoDb,
 }));
 

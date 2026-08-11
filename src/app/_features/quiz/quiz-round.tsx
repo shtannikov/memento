@@ -1,4 +1,4 @@
-import { StatusScreen } from "@/app/_ui/status-screen";
+import { StatusScreen } from "@/app/_components/status-screen";
 import { QuizScreen } from "./quiz-screen";
 import { RoundResult } from "./round-result";
 import { useQuizRound } from "./use-quiz-round";
