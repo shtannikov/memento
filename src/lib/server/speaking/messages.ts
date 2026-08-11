@@ -23,7 +23,7 @@ export function buildSpeakingTaskMessage(task: SpeakingTask): string {
     "💬 <b>Try these phrases</b>",
     phrases,
     "",
-    "🚀 <b>Hit reply and send a 1–3 minute voice note.</b>",
+    "🚀 <b>Ready to answer the task?\nSend a 1–3 min voice message!</b>",
   ].join("\n");
 }
 
@@ -63,7 +63,10 @@ export function buildSpeakingFeedbackMessage(
       `🧩 <b>One grammar pattern to fix:</b>\n${escapeHtml(grammar.explanation)}\nExample: <i>${escapeHtml(cleanGrammarExample(grammar.example))}</i>`,
     );
   }
-  lines.push("", "🌟 I’m looking forward to hearing your next answer.");
+  lines.push(
+    "",
+    "🏁 That’s all for this task.\nReady for more? Send /speaking",
+  );
   return lines.join("\n");
 }
 

@@ -36,9 +36,13 @@ describe("validateVoiceDuration", () => {
     expect(() => validateVoiceDuration(180)).not.toThrow();
   });
 
-  it("rejects voice notes outside the supported range", () => {
-    expect(() => validateVoiceDuration(29)).toThrow("at least 30 seconds");
-    expect(() => validateVoiceDuration(181)).toThrow("under 3 minutes");
+  it("rejects voice messages outside the supported range", () => {
+    expect(() => validateVoiceDuration(29)).toThrow(
+      "That voice message is too short 🤏\nKeep building your speaking skills and give it another try 💪\nSpeak for at least 30 seconds.",
+    );
+    expect(() => validateVoiceDuration(181)).toThrow(
+      "Whoa! That voice message is too long 🙀\nPlease keep it under 3 minutes.",
+    );
   });
 });
 

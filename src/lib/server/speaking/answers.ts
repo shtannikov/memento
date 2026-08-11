@@ -96,14 +96,14 @@ export function validateVoiceDuration(durationSeconds: number): void {
   if (durationSeconds < MIN_VOICE_DURATION_SECONDS) {
     throw new AppError(
       "VOICE_TOO_SHORT",
-      `That voice note is too short. Please speak for at least ${MIN_VOICE_DURATION_SECONDS} seconds.`,
+      `That voice message is too short 🤏\nKeep building your speaking skills and give it another try 💪\nSpeak for at least ${MIN_VOICE_DURATION_SECONDS} seconds.`,
       409,
     );
   }
   if (durationSeconds > MAX_VOICE_DURATION_SECONDS) {
     throw new AppError(
       "VOICE_TOO_LONG",
-      `That voice note is too long. Keep it under ${MAX_VOICE_DURATION_SECONDS / 60} minutes.`,
+      `Whoa! That voice message is too long 🙀\nPlease keep it under ${MAX_VOICE_DURATION_SECONDS / 60} minutes.`,
       409,
     );
   }

@@ -24,7 +24,9 @@ describe("speaking messages", () => {
     expect(message).toContain("The scene");
     expect(message).not.toContain(task.topic);
     expect(message).toContain("<i>take into account</i>");
-    expect(message).toContain("send a 1–3 minute voice note");
+    expect(message).toContain(
+      "🚀 <b>Ready to answer the task?\nSend a 1–3 min voice message!</b>",
+    );
   });
 
   it("celebrates an answer that needs no corrections", () => {
@@ -52,6 +54,9 @@ describe("speaking messages", () => {
     );
     expect(message).not.toContain("transcript");
     expect(message).not.toContain("A few things I’d fix");
+    expect(message).toContain(
+      "🏁 That’s all for this task.\nReady for more? Send /speaking",
+    );
   });
 
   it("encourages practice phrases when a correct answer misses them", () => {
