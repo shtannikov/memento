@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 
 import styles from "@/app/page.module.css";
+import { PreparingScreen } from "@/features/quiz/preparing-screen";
 import { QuizRound } from "@/features/quiz/quiz-round";
 import { useVocabulary } from "@/features/vocabulary/use-vocabulary";
 import { VocabularyScreen } from "@/features/vocabulary/vocabulary-screen";
@@ -85,15 +86,15 @@ export function MementoApp({
           </div>
         )}
 
-        {!startupError && !vocabulary.error && vocabulary.loading && (
-          <div
-            className={styles.stateScreen}
-            role="status"
-            aria-live="polite"
-          >
-            <h1>Loading {appName}…</h1>
-          </div>
-        )}
+        {!startupError &&
+          !vocabulary.error &&
+          (!initData || vocabulary.loading) && (
+            <PreparingScreen
+              title={`Loading ${appName}`}
+              supportingCopy="Getting your vocabulary ready."
+              status
+            />
+          )}
 
         {!startupError &&
           !vocabulary.error &&

@@ -19,6 +19,25 @@ describe("quiz UI", () => {
     expect(ellipsis?.children).toHaveLength(3);
   });
 
+  it("reuses the preparing screen for app loading", () => {
+    render(
+      <PreparingScreen
+        title="Loading Pomněnka"
+        supportingCopy="Getting your vocabulary ready."
+        status
+      />,
+    );
+
+    expect(
+      screen.getByRole("heading", { name: "Loading Pomněnka..." }),
+    ).toBeVisible();
+    const loadingStatus = screen.getByRole("status");
+    expect(loadingStatus).toHaveTextContent(
+      "Getting your vocabulary ready.",
+    );
+    expect(loadingStatus.querySelector("button")).not.toBeInTheDocument();
+  });
+
   it("reuses the home play icon for another successful quiz", () => {
     render(
       <RoundResult
