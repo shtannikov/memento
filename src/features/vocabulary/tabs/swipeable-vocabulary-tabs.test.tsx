@@ -83,6 +83,24 @@ describe("SwipeableVocabularyTabs", () => {
     );
   });
 
+  it("removes text-input focus once a horizontal swipe starts", () => {
+    render(<Pager statuses={["learning", "practicing", "learned"]} />);
+
+    const input = screen.getByRole("textbox", { name: "learning search" });
+    const panel = screen.getByRole("tabpanel", { name: "learning" });
+    input.focus();
+    expect(input).toHaveFocus();
+
+    fireEvent.touchStart(panel, {
+      touches: [{ clientX: 250, clientY: 100 }],
+    });
+    fireEvent.touchMove(panel, {
+      touches: [{ clientX: 160, clientY: 104 }],
+    });
+
+    expect(input).not.toHaveFocus();
+  });
+
   it("ignores short, vertical, and interactive-control gestures", () => {
     render(<Pager statuses={["learning", "practicing", "learned"]} />);
 

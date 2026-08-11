@@ -101,6 +101,14 @@ export function SwipeableVocabularyTabs({
           ? "horizontal"
           : "vertical";
       if (swipe.axis === "vertical") return;
+      const activeElement = document.activeElement;
+      if (
+        activeElement instanceof HTMLElement &&
+        event.currentTarget.contains(activeElement) &&
+        activeElement.matches("input, textarea, [contenteditable='true']")
+      ) {
+        activeElement.blur();
+      }
       setIsDragging(true);
     }
 
