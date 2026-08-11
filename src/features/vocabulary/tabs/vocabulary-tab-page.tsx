@@ -1,4 +1,4 @@
-import { useRef, useState, type ReactNode } from "react";
+import { useRef, type ReactNode } from "react";
 
 import { VocabularyCard } from "../vocabulary-card";
 import { VocabularyEmptyState } from "../vocabulary-empty-state";
@@ -29,7 +29,6 @@ export function VocabularyTabPage({
   children: ReactNode;
 }) {
   const searchInputRef = useRef<HTMLInputElement>(null);
-  const [searchFocused, setSearchFocused] = useState(false);
 
   function clearSearch() {
     onSearchChange("");
@@ -40,7 +39,6 @@ export function VocabularyTabPage({
     <div>
       <div
         className={`${styles.search} ${hint ? styles.searchBeforeHint : ""}`}
-        data-focused={searchFocused}
       >
         <SearchIcon />
         <input
@@ -48,8 +46,6 @@ export function VocabularyTabPage({
           type="search"
           value={searchQuery}
           onChange={(event) => onSearchChange(event.target.value)}
-          onFocus={() => setSearchFocused(true)}
-          onBlur={() => setSearchFocused(false)}
           placeholder="Search phrases"
           aria-label="Search phrases"
           autoComplete="off"
