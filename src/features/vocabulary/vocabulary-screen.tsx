@@ -118,7 +118,7 @@ export function VocabularyScreen({
       content: (
         <LearningTab
           items={learning}
-          searchQuery={searchQuery}
+          searchQuery={activeTab === "learning" ? searchQuery : ""}
           speakingEnabled={speakingEnabled}
           disabled={disabled}
           onSearchChange={setSearchQuery}
@@ -134,7 +134,7 @@ export function VocabularyScreen({
             content: (
               <PracticingTab
                 items={practicing}
-                searchQuery={searchQuery}
+                searchQuery={activeTab === "practicing" ? searchQuery : ""}
                 disabled={disabled}
                 onSearchChange={setSearchQuery}
                 reordering={reordering}
@@ -151,7 +151,7 @@ export function VocabularyScreen({
       content: (
         <LearnedTab
           items={learned}
-          searchQuery={searchQuery}
+          searchQuery={activeTab === "learned" ? searchQuery : ""}
           speakingEnabled={speakingEnabled}
           disabled={disabled}
           onSearchChange={setSearchQuery}

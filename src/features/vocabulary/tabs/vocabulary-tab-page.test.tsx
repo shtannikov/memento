@@ -52,6 +52,9 @@ describe("VocabularyTabPage", () => {
     render(<SearchablePage />);
     const search = screen.getByRole("searchbox", { name: "Search phrases" });
 
+    await user.click(search);
+    expect(search.parentElement).toHaveAttribute("data-focused", "true");
+
     await user.type(search, "FOLLOW");
     expect(screen.getByRole("heading", { name: "Follow up" })).toBeVisible();
     expect(

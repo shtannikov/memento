@@ -204,6 +204,7 @@
 .tabs button:focus-visible,
 .total:focus-visible,
 .search:focus-within,
+.search[data-focused="true"],
 .iconButton:focus-visible,
 .dragHandle:focus-visible,
 .floatingButton:focus-visible {
@@ -235,7 +236,8 @@
   margin-bottom: 20px;
 }
 
-.search:focus-within {
+.search:focus-within,
+.search[data-focused="true"] {
   color: #7c3aed;
   border-color: #c4b5fd;
 }
