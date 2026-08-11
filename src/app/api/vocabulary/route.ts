@@ -5,12 +5,12 @@ import {
   apiError,
   authenticateRequest,
   parseJson,
-} from "@/lib/server/api";
+} from "@/server/api";
 import {
   ensureUserAndSeed,
   importVocabularyItems,
   loadVocabulary,
-} from "@/lib/server/vocabulary";
+} from "@/features/vocabulary/server/vocabulary";
 import {
   DEFINITION_MAX_LENGTH,
   TERM_MAX_LENGTH,

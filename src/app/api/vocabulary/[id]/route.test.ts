@@ -9,14 +9,14 @@ const mocks = vi.hoisted(() => ({
   rpc: vi.fn(),
 }));
 
-vi.mock("@/lib/server/api", async (importOriginal) => ({
-  ...(await importOriginal<typeof import("@/lib/server/api")>()),
+vi.mock("@/server/api", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@/server/api")>()),
   authenticateRequest: mocks.authenticateRequest,
 }));
-vi.mock("@/lib/server/supabase", () => ({
+vi.mock("@/server/supabase", () => ({
   getMementoDb: () => ({ rpc: mocks.rpc }),
 }));
-vi.mock("@/lib/server/vocabulary", () => ({
+vi.mock("@/features/vocabulary/server/vocabulary", () => ({
   ensureUserAndSeed: mocks.ensureUserAndSeed,
   loadVocabulary: mocks.loadVocabulary,
   resetSchedule: vi.fn(),

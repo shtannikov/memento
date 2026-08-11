@@ -1,14 +1,14 @@
 import { DAILY_GENERATION_LIMIT, ROUND_SIZE } from "@/lib/domain/round";
 import type { AppId } from "@/lib/domain/app";
 import { randomizeQuizCards } from "@/lib/domain/quiz-options";
-import { AppError } from "./api";
+import { AppError } from "@/server/api";
 import {
   generateQuizCards,
   getOpenAIClient,
   type GenerationVocabularyItem,
-} from "./openai";
+} from "@/server/openai";
 import { loadRecentQuizSentences } from "./quiz-history";
-import { getMementoDb } from "./supabase";
+import { getMementoDb } from "@/server/supabase";
 
 export type ClientQuizCard = {
   id: string;

@@ -22,20 +22,20 @@ import {
   TERM_MAX_LENGTH,
   VOCABULARY_MAX_ITEMS,
 } from "@/lib/domain/vocabulary";
-import { AppError } from "./api";
-import type { TelegramUser } from "./telegram-auth";
+import { AppError } from "../api";
+import type { TelegramUser } from "./auth";
 import {
   importVocabularyItems,
   confirmLearningReset,
   ensureUserAndSeed,
   prepareLearningReset,
-} from "./vocabulary";
+} from "@/features/vocabulary/server/vocabulary";
 import {
   answerTelegramCallbackQuery,
   editTelegramMessage,
   sendTelegramTyping,
   type TelegramInlineButton,
-} from "./telegram-bot";
+} from "./bot";
 
 const TelegramUpdateSchema = z.object({
   update_id: z.number().int(),

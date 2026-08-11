@@ -5,7 +5,7 @@ import {
   deleteTelegramMessage,
   editTelegramMessage,
   sendTelegramMessage,
-} from "./telegram-bot";
+} from "./bot";
 
 const originalToken = process.env.TELEGRAM_BOT_TOKEN;
 const originalCzechToken = process.env.TELEGRAM_CZ_BOT_TOKEN;

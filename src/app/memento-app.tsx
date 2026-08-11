@@ -77,13 +77,18 @@ export function MementoApp({
     <main className={styles.canvas}>
       <section className={styles.mobileShell}>
         {(startupError || vocabulary.error) && (
-          <div className={styles.stateScreen} role="alert">
-            <h1>{appName}</h1>
-            <p>{startupError ?? vocabulary.error}</p>
-            {vocabulary.error && (
-              <button onClick={() => void vocabulary.refresh()}>Try again</button>
-            )}
-          </div>
+          <StatusScreen
+            title={appName}
+            supportingCopy={
+              startupError ?? vocabulary.error ?? "Something went wrong."
+            }
+            animatedEllipsis={false}
+            onAction={
+              vocabulary.error ? () => void vocabulary.refresh() : undefined
+            }
+            actionLabel="Try again"
+            role="alert"
+          />
         )}
 
         {!startupError &&

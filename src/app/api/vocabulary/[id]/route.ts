@@ -6,14 +6,14 @@ import {
   AppError,
   authenticateRequest,
   parseJson,
-} from "@/lib/server/api";
-import { getMementoDb } from "@/lib/server/supabase";
+} from "@/server/api";
+import { getMementoDb } from "@/server/supabase";
 import { getLanguage } from "@/languages/registry";
 import {
   ensureUserAndSeed,
   loadVocabulary,
   resetSchedule,
-} from "@/lib/server/vocabulary";
+} from "@/features/vocabulary/server/vocabulary";
 
 const ChangeStatusSchema = z.object({
   action: z.enum(["learn", "practice", "restore", "return"]),

@@ -2,7 +2,7 @@ import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 
 import { VocabularyCard } from "./vocabulary-card";
-import { GripIcon } from "./vocabulary-icons";
+import { GripIcon } from "@/ui/icons";
 import styles from "./vocabulary-screen.module.css";
 import type { VocabularyItem } from "./vocabulary.types";
 

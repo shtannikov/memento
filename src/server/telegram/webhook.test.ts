@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 
-import { AppError } from "./api";
-import { parseTelegramUpdate, processTelegramUpdate } from "./telegram-webhook";
+import { AppError } from "../api";
+import { parseTelegramUpdate, processTelegramUpdate } from "./webhook";
 
 function update(text: string, type = "private") {
   return {

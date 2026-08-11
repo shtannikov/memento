@@ -5,7 +5,7 @@ import {
   readInitDataAuthorization,
   TelegramAuthError,
   validateTelegramInitData,
-} from "./telegram-auth";
+} from "./auth";
 
 const token = "123456:test-token";
 const now = new Date("2026-07-26T12:00:00Z");

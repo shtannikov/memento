@@ -3,7 +3,7 @@ import { afterEach, describe, expect, it } from "vitest";
 import {
   authenticateTelegramWebhook,
   TelegramWebhookConfigurationError,
-} from "./telegram-webhook-auth";
+} from "./webhook-auth";
 
 const originalSecret = process.env.TELEGRAM_WEBHOOK_SECRET;
 const originalCzechSecret = process.env.TELEGRAM_CZ_WEBHOOK_SECRET;

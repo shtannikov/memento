@@ -5,14 +5,14 @@ import {
   MAX_VOICE_DURATION_SECONDS,
   MIN_VOICE_DURATION_SECONDS,
 } from "../domain";
-import { AppError } from "@/lib/server/api";
-import { evaluateSpeakingAnswer, transcribeVoice } from "@/lib/server/openai";
-import { getMementoDb } from "@/lib/server/supabase";
+import { AppError } from "@/server/api";
+import { evaluateSpeakingAnswer, transcribeVoice } from "@/server/openai";
+import { getMementoDb } from "@/server/supabase";
 import {
   downloadTelegramFile,
   getTelegramFile,
   sendTelegramMessage,
-} from "@/lib/server/telegram-bot";
+} from "@/server/telegram/bot";
 import { buildSpeakingFeedbackMessage } from "./messages";
 import { loadSpeakingTask, type StoredTaskRow } from "./tasks";
 import { runWithTelegramTyping } from "./typing-indicator";

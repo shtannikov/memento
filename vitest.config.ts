@@ -20,7 +20,7 @@ export default defineConfig({
       include: [
         "src/lib/domain/**/*.ts",
         "src/features/speaking/domain.ts",
-        "src/lib/server/telegram-auth.ts",
+        "src/server/telegram/auth.ts",
       ],
       thresholds: {
         statements: 85,

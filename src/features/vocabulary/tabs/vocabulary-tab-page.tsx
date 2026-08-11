@@ -2,7 +2,7 @@ import { useRef, type ReactNode } from "react";
 
 import { VocabularyCard } from "../vocabulary-card";
 import { VocabularyEmptyState } from "../vocabulary-empty-state";
-import { CloseIcon, SearchIcon } from "../vocabulary-icons";
+import { CloseIcon, SearchIcon } from "@/ui/icons";
 import styles from "../vocabulary-screen.module.css";
 import type { VocabularyItem, VocabularyStatus } from "../vocabulary.types";
 

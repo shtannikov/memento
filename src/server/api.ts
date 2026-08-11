@@ -13,7 +13,7 @@ import {
   TelegramAuthError,
   type TelegramUser,
   validateTelegramInitData,
-} from "./telegram-auth";
+} from "./telegram/auth";
 
 export class AppError extends Error {
   constructor(

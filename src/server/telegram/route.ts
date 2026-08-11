@@ -3,12 +3,12 @@ import "server-only";
 import { NextResponse } from "next/server";
 
 import type { AppId } from "@/lib/domain/app";
-import { sendTelegramMessage } from "./telegram-bot";
+import { sendTelegramMessage } from "./bot";
 import {
   authenticateTelegramWebhook,
   TelegramWebhookConfigurationError,
-} from "./telegram-webhook-auth";
-import { parseTelegramUpdate, processTelegramUpdate } from "./telegram-webhook";
+} from "./webhook-auth";
+import { parseTelegramUpdate, processTelegramUpdate } from "./webhook";
 
 export async function handleTelegramWebhook(request: Request, appId: AppId) {
   try {

@@ -5,9 +5,9 @@ import { DEFAULT_APP_ID, type AppId } from "@/lib/domain/app";
 import type {
   GenerationVocabularyItem,
   RecentQuizSentence,
-} from "./openai";
-import { normalizeQuizSentence } from "./openai";
-import { getMementoDb } from "./supabase";
+} from "@/server/openai";
+import { normalizeQuizSentence } from "@/server/openai";
+import { getMementoDb } from "@/server/supabase";
 
 const RECENT_ROUND_LIMIT = 10;
 const RECENT_SENTENCE_LIMIT_PER_ITEM = 3;
