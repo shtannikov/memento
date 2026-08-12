@@ -596,6 +596,10 @@
   visibility: hidden;
 }
 
+.screen:has(.tabViewport[data-scrolling="true"]) .floatingActions {
+  transition: none;
+}
+
 .floatingButton {
   display: inline-flex;
   height: 56px;
