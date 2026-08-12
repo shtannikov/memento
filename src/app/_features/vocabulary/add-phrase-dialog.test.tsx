@@ -313,12 +313,13 @@ describe("AddPhraseDialog", () => {
     expect(document.body).toHaveStyle({ overflow: "hidden" });
 
     visualViewport.height = 480;
+    visualViewport.offsetTop = 42;
     visualViewport.dispatchEvent(new Event("resize"));
     await waitFor(() => {
       expect((overlay as HTMLElement).style.height).toBe("");
       expect(dialog).toHaveStyle({
         "--dialog-viewport-top": "8px",
-        "--dialog-viewport-center-y": "248px",
+        "--dialog-viewport-center-y": "282px",
         "--dialog-viewport-height": "480px",
       });
       expect(document.documentElement).not.toHaveClass("keyboard-open");

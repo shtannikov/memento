@@ -48,9 +48,10 @@ export function AddPhraseDialog({
 
     const viewport = globalThis.visualViewport;
     let animationFrame = 0;
+    const dialogTop = viewport?.offsetTop ?? 0;
     const backgroundHeight = Math.max(
       globalThis.innerHeight,
-      (viewport?.offsetTop ?? 0) + (viewport?.height ?? 0),
+      dialogTop + (viewport?.height ?? 0),
     );
     root.style.setProperty(
       "--dialog-background-height",
@@ -67,7 +68,7 @@ export function AddPhraseDialog({
         const dialog = addDialogRef.current;
 
         if (dialog) {
-          dialog.style.setProperty("--dialog-viewport-top", `${offsetTop}px`);
+          dialog.style.setProperty("--dialog-viewport-top", `${dialogTop}px`);
           dialog.style.setProperty(
             "--dialog-viewport-center-x",
             `${offsetLeft + width / 2}px`,
