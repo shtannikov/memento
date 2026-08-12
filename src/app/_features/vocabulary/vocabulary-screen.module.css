@@ -234,16 +234,52 @@
   outline-offset: 2px;
 }
 
-.search {
+.searchDock {
   position: sticky;
   z-index: 2;
   top: 0;
+  padding-bottom: 12px;
+  margin-bottom: 8px;
+  background: #ffffff;
+}
+
+.searchDock::after {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  left: 0;
+  height: 18px;
+  background: linear-gradient(
+    180deg,
+    rgb(255 255 255 / 96%) 0%,
+    rgb(255 255 255 / 72%) 38%,
+    rgb(255 255 255 / 0%) 100%
+  );
+  content: "";
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(-2px);
+  transition: opacity 180ms ease;
+}
+
+.tabPage[data-scrolled="true"] .searchDock {
+  box-shadow: 0 10px 18px -20px rgb(15 23 42 / 55%);
+}
+
+.tabPage[data-scrolled="true"] .searchDock::after {
+  opacity: 1;
+}
+
+.searchDockBeforeHint {
+  margin-bottom: -2px;
+}
+
+.search {
   display: flex;
   min-height: 44px;
   align-items: center;
   gap: 10px;
   padding: 0 6px 0 14px;
-  margin-bottom: 20px;
   color: #94a3b8;
   border: 1px solid #e2e8f0;
   border-radius: 14px;
@@ -251,10 +287,6 @@
   transition:
     border-color 160ms ease,
     box-shadow 160ms ease;
-}
-
-.searchBeforeHint {
-  margin-bottom: 10px;
 }
 
 .progressHint {
@@ -538,7 +570,15 @@
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 10px;
+  opacity: var(--learning-actions-opacity, 1);
   pointer-events: none;
+  transform: translate3d(0, var(--learning-actions-y, 0), 0)
+    scale(var(--learning-actions-scale, 1));
+  transform-origin: bottom center;
+  transition:
+    opacity 160ms linear,
+    transform 220ms cubic-bezier(0.32, 0.72, 0, 1);
+  will-change: opacity, transform;
 }
 
 .floatingButton {
@@ -559,10 +599,14 @@
   font-weight: 600;
   white-space: nowrap;
   cursor: pointer;
-  pointer-events: auto;
+  pointer-events: none;
   transition:
     background 160ms ease,
     transform 160ms ease;
+}
+
+.screen[data-learning-actions-visible="true"] .floatingButton {
+  pointer-events: auto;
 }
 
 .floatingButton:hover:not(:disabled) {

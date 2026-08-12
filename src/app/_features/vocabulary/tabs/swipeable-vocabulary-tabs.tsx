@@ -1,4 +1,5 @@
 import {
+  useCallback,
   useEffect,
   useRef,
   useState,
@@ -22,10 +23,12 @@ export function SwipeableVocabularyTabs({
   activeTab,
   pages,
   onChange,
+  onProgress,
 }: {
   activeTab: VocabularyStatus;
   pages: readonly SwipeableVocabularyTabPage[];
   onChange: (tab: VocabularyStatus) => void;
+  onProgress?: (position: number) => void;
 }) {
   const activeIndex = pages.findIndex((page) => page.value === activeTab);
   const [initialIndex] = useState(activeIndex);
@@ -34,9 +37,13 @@ export function SwipeableVocabularyTabs({
   const viewportRef = useRef<HTMLDivElement>(null);
   const hasPositionedViewportRef = useRef(false);
 
-  function setIndicatorPosition(position: number) {
-    pagerRef.current?.style.setProperty("--tab-position", String(position));
-  }
+  const setIndicatorPosition = useCallback(
+    (position: number) => {
+      pagerRef.current?.style.setProperty("--tab-position", String(position));
+      onProgress?.(position);
+    },
+    [onProgress],
+  );
 
   function pageStep(viewport: HTMLDivElement) {
     return viewport.clientWidth + TAB_PAGE_GUTTER;
@@ -77,6 +84,12 @@ export function SwipeableVocabularyTabs({
     }
   }
 
+  function handlePageScroll(event: UIEvent<HTMLDivElement>) {
+    event.currentTarget.dataset.scrolled = String(
+      event.currentTarget.scrollTop > 2,
+    );
+  }
+
   useEffect(() => {
     const viewport = viewportRef.current;
     if (!viewport || activeIndex < 0) return;
@@ -94,7 +107,7 @@ export function SwipeableVocabularyTabs({
     } else {
       viewport.scrollLeft = left;
     }
-  }, [activeIndex]);
+  }, [activeIndex, setIndicatorPosition]);
 
   return (
     <div
@@ -131,6 +144,8 @@ export function SwipeableVocabularyTabs({
               }`}
               aria-hidden={!isActive}
               inert={!isActive}
+              data-scrolled="false"
+              onScroll={handlePageScroll}
             >
               {page.content}
             </div>

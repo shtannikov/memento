@@ -95,9 +95,12 @@ describe("SwipeableVocabularyTabs", () => {
     }).parentElement as HTMLDivElement;
     learningPage.scrollTop = 900;
     practicingPage.scrollTop = 0;
+    fireEvent.scroll(learningPage);
 
     scrollToPage(1);
 
+    expect(learningPage).toHaveAttribute("data-scrolled", "true");
+    expect(practicingPage).toHaveAttribute("data-scrolled", "false");
     expect(learningPage.scrollTop).toBe(900);
     expect(practicingPage.scrollTop).toBe(0);
     expect(screen.getByRole("tabpanel", { name: "practicing" })).toBeVisible();

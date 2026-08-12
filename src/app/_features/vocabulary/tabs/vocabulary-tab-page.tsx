@@ -38,31 +38,36 @@ export function VocabularyTabPage({
   return (
     <div>
       <div
-        className={`${styles.search} ${hint ? styles.searchBeforeHint : ""}`}
+        className={`${styles.searchDock} ${
+          hint ? styles.searchDockBeforeHint : ""
+        }`}
+        data-testid="search-dock"
       >
-        <SearchIcon />
-        <input
-          ref={searchInputRef}
-          type="search"
-          value={searchQuery}
-          onChange={(event) => onSearchChange(event.target.value)}
-          placeholder="Search phrases"
-          aria-label="Search phrases"
-          autoComplete="off"
-          autoCorrect="off"
-          autoCapitalize="none"
-          spellCheck={false}
-        />
-        {searchQuery && (
-          <button
-            type="button"
-            className={styles.searchClear}
-            aria-label="Clear search"
-            onClick={clearSearch}
-          >
-            <CloseIcon />
-          </button>
-        )}
+        <div className={styles.search}>
+          <SearchIcon />
+          <input
+            ref={searchInputRef}
+            type="search"
+            value={searchQuery}
+            onChange={(event) => onSearchChange(event.target.value)}
+            placeholder="Search phrases"
+            aria-label="Search phrases"
+            autoComplete="off"
+            autoCorrect="off"
+            autoCapitalize="none"
+            spellCheck={false}
+          />
+          {searchQuery && (
+            <button
+              type="button"
+              className={styles.searchClear}
+              aria-label="Clear search"
+              onClick={clearSearch}
+            >
+              <CloseIcon />
+            </button>
+          )}
+        </div>
       </div>
       {hint && <div className={styles.progressHint}>{hint}</div>}
       <section

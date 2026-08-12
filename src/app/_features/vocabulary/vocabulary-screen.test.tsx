@@ -53,6 +53,49 @@ describe("VocabularyScreen", () => {
     expect(searches[1]).toHaveValue("");
   });
 
+  it("animates the Learning actions continuously with tab progress", () => {
+    render(
+      <VocabularyScreen
+        learning={[]}
+        practicing={[]}
+        learned={[]}
+        speakingEnabled
+        onAdd={vi.fn()}
+        onRemove={vi.fn()}
+        onChangeStatus={vi.fn()}
+        onReorderPracticing={vi.fn()}
+        onStartQuiz={vi.fn()}
+      />,
+    );
+
+    const viewport = screen.getByTestId("tab-viewport");
+    const vocabularyScreen = screen.getByTestId("vocabulary-screen");
+    const actions = screen.getByTestId("learning-actions");
+    Object.defineProperty(viewport, "clientWidth", { value: 320 });
+
+    viewport.scrollLeft = 172;
+    fireEvent.scroll(viewport);
+
+    expect(vocabularyScreen).toHaveStyle({
+      "--learning-actions-opacity": "0.5",
+      "--learning-actions-scale": "0.98",
+      "--learning-actions-y": "8px",
+    });
+    expect(actions).not.toHaveAttribute("aria-hidden", "true");
+
+    viewport.scrollLeft = 344;
+    fireEvent.scroll(viewport);
+    fireEvent(viewport, new Event("scrollend"));
+
+    expect(vocabularyScreen).toHaveStyle({
+      "--learning-actions-opacity": "0",
+      "--learning-actions-scale": "0.96",
+      "--learning-actions-y": "16px",
+    });
+    expect(actions).toHaveAttribute("aria-hidden", "true");
+    expect(actions).toHaveAttribute("inert");
+  });
+
   it("disables the quiz action when Learning has fewer than two phrases", async () => {
     const onStartQuiz = vi.fn();
     const learning: VocabularyItem = {
