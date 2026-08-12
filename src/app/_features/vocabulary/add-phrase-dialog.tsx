@@ -47,11 +47,9 @@ export function AddPhraseDialog({
     setTelegramColor(DIALOG_BACKDROP_SOLID);
 
     const viewport = globalThis.visualViewport;
-    let animationFrame = 0;
-    const dialogTop = viewport?.offsetTop ?? 0;
     const backgroundHeight = Math.max(
       globalThis.innerHeight,
-      dialogTop + (viewport?.height ?? 0),
+      (viewport?.offsetTop ?? 0) + (viewport?.height ?? 0),
     );
     root.style.setProperty(
       "--dialog-background-height",
@@ -59,36 +57,33 @@ export function AddPhraseDialog({
     );
 
     function syncVisualViewport() {
-      cancelAnimationFrame(animationFrame);
-      animationFrame = requestAnimationFrame(() => {
-        const offsetTop = viewport?.offsetTop ?? 0;
-        const offsetLeft = viewport?.offsetLeft ?? 0;
-        const width = viewport?.width ?? globalThis.innerWidth;
-        const height = viewport?.height ?? globalThis.innerHeight;
-        const dialog = addDialogRef.current;
+      const offsetTop = viewport?.offsetTop ?? 0;
+      const offsetLeft = viewport?.offsetLeft ?? 0;
+      const width = viewport?.width ?? globalThis.innerWidth;
+      const height = viewport?.height ?? globalThis.innerHeight;
+      const dialog = addDialogRef.current;
 
-        if (dialog) {
-          dialog.style.setProperty("--dialog-viewport-top", `${dialogTop}px`);
-          dialog.style.setProperty(
-            "--dialog-viewport-center-x",
-            `${offsetLeft + width / 2}px`,
-          );
-          dialog.style.setProperty(
-            "--dialog-viewport-center-y",
-            `${offsetTop + height / 2}px`,
-          );
-          dialog.style.setProperty("--dialog-viewport-height", `${height}px`);
-        }
-      });
+      if (dialog) {
+        dialog.style.setProperty("--dialog-viewport-top", `${offsetTop}px`);
+        dialog.style.setProperty(
+          "--dialog-viewport-center-x",
+          `${offsetLeft + width / 2}px`,
+        );
+        dialog.style.setProperty(
+          "--dialog-viewport-center-y",
+          `${offsetTop + height / 2}px`,
+        );
+        dialog.style.setProperty("--dialog-viewport-height", `${height}px`);
+      }
     }
 
-    syncVisualViewport();
+    const initialAnimationFrame = requestAnimationFrame(syncVisualViewport);
     viewport?.addEventListener("resize", syncVisualViewport);
     viewport?.addEventListener("scroll", syncVisualViewport);
     globalThis.addEventListener("resize", syncVisualViewport);
 
     return () => {
-      cancelAnimationFrame(animationFrame);
+      cancelAnimationFrame(initialAnimationFrame);
       viewport?.removeEventListener("resize", syncVisualViewport);
       viewport?.removeEventListener("scroll", syncVisualViewport);
       globalThis.removeEventListener("resize", syncVisualViewport);

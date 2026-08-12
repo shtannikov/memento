@@ -226,6 +226,8 @@ describe("AddPhraseDialog", () => {
     expect(pageStyles).toContain(
       ":global(html.dialog-open) .mobileShell {\n  filter: blur(4px);",
     );
+    expect(pageStyles).toContain("transform: scale(1.03);");
+    expect(pageStyles).toContain("transform-origin: center;");
   });
 
   it("clips the app shell and matches Telegram chrome above the iOS keyboard", async () => {
@@ -315,20 +317,18 @@ describe("AddPhraseDialog", () => {
     visualViewport.height = 480;
     visualViewport.offsetTop = 42;
     visualViewport.dispatchEvent(new Event("resize"));
-    await waitFor(() => {
-      expect((overlay as HTMLElement).style.height).toBe("");
-      expect(dialog).toHaveStyle({
-        "--dialog-viewport-top": "8px",
-        "--dialog-viewport-center-y": "282px",
-        "--dialog-viewport-height": "480px",
-      });
-      expect(document.documentElement).not.toHaveClass("keyboard-open");
-      expect(
-        document.documentElement.style.getPropertyValue(
-          "--dialog-background-height",
-        ),
-      ).toBe("844px");
+    expect((overlay as HTMLElement).style.height).toBe("");
+    expect(dialog).toHaveStyle({
+      "--dialog-viewport-top": "42px",
+      "--dialog-viewport-center-y": "282px",
+      "--dialog-viewport-height": "480px",
     });
+    expect(document.documentElement).not.toHaveClass("keyboard-open");
+    expect(
+      document.documentElement.style.getPropertyValue(
+        "--dialog-background-height",
+      ),
+    ).toBe("844px");
 
     unmount();
     expect(document.body.style.overflow).toBe("");
