@@ -11,29 +11,29 @@ afterEach(() => {
 });
 
 describe("initializeTelegram", () => {
-  it("readies, expands, enables vertical swipes, and requests fullscreen", () => {
+  it("readies, expands, disables vertical swipes, and requests fullscreen", () => {
     const ready = vi.fn();
     const expand = vi.fn();
-    const enableVerticalSwipes = vi.fn();
+    const disableVerticalSwipes = vi.fn();
     const requestFullscreen = vi.fn();
     globalThis.Telegram = {
       WebApp: {
         initData: "signed",
         ready,
         expand,
-        enableVerticalSwipes,
+        disableVerticalSwipes,
         requestFullscreen,
       },
     };
     expect(initializeTelegram("Memento")).toBe("signed");
     expect(ready).toHaveBeenCalledOnce();
     expect(expand).toHaveBeenCalledOnce();
-    expect(enableVerticalSwipes).toHaveBeenCalledOnce();
+    expect(disableVerticalSwipes).toHaveBeenCalledOnce();
     expect(requestFullscreen).toHaveBeenCalledOnce();
   });
 
   it("keeps older Telegram clients usable", () => {
-    const enableVerticalSwipes = vi.fn();
+    const disableVerticalSwipes = vi.fn();
     const requestFullscreen = vi.fn();
     const isVersionAtLeast = vi.fn(() => false);
     globalThis.Telegram = {
@@ -41,7 +41,7 @@ describe("initializeTelegram", () => {
         initData: "signed",
         ready: vi.fn(),
         expand: vi.fn(),
-        enableVerticalSwipes,
+        disableVerticalSwipes,
         requestFullscreen,
         isVersionAtLeast,
       },
@@ -50,7 +50,7 @@ describe("initializeTelegram", () => {
     expect(initializeTelegram("Memento")).toBe("signed");
     expect(isVersionAtLeast).toHaveBeenCalledWith("7.7");
     expect(isVersionAtLeast).toHaveBeenCalledWith("8.0");
-    expect(enableVerticalSwipes).not.toHaveBeenCalled();
+    expect(disableVerticalSwipes).not.toHaveBeenCalled();
     expect(requestFullscreen).not.toHaveBeenCalled();
   });
 
@@ -60,7 +60,7 @@ describe("initializeTelegram", () => {
         initData: "signed",
         ready: vi.fn(),
         expand: vi.fn(),
-        enableVerticalSwipes: vi.fn(() => {
+        disableVerticalSwipes: vi.fn(() => {
           throw new Error("unsupported");
         }),
         requestFullscreen: vi.fn(() => {

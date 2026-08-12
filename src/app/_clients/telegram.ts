@@ -2,7 +2,7 @@ export type TelegramWebApp = {
   initData: string;
   ready(): void;
   expand(): void;
-  enableVerticalSwipes?(): void;
+  disableVerticalSwipes?(): void;
   requestFullscreen?(): void;
   setBackgroundColor?(color: string): void;
   setHeaderColor?(color: string): void;
@@ -34,7 +34,7 @@ export function initializeTelegram(appName: string): string {
   setTelegramColor(APP_BACKGROUND);
   webApp?.ready();
   webApp?.expand();
-  invokeIfSupported(webApp, "7.7", webApp?.enableVerticalSwipes);
+  invokeIfSupported(webApp, "7.7", webApp?.disableVerticalSwipes);
   invokeIfSupported(webApp, "8.0", webApp?.requestFullscreen);
   const initData = webApp?.initData?.trim() ?? "";
   if (!initData) {
