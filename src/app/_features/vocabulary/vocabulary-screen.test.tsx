@@ -12,6 +12,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { VocabularyScreen } from "./vocabulary-screen";
 import type { VocabularyItem } from "./vocabulary.types";
+import styles from "./vocabulary-screen.module.css";
 
 afterEach(() => {
   cleanup();
@@ -121,6 +122,36 @@ describe("VocabularyScreen", () => {
 
     fireEvent.blur(search);
     expect(vocabularyScreen).toHaveAttribute("data-search-focused", "false");
+  });
+
+  it("hides the Learning actions before the Add Phrase keyboard opens", async () => {
+    const user = userEvent.setup();
+    render(
+      <VocabularyScreen
+        learning={[]}
+        practicing={[]}
+        learned={[]}
+        speakingEnabled
+        onAdd={vi.fn()}
+        onRemove={vi.fn()}
+        onChangeStatus={vi.fn()}
+        onReorderPracticing={vi.fn()}
+        onStartQuiz={vi.fn()}
+      />,
+    );
+
+    const actions = screen.getByTestId("learning-actions");
+    await user.click(screen.getByRole("button", { name: "Add phrase" }));
+
+    expect(screen.getByRole("dialog")).toBeInTheDocument();
+    expect(actions).toHaveClass(styles.floatingActionsDialogOpen);
+    expect(actions).toHaveAttribute("aria-hidden", "true");
+    expect(actions).toHaveAttribute("inert");
+
+    await user.click(
+      screen.getByRole("button", { name: "Close add word dialog" }),
+    );
+    expect(actions).not.toHaveClass(styles.floatingActionsDialogOpen);
   });
 
   it("gives list gestures to the app and header gestures to Telegram", () => {

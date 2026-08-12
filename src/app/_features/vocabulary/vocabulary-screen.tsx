@@ -240,10 +240,12 @@ export function VocabularyScreen({
         </div>
 
         <div
-          className={styles.floatingActions}
+          className={`${styles.floatingActions} ${
+            addOpen ? styles.floatingActionsDialogOpen : ""
+          }`}
           data-testid="learning-actions"
-          inert={activeTab !== "learning"}
-          aria-hidden={activeTab !== "learning"}
+          inert={activeTab !== "learning" || addOpen}
+          aria-hidden={activeTab !== "learning" || addOpen}
         >
           <button
             className={styles.floatingButton}

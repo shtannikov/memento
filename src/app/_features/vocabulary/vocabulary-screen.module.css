@@ -600,6 +600,13 @@
   transition: none;
 }
 
+.floatingActionsDialogOpen {
+  opacity: 0;
+  transform: translate3d(0, 16px, 0) scale(0.96);
+  transition: none;
+  visibility: hidden;
+}
+
 .floatingButton {
   display: inline-flex;
   height: 56px;
