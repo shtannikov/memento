@@ -96,14 +96,7 @@
   min-height: 0;
   flex: 1;
   flex-direction: column;
-  padding:
-    0 16px
-    max(
-      32px,
-      calc(var(--tg-content-safe-area-inset-bottom, 0px) + 16px),
-      calc(var(--tg-safe-area-inset-bottom, 0px) + 16px),
-      calc(env(safe-area-inset-bottom, 0px) + 16px)
-    );
+  padding: 0 16px;
 }
 
 .contentWithActions {
@@ -348,7 +341,12 @@
   display: flex;
   flex-direction: column;
   gap: 10px;
-  padding-bottom: 32px;
+  padding-bottom: max(
+    32px,
+    calc(var(--tg-content-safe-area-inset-bottom, 0px) + 16px),
+    calc(var(--tg-safe-area-inset-bottom, 0px) + 16px),
+    calc(env(safe-area-inset-bottom, 0px) + 16px)
+  );
 }
 
 .wordCard {
@@ -577,8 +575,20 @@
   transform-origin: bottom center;
   transition:
     opacity 160ms linear,
-    transform 220ms cubic-bezier(0.32, 0.72, 0, 1);
+    transform 220ms cubic-bezier(0.32, 0.72, 0, 1),
+    visibility 0s;
+  visibility: visible;
   will-change: opacity, transform;
+}
+
+:global(html.keyboard-open) .screen[data-search-focused="true"] .floatingActions {
+  opacity: 0;
+  transform: translate3d(0, 16px, 0) scale(0.96);
+  transition:
+    opacity 160ms linear,
+    transform 220ms cubic-bezier(0.32, 0.72, 0, 1),
+    visibility 0s linear 220ms;
+  visibility: hidden;
 }
 
 .floatingButton {
@@ -607,6 +617,12 @@
 
 .screen[data-learning-actions-visible="true"] .floatingButton {
   pointer-events: auto;
+}
+
+:global(html.keyboard-open)
+  .screen[data-search-focused="true"]
+  .floatingButton {
+  pointer-events: none;
 }
 
 .floatingButton:hover:not(:disabled) {

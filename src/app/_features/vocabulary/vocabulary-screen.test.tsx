@@ -96,6 +96,32 @@ describe("VocabularyScreen", () => {
     expect(actions).toHaveAttribute("inert");
   });
 
+  it("marks the screen while a search input is focused", () => {
+    render(
+      <VocabularyScreen
+        learning={[]}
+        practicing={[]}
+        learned={[]}
+        speakingEnabled
+        onAdd={vi.fn()}
+        onRemove={vi.fn()}
+        onChangeStatus={vi.fn()}
+        onReorderPracticing={vi.fn()}
+        onStartQuiz={vi.fn()}
+      />,
+    );
+
+    const vocabularyScreen = screen.getByTestId("vocabulary-screen");
+    const search = screen.getByRole("searchbox", { name: "Search phrases" });
+    expect(vocabularyScreen).toHaveAttribute("data-search-focused", "false");
+
+    fireEvent.focus(search);
+    expect(vocabularyScreen).toHaveAttribute("data-search-focused", "true");
+
+    fireEvent.blur(search);
+    expect(vocabularyScreen).toHaveAttribute("data-search-focused", "false");
+  });
+
   it("disables the quiz action when Learning has fewer than two phrases", async () => {
     const onStartQuiz = vi.fn();
     const learning: VocabularyItem = {

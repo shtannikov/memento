@@ -1,4 +1,10 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type FocusEvent,
+} from "react";
 import { createPortal } from "react-dom";
 
 import { AddPhraseDialog } from "./add-phrase-dialog";
@@ -129,6 +135,14 @@ export function VocabularyScreen({
     screen.dataset.learningActionsVisible = String(progress >= 0.5);
   }, []);
 
+  function updateSearchFocus(event: FocusEvent<HTMLDivElement>) {
+    const screen = screenRef.current;
+    if (!screen || !(event.target instanceof HTMLInputElement)) return;
+    if (event.target.type !== "search") return;
+
+    screen.dataset.searchFocused = String(event.type === "focus");
+  }
+
   const disabled = mutating || reordering;
   const pages: SwipeableVocabularyTabPage[] = [
     {
@@ -186,7 +200,10 @@ export function VocabularyScreen({
         ref={screenRef}
         className={styles.screen}
         data-learning-actions-visible={activeTab === "learning"}
+        data-search-focused="false"
         data-testid="vocabulary-screen"
+        onFocusCapture={updateSearchFocus}
+        onBlurCapture={updateSearchFocus}
       >
         <VocabularyHeader
           learningCount={learning.length}
