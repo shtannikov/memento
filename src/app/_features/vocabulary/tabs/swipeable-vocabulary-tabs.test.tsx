@@ -1,6 +1,8 @@
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { useState } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 
 import type { VocabularyStatus } from "../vocabulary.types";
 import {
@@ -59,6 +61,21 @@ function scrollToPage(index: number) {
 }
 
 describe("SwipeableVocabularyTabs", () => {
+  it("disables native horizontal swiping for precise desktop pointers", () => {
+    const styles = readFileSync(
+      join(
+        process.cwd(),
+        "src/app/_features/vocabulary/vocabulary-screen.module.css",
+      ),
+      "utf8",
+    );
+
+    expect(styles).toContain("@media (hover: hover) and (pointer: fine)");
+    expect(styles).toContain(
+      ".tabViewport {\n    overflow-x: hidden;\n    scroll-snap-type: none;",
+    );
+  });
+
   it("switches through the ordered pages in both directions", () => {
     render(<Pager statuses={["learning", "practicing", "learned"]} />);
 
