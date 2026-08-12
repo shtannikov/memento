@@ -9,6 +9,7 @@ describe("isVirtualKeyboardOpen", () => {
         baselineHeight: 844,
         viewportHeight: 520,
         editableFocused: true,
+        keyboardWasOpen: false,
       }),
     ).toBe(true);
   });
@@ -19,6 +20,7 @@ describe("isVirtualKeyboardOpen", () => {
         baselineHeight: 844,
         viewportHeight: 780,
         editableFocused: true,
+        keyboardWasOpen: false,
       }),
     ).toBe(false);
     expect(
@@ -26,6 +28,26 @@ describe("isVirtualKeyboardOpen", () => {
         baselineHeight: 844,
         viewportHeight: 520,
         editableFocused: false,
+        keyboardWasOpen: false,
+      }),
+    ).toBe(false);
+  });
+
+  it("stays open after blur until the viewport height is restored", () => {
+    expect(
+      isVirtualKeyboardOpen({
+        baselineHeight: 844,
+        viewportHeight: 520,
+        editableFocused: false,
+        keyboardWasOpen: true,
+      }),
+    ).toBe(true);
+    expect(
+      isVirtualKeyboardOpen({
+        baselineHeight: 844,
+        viewportHeight: 844,
+        editableFocused: false,
+        keyboardWasOpen: true,
       }),
     ).toBe(false);
   });

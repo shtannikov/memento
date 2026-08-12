@@ -58,13 +58,15 @@ export function MementoApp({
       const editableFocused =
         activeElement instanceof HTMLElement &&
         activeElement.matches("input, textarea, [contenteditable='true']");
+      const keyboardWasOpen = root.classList.contains("keyboard-open");
       const keyboardOpen = isVirtualKeyboardOpen({
         baselineHeight,
         viewportHeight: height,
         editableFocused,
+        keyboardWasOpen,
       });
 
-      if (!editableFocused) baselineHeight = height;
+      if (!editableFocused && !keyboardOpen) baselineHeight = height;
       else if (!keyboardOpen) baselineHeight = Math.max(baselineHeight, height);
       root.style.setProperty("--visual-viewport-height", `${height}px`);
       root.style.setProperty("--visual-viewport-bottom", `${visibleBottom}px`);

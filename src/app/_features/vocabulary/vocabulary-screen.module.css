@@ -585,7 +585,8 @@
   will-change: opacity, transform;
 }
 
-.screen[data-search-focused="true"] .floatingActions {
+.screen[data-search-focused="true"] .floatingActions,
+:global(html.keyboard-open) .screen .floatingActions {
   opacity: 0;
   transform: translate3d(0, 16px, 0) scale(0.96);
   transition:
@@ -623,7 +624,8 @@
   pointer-events: auto;
 }
 
-.screen[data-search-focused="true"] .floatingButton {
+.screen[data-search-focused="true"] .floatingButton,
+:global(html.keyboard-open) .screen .floatingButton {
   pointer-events: none;
 }
 
