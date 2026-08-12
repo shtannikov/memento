@@ -1,4 +1,10 @@
-import { useRef, useState, type ReactNode, type TouchEvent } from "react";
+import {
+  useEffect,
+  useRef,
+  useState,
+  type ReactNode,
+  type TouchEvent as ReactTouchEvent,
+} from "react";
 
 import styles from "../vocabulary-screen.module.css";
 import type { VocabularyStatus } from "../vocabulary.types";
@@ -14,11 +20,22 @@ const TAB_PAGE_GUTTER = 24;
 
 type TabSwipe = {
   axis: "pending" | "horizontal" | "vertical";
+  dragStarted: boolean;
   startX: number;
   startY: number;
   startedAt: number;
   width: number;
 };
+
+function resolveSwipeAxis(deltaX: number, deltaY: number): TabSwipe["axis"] {
+  if (Math.max(Math.abs(deltaX), Math.abs(deltaY)) < TAB_SWIPE_LOCK_DISTANCE) {
+    return "pending";
+  }
+
+  return Math.abs(deltaX) > Math.abs(deltaY) * TAB_SWIPE_AXIS_RATIO
+    ? "horizontal"
+    : "vertical";
+}
 
 export type SwipeableVocabularyTabPage = {
   value: VocabularyStatus;
@@ -37,6 +54,7 @@ export function SwipeableVocabularyTabs({
   const [dragOffset, setDragOffset] = useState(0);
   const [dragWidth, setDragWidth] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
+  const pagerRef = useRef<HTMLDivElement>(null);
   const swipeRef = useRef<TabSwipe | null>(null);
   const activeIndex = pages.findIndex((page) => page.value === activeTab);
   const indicatorPosition = Math.min(
@@ -47,6 +65,35 @@ export function SwipeableVocabularyTabs({
         (dragWidth ? dragOffset / (dragWidth + TAB_PAGE_GUTTER) : 0),
     ),
   );
+
+  useEffect(() => {
+    const pager = pagerRef.current;
+    if (!pager) return;
+
+    function preventScrollDuringHorizontalSwipe(event: globalThis.TouchEvent) {
+      const swipe = swipeRef.current;
+      const touch = event.touches[0];
+      if (!swipe || !touch || swipe.axis === "vertical") return;
+
+      if (swipe.axis === "pending") {
+        swipe.axis = resolveSwipeAxis(
+          touch.clientX - swipe.startX,
+          touch.clientY - swipe.startY,
+        );
+      }
+
+      if (swipe.axis === "horizontal" && event.cancelable) {
+        event.preventDefault();
+      }
+    }
+
+    pager.addEventListener("touchmove", preventScrollDuringHorizontalSwipe, {
+      passive: false,
+    });
+    return () => {
+      pager.removeEventListener("touchmove", preventScrollDuringHorizontalSwipe);
+    };
+  }, []);
 
   function resetSwipe() {
     swipeRef.current = null;
@@ -59,7 +106,7 @@ export function SwipeableVocabularyTabs({
     onChange(tab);
   }
 
-  function handleTouchStart(event: TouchEvent<HTMLDivElement>) {
+  function handleTouchStart(event: ReactTouchEvent<HTMLDivElement>) {
     swipeRef.current = null;
     if (event.touches.length !== 1) return;
     if (
@@ -74,6 +121,7 @@ export function SwipeableVocabularyTabs({
       event.currentTarget.clientWidth || globalThis.innerWidth || 320;
     swipeRef.current = {
       axis: "pending",
+      dragStarted: false,
       startX: touch.clientX,
       startY: touch.clientY,
       startedAt: Date.now(),
@@ -82,7 +130,7 @@ export function SwipeableVocabularyTabs({
     setDragWidth(width);
   }
 
-  function handleTouchMove(event: TouchEvent<HTMLDivElement>) {
+  function handleTouchMove(event: ReactTouchEvent<HTMLDivElement>) {
     const swipe = swipeRef.current;
     const touch = event.touches[0];
     if (!swipe || !touch || swipe.axis === "vertical") return;
@@ -90,17 +138,12 @@ export function SwipeableVocabularyTabs({
     const deltaX = touch.clientX - swipe.startX;
     const deltaY = touch.clientY - swipe.startY;
     if (swipe.axis === "pending") {
-      if (
-        Math.max(Math.abs(deltaX), Math.abs(deltaY)) <
-        TAB_SWIPE_LOCK_DISTANCE
-      ) {
-        return;
-      }
-      swipe.axis =
-        Math.abs(deltaX) > Math.abs(deltaY) * TAB_SWIPE_AXIS_RATIO
-          ? "horizontal"
-          : "vertical";
-      if (swipe.axis === "vertical") return;
+      swipe.axis = resolveSwipeAxis(deltaX, deltaY);
+    }
+    if (swipe.axis !== "horizontal") return;
+
+    if (!swipe.dragStarted) {
+      swipe.dragStarted = true;
       const activeElement = document.activeElement;
       if (
         activeElement instanceof HTMLElement &&
@@ -121,7 +164,7 @@ export function SwipeableVocabularyTabs({
     );
   }
 
-  function handleTouchEnd(event: TouchEvent<HTMLDivElement>) {
+  function handleTouchEnd(event: ReactTouchEvent<HTMLDivElement>) {
     const swipe = swipeRef.current;
     swipeRef.current = null;
     const touch = event.changedTouches[0];
@@ -160,6 +203,7 @@ export function SwipeableVocabularyTabs({
 
   return (
     <div
+      ref={pagerRef}
       className={styles.tabPager}
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
