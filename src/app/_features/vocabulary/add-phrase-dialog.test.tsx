@@ -186,6 +186,7 @@ describe("AddPhraseDialog", () => {
     expect(dialogStyles).toContain(
       "height: var(--dialog-background-height, 100dvh);",
     );
+    expect(dialogStyles).not.toContain("backdrop-filter:");
   });
 
   it("anchors the mobile dialog below Telegram chrome", () => {
@@ -221,6 +222,9 @@ describe("AddPhraseDialog", () => {
     );
     expect(pageStyles).toContain(
       "min-height: var(--dialog-background-height, 100dvh);",
+    );
+    expect(pageStyles).toContain(
+      ":global(html.dialog-open) .mobileShell {\n  filter: blur(4px);",
     );
   });
 
