@@ -57,6 +57,7 @@ export function VocabularyScreen({
   const [toast, setToast] = useState<{ id: number; message: string } | null>(
     null,
   );
+  const screenRef = useRef<HTMLDivElement>(null);
   const toastTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(
@@ -164,7 +165,7 @@ export function VocabularyScreen({
 
   return (
     <>
-      <div className={styles.screen}>
+      <div ref={screenRef} className={styles.screen}>
         <VocabularyHeader
           learningCount={learning.length}
           practicingCount={practicing.length}
@@ -185,6 +186,7 @@ export function VocabularyScreen({
             activeTab={activeTab}
             pages={pages}
             onChange={changeTab}
+            getScrollContainer={() => screenRef.current}
           />
         </div>
 

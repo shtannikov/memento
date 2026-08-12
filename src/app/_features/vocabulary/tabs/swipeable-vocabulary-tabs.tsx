@@ -27,6 +27,13 @@ type TabSwipe = {
   width: number;
 };
 
+type SwipeDestination = {
+  index: number;
+  scrollTop: number;
+  verticalOffset: number;
+  value: VocabularyStatus;
+};
+
 function resolveSwipeAxis(deltaX: number, deltaY: number): TabSwipe["axis"] {
   if (Math.max(Math.abs(deltaX), Math.abs(deltaY)) < TAB_SWIPE_LOCK_DISTANCE) {
     return "pending";
@@ -46,15 +53,21 @@ export function SwipeableVocabularyTabs({
   activeTab,
   pages,
   onChange,
+  getScrollContainer,
 }: {
   activeTab: VocabularyStatus;
   pages: readonly SwipeableVocabularyTabPage[];
   onChange: (tab: VocabularyStatus) => void;
+  getScrollContainer?: () => HTMLElement | null;
 }) {
   const [dragOffset, setDragOffset] = useState(0);
   const [dragWidth, setDragWidth] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
+  const [swipeDestination, setSwipeDestination] =
+    useState<SwipeDestination | null>(null);
+  const pageRefs = useRef(new Map<VocabularyStatus, HTMLDivElement>());
   const pagerRef = useRef<HTMLDivElement>(null);
+  const swipeDestinationRef = useRef<SwipeDestination | null>(null);
   const swipeRef = useRef<TabSwipe | null>(null);
   const activeIndex = pages.findIndex((page) => page.value === activeTab);
   const indicatorPosition = Math.min(
@@ -97,11 +110,62 @@ export function SwipeableVocabularyTabs({
 
   function resetSwipe() {
     swipeRef.current = null;
+    swipeDestinationRef.current = null;
     setIsDragging(false);
     setDragOffset(0);
+    setSwipeDestination(null);
   }
 
-  function settleOnTab(tab: VocabularyStatus) {
+  function resolveDestination(index: number): SwipeDestination | null {
+    const scrollContainer = getScrollContainer?.();
+    const activePage = pageRefs.current.get(activeTab);
+    const targetPage = pageRefs.current.get(pages[index]?.value);
+    if (!scrollContainer || !activePage || !targetPage) return null;
+
+    const pageTop =
+      activePage.getBoundingClientRect().top -
+      scrollContainer.getBoundingClientRect().top +
+      scrollContainer.scrollTop;
+    const targetBottom = pageTop + targetPage.offsetHeight;
+    const maximumUsefulScrollTop = Math.max(
+      0,
+      targetBottom - scrollContainer.clientHeight,
+    );
+    const scrollTop = Math.min(
+      scrollContainer.scrollTop,
+      maximumUsefulScrollTop,
+    );
+
+    return {
+      index,
+      scrollTop,
+      verticalOffset: scrollContainer.scrollTop - scrollTop,
+      value: pages[index].value,
+    };
+  }
+
+  function previewDestination(index: number) {
+    const destination = resolveDestination(index);
+    swipeDestinationRef.current = destination;
+    setSwipeDestination((current) =>
+      current?.index === destination?.index &&
+      current?.scrollTop === destination?.scrollTop &&
+      current?.verticalOffset === destination?.verticalOffset
+        ? current
+        : destination,
+    );
+  }
+
+  function settleOnTab(
+    tab: VocabularyStatus,
+    destination = resolveDestination(
+      pages.findIndex((page) => page.value === tab),
+    ),
+  ) {
+    const scrollContainer = getScrollContainer?.();
+    if (destination?.value === tab && scrollContainer) {
+      scrollContainer.scrollTop = destination.scrollTop;
+    }
     resetSwipe();
     onChange(tab);
   }
@@ -157,6 +221,7 @@ export function SwipeableVocabularyTabs({
 
     const pullingPastStart = activeIndex === 0 && deltaX > 0;
     const pullingPastEnd = activeIndex === pages.length - 1 && deltaX < 0;
+    previewDestination(activeIndex + (deltaX < 0 ? 1 : -1));
     setDragOffset(
       pullingPastStart || pullingPastEnd
         ? deltaX * TAB_SWIPE_EDGE_RESISTANCE
@@ -195,7 +260,15 @@ export function SwipeableVocabularyTabs({
       : undefined;
 
     if (targetTab) {
-      settleOnTab(targetTab);
+      const destination = swipeDestinationRef.current;
+      settleOnTab(
+        targetTab,
+        destination?.value === targetTab
+          ? destination
+          : resolveDestination(
+              pages.findIndex((page) => page.value === targetTab),
+            ),
+      );
     } else {
       resetSwipe();
     }
@@ -221,14 +294,22 @@ export function SwipeableVocabularyTabs({
         {pages.map((page, index) => {
           const isActive = page.value === activeTab;
           const pageOffset = index - activeIndex;
+          const verticalOffset =
+            swipeDestination?.index === index
+              ? swipeDestination.verticalOffset
+              : 0;
           return (
             <div
+              ref={(node) => {
+                if (node) pageRefs.current.set(page.value, node);
+                else pageRefs.current.delete(page.value);
+              }}
               key={page.value}
               className={`${styles.tabPage} ${
                 isActive ? styles.tabPageActive : ""
               }`}
               style={{
-                transform: `translate3d(calc(${pageOffset * 100}% + ${pageOffset * TAB_PAGE_GUTTER}px + ${dragOffset}px), 0, 0)`,
+                transform: `translate3d(calc(${pageOffset * 100}% + ${pageOffset * TAB_PAGE_GUTTER}px + ${dragOffset}px), ${verticalOffset ? `${verticalOffset}px` : "0"}, 0)`,
               }}
               aria-hidden={!isActive}
               inert={!isActive}
