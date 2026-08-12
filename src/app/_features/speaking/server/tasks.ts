@@ -7,7 +7,6 @@ import {
   selectLeastPracticed,
   type SpeakingTask,
   type SpeakingVocabularyItem,
-  type TopicGenerationInput,
 } from "../domain";
 import { getLanguage } from "@/app/_languages/registry";
 import { AppError } from "@/app/api/_server/api";
@@ -31,6 +30,9 @@ export type StoredTaskRow = {
   prompt: string | null;
   created_at?: string;
 };
+
+const TOPIC_ROTATION_HISTORY_LIMIT = 60;
+const TOPIC_GENERATION_HISTORY_LIMIT = 5;
 
 export async function hasActiveSpeakingTask(
   userId: number,
@@ -197,7 +199,12 @@ export async function getOrCreateSpeakingTask(
       409,
     );
   }
-  let previousTask: TopicGenerationInput["previousTask"];
+  let previousTask: {
+    title: string;
+    speakingPrompt: string;
+    domain: string;
+    grammarFocus: string;
+  } | undefined;
   if (regenerationTaskId && existing) {
     if (
       !existing.topic ||
@@ -294,20 +301,18 @@ export async function getOrCreateSpeakingTask(
       : speaking.grammarFocuses;
     const targetDomain = selectLeastPracticed(
       domainOptions,
-      context.recentTopics.map((row) => row.domain),
+      context.rotationHistory.map((row) => row.domain),
       `${userId}:${today}:domain`,
     );
     const targetGrammarFocus = selectLeastPracticed(
       grammarOptions,
-      context.recentTopics.map((row) => row.grammarFocus),
+      context.rotationHistory.map((row) => row.grammarFocus),
       `${userId}:${today}:grammar`,
     );
     const generated = await generateSpeakingTopic({
       targetDomain,
       targetGrammarFocus,
-      ...(previousTask ? { previousTask } : {}),
-      recentTopics: context.recentTopics,
-      recentLearnerExcerpts: context.recentLearnerExcerpts,
+      recentTasks: context.recentTasks,
       requiredPhrases: items.map((item) => item.term),
     }, userId, appId);
     const { error: readyError } = await db
@@ -428,31 +433,37 @@ export async function loadSpeakingTask(row: StoredTaskRow): Promise<SpeakingTask
 
 async function loadTopicContext(userId: number, appId: AppId) {
   const db = getMementoDb();
-  const { data: tasks, error: taskError } = await db.from("speaking_tasks")
-    .select("id,topic,domain,grammar_focus")
-    .eq("user_id", userId).eq("app_id", appId)
-    .eq("status", "completed")
-    .order("created_at", { ascending: false }).limit(60);
-  if (taskError) throw taskError;
-  const ids = (tasks ?? []).map((task) => task.id);
-  let recentLearnerExcerpts: string[] = [];
-  if (ids.length > 0) {
-    const { data: lessons, error: lessonError } = await db.from("speaking_lessons")
-      .select("transcript,task_id")
-      .in("task_id", ids).not("transcript", "is", null)
-      .order("created_at", { ascending: false }).limit(3);
-    if (lessonError) throw lessonError;
-    recentLearnerExcerpts = (lessons ?? [])
-      .map((lesson) => String(lesson.transcript ?? "").trim().slice(0, 600))
-      .filter(Boolean);
-  }
+  const [rotationResult, recentResult] = await Promise.all([
+    db.from("speaking_tasks")
+      .select("domain,grammar_focus")
+      .eq("user_id", userId).eq("app_id", appId)
+      .eq("status", "completed")
+      .order("created_at", { ascending: false })
+      .limit(TOPIC_ROTATION_HISTORY_LIMIT),
+    db.from("speaking_tasks")
+      .select("topic,domain,grammar_focus,prompt")
+      .eq("user_id", userId).eq("app_id", appId)
+      .in("status", ["completed", "active", "superseded"])
+      .not("topic", "is", null)
+      .not("prompt", "is", null)
+      .order("created_at", { ascending: false })
+      .limit(TOPIC_GENERATION_HISTORY_LIMIT),
+  ]);
+  if (rotationResult.error) throw rotationResult.error;
+  if (recentResult.error) throw recentResult.error;
   return {
-    recentTopics: (tasks ?? []).map((task) => ({
-      topic: task.topic ?? "",
+    rotationHistory: (rotationResult.data ?? []).map((task) => ({
       domain: task.domain,
       grammarFocus: task.grammar_focus,
     })),
-    recentLearnerExcerpts,
+    recentTasks: (recentResult.data ?? [])
+      .slice(0, TOPIC_GENERATION_HISTORY_LIMIT)
+      .map((task) => ({
+        title: task.topic ?? "",
+        speakingPrompt: task.prompt ?? "",
+        domain: task.domain,
+        grammarFocus: task.grammar_focus,
+      })),
   };
 }
 

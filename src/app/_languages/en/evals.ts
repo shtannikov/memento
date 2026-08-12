@@ -159,25 +159,49 @@ export const SPEAKING_EVAL_CASES: SpeakingEvalCase[] = [
     kind: "topic",
     id: "speaking-topic-coherence",
     description:
-      "Creates one coherent public-service scenario around the selected domain, grammar focus, and required phrases.",
+      "Chooses a distinct underlying public-service interaction instead of reskinning recent goals, while using negative practice phrases only when natural.",
     appId: "en",
     input: {
       targetDomain: "public services and civic life",
-      targetGrammarFocus: "polite requests and indirect questions",
-      previousTask: {
-        title: "Changing a project deadline",
-        speakingPrompt:
-          "Ask a teammate to move a deadline and agree on a revised plan.",
-        domain: "work and career",
-        grammarFocus: "future plans and predictions",
-      },
-      recentTopics: [
-        { topic: "Returning a purchase", domain: "shopping", grammarFocus: null },
+      targetGrammarFocus: "past narration with tense contrast",
+      recentTasks: [
+        {
+          title: "A Second Chance at Your Course",
+          speakingPrompt:
+            "You missed an important application deadline. Explain what went wrong, apologize to your mentor, and ask whether you can apply again.",
+          domain: "education and personal growth",
+          grammarFocus: "third conditional and wish for past regrets",
+        },
+        {
+          title: "Book the Right Physiotherapy Appointment",
+          speakingPrompt:
+            "Call a physiotherapy clinic, ask about the available services, and choose a suitable appointment.",
+          domain: "health and wellbeing",
+          grammarFocus: "polite requests and indirect questions",
+        },
+        {
+          title: "Choose a Venue for a Welcome Meet-Up",
+          speakingPrompt:
+            "Compare two local venues and recommend the better place for a neighbourhood event.",
+          domain: "community and social situations",
+          grammarFocus: "comparisons and language of preference",
+        },
+        {
+          title: "A Restaurant for Your Team",
+          speakingPrompt:
+            "Retell what two restaurant managers said and decide where your team should have dinner.",
+          domain: "restaurants and food",
+          grammarFocus: "reported speech for retelling conversations",
+        },
+        {
+          title: "Choose a New Hobby Class",
+          speakingPrompt:
+            "Compare an evening pottery class with a weekend photography class and tell a friend which one you would choose.",
+          domain: "preferences and personal choices",
+          grammarFocus: "first conditional for realistic consequences",
+        },
       ],
-      recentLearnerExcerpts: [
-        "I had to explain why the appointment time did not work for me.",
-      ],
-      requiredPhrases: ["take into account", "be responsible for", "wrap up"],
+      requiredPhrases: ["to scold", "to be offended", "a fine"],
     },
   },
   {
@@ -189,14 +213,15 @@ export const SPEAKING_EVAL_CASES: SpeakingEvalCase[] = [
     input: {
       targetDomain: "housing and neighbourhood",
       targetGrammarFocus: "first conditional for realistic consequences",
-      recentTopics: [
+      recentTasks: [
         {
-          topic: "A community repair day",
+          title: "A community repair day",
+          speakingPrompt:
+            "Help neighbours plan a repair day and decide what everyone should bring.",
           domain: "community and social situations",
           grammarFocus: "first conditional for realistic consequences",
         },
       ],
-      recentLearnerExcerpts: [],
       requiredPhrases: ["a splinter", "a dead-end job"],
     },
   },

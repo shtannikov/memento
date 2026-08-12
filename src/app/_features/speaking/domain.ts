@@ -47,18 +47,12 @@ export type AnswerEvaluation = {
 export type TopicGenerationInput = {
   targetDomain: string;
   targetGrammarFocus: string;
-  previousTask?: {
+  recentTasks: Array<{
     title: string;
     speakingPrompt: string;
-    domain: string;
-    grammarFocus: string;
-  };
-  recentTopics: Array<{
-    topic: string;
     domain: string | null;
     grammarFocus: string | null;
   }>;
-  recentLearnerExcerpts: string[];
   requiredPhrases: string[];
 };
 

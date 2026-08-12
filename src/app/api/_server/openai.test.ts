@@ -429,8 +429,12 @@ describe("quiz generation contract", () => {
     const input = {
       targetDomain: "public services and appointments",
       targetGrammarFocus: "polite requests and indirect questions",
-      recentTopics: [{ topic: "A cancelled train", domain: "travel", grammarFocus: null }],
-      recentLearnerExcerpts: ["I needed to change the time."],
+      recentTasks: [{
+        title: "A cancelled train",
+        speakingPrompt: "Tell a station employee what happened and ask for help.",
+        domain: "travel",
+        grammarFocus: null,
+      }],
       requiredPhrases: ["take into account"],
     };
 
@@ -442,16 +446,34 @@ describe("quiz generation contract", () => {
     });
     expect(parse.mock.calls[0][0]).toMatchObject({ store: false });
     expect(JSON.stringify(parse.mock.calls[0][0].input)).toContain(
-      "I needed to change the time.",
+      "Tell a station employee what happened and ask for help.",
     );
     expect(ENGLISH_LANGUAGE.speaking?.topicSystemPrompt).toContain(
-      "they do not all need to fit the scene",
+      "up to five recent tasks",
     );
     expect(ENGLISH_LANGUAGE.speaking?.topicSystemPrompt).toContain(
       "form a realistic causal chain",
     );
     expect(ENGLISH_LANGUAGE.speaking?.topicSystemPrompt).toContain(
-      "create a materially different situation and mission",
+      "Choose a natural combination for the target domain and grammar that is least similar",
+    );
+    expect(ENGLISH_LANGUAGE.speaking?.topicSystemPrompt).toContain(
+      "main communicative goal, social role and level of agency",
+    );
+    expect(ENGLISH_LANGUAGE.speaking?.topicSystemPrompt).toContain(
+      "use the required phrases as optional inspiration",
+    );
+    expect(ENGLISH_LANGUAGE.speaking?.topicSystemPrompt).toContain(
+      "A change of setting alone is not enough",
+    );
+    expect(ENGLISH_LANGUAGE.speaking?.topicSystemPrompt).toContain(
+      "let the phrase set alone determine",
+    );
+    expect(ENGLISH_LANGUAGE.speaking?.topicSystemPrompt).not.toContain(
+      "missing an obligation",
+    );
+    expect(ENGLISH_LANGUAGE.speaking?.topicSystemPrompt).toContain(
+      "under 240 characters",
     );
   });
 
@@ -464,6 +486,7 @@ describe("quiz generation contract", () => {
         missionRelevantDetails: false,
         requiredPhrasesNotForced: false,
         naturalAndConcrete: true,
+        distinctUnderlyingPattern: true,
         reason: "The job offer is unrelated to the neighbourhood repair mission.",
       },
     });
@@ -471,8 +494,7 @@ describe("quiz generation contract", () => {
     const input = {
       targetDomain: "housing and neighbourhood",
       targetGrammarFocus: "first conditional for realistic consequences",
-      recentTopics: [],
-      recentLearnerExcerpts: [],
+      recentTasks: [],
       requiredPhrases: ["a splinter", "a dead-end job"],
     };
     const topic = {
@@ -493,6 +515,47 @@ describe("quiz generation contract", () => {
     expect(parse.mock.calls[0][0]).toMatchObject({
       store: false,
       reasoning: { effort: "low" },
+    });
+  });
+
+  it("rejects a new setting that repeats a recent interaction pattern", async () => {
+    const parse = vi.fn().mockResolvedValue({
+      status: "completed",
+      output_parsed: {
+        coherentScenario: true,
+        oneClearMission: true,
+        missionRelevantDetails: true,
+        requiredPhrasesNotForced: true,
+        naturalAndConcrete: true,
+        distinctUnderlyingPattern: false,
+        reason: "The learner still compares two options and recommends one.",
+      },
+    });
+    const openai = { responses: { parse } } as unknown as OpenAI;
+    const input = {
+      targetDomain: "travel and transport",
+      targetGrammarFocus: "comparisons and language of preference",
+      recentTasks: [{
+        title: "Choose a Venue",
+        speakingPrompt: "Compare two venues and recommend one to an organizer.",
+        domain: "community and social situations",
+        grammarFocus: "comparisons and language of preference",
+      }],
+      requiredPhrases: ["take into account"],
+    };
+    const topic = {
+      title: "Choose a Train",
+      speakingPrompt: "Compare two trains and recommend one to a friend.",
+      domain: input.targetDomain,
+      grammarFocus: input.targetGrammarFocus,
+    };
+
+    await expect(
+      gradeSpeakingTopic(input, topic, 42, "en", openai),
+    ).resolves.toMatchObject({
+      coherentScenario: true,
+      distinctUnderlyingPattern: false,
+      passed: false,
     });
   });
 
