@@ -36,6 +36,13 @@
   background: #f0eff3;
 }
 
+.iconButton:focus-visible {
+  color: #6d28d9;
+  outline: 0;
+  background: #f5f3ff;
+  box-shadow: inset 0 0 0 2px #ddd6fe;
+}
+
 .iconButton svg {
   width: 20px;
   height: 20px;
@@ -145,6 +152,14 @@
 
 .option:disabled {
   cursor: default;
+}
+
+.option:focus-visible {
+  border-color: #a78bfa;
+  outline: 0;
+  box-shadow:
+    0 2px 4px rgb(20 24 40 / 4%),
+    0 0 0 3px rgb(124 58 237 / 14%);
 }
 
 @media (hover: hover) and (pointer: fine) {

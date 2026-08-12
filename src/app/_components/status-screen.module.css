@@ -35,6 +35,13 @@
   height: 17px;
 }
 
+.backButton:focus-visible {
+  color: #6d28d9;
+  outline: 0;
+  background: #ede9fe;
+  box-shadow: inset 0 0 0 2px #c4b5fd;
+}
+
 .centerScreen h1 {
   max-width: 310px;
   margin: 0 0 10px;
@@ -61,6 +68,13 @@
   background: var(--violet);
   font-weight: 720;
   cursor: pointer;
+}
+
+.actionButton:focus-visible {
+  outline: 0;
+  box-shadow:
+    0 0 0 3px var(--surface),
+    0 0 0 5px rgb(124 58 237 / 42%);
 }
 
 .animatedDots {

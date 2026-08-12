@@ -142,3 +142,11 @@
 .secondaryButton:active {
   transform: translateY(1px);
 }
+
+.primaryButton:focus-visible,
+.secondaryButton:focus-visible {
+  outline: 0;
+  box-shadow:
+    0 0 0 3px var(--surface),
+    0 0 0 5px rgb(124 58 237 / 42%);
+}
