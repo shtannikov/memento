@@ -1,5 +1,6 @@
 import {
   useEffect,
+  useLayoutEffect,
   useRef,
   useState,
   type ReactNode,
@@ -46,15 +47,20 @@ export function SwipeableVocabularyTabs({
   activeTab,
   pages,
   onChange,
+  getScrollTop,
+  restoreScrollTop,
 }: {
   activeTab: VocabularyStatus;
   pages: readonly SwipeableVocabularyTabPage[];
   onChange: (tab: VocabularyStatus) => void;
+  getScrollTop?: () => number;
+  restoreScrollTop?: (scrollTop: number) => void;
 }) {
   const [dragOffset, setDragOffset] = useState(0);
   const [dragWidth, setDragWidth] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
   const pagerRef = useRef<HTMLDivElement>(null);
+  const pendingScrollTopRef = useRef<number | null>(null);
   const swipeRef = useRef<TabSwipe | null>(null);
   const activeIndex = pages.findIndex((page) => page.value === activeTab);
   const indicatorPosition = Math.min(
@@ -95,6 +101,14 @@ export function SwipeableVocabularyTabs({
     };
   }, []);
 
+  useLayoutEffect(() => {
+    const scrollTop = pendingScrollTopRef.current;
+    if (scrollTop === null) return;
+
+    pendingScrollTopRef.current = null;
+    restoreScrollTop?.(scrollTop);
+  }, [activeTab, restoreScrollTop]);
+
   function resetSwipe() {
     swipeRef.current = null;
     setIsDragging(false);
@@ -102,6 +116,9 @@ export function SwipeableVocabularyTabs({
   }
 
   function settleOnTab(tab: VocabularyStatus) {
+    if (tab !== activeTab) {
+      pendingScrollTopRef.current = getScrollTop?.() ?? null;
+    }
     resetSwipe();
     onChange(tab);
   }

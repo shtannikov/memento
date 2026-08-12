@@ -169,6 +169,7 @@
 .tabViewport {
   position: relative;
   overflow: hidden;
+  overflow-anchor: none;
   flex: 1;
   background: #ffffff;
 }

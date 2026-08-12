@@ -57,6 +57,7 @@ export function VocabularyScreen({
   const [toast, setToast] = useState<{ id: number; message: string } | null>(
     null,
   );
+  const screenRef = useRef<HTMLDivElement>(null);
   const toastTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(
@@ -109,6 +110,15 @@ export function VocabularyScreen({
   function changeTab(tab: VocabularyStatus) {
     setActiveTab(tab);
     setSearchQuery("");
+  }
+
+  function getScreenScrollTop() {
+    return screenRef.current?.scrollTop ?? 0;
+  }
+
+  function restoreScreenScrollTop(scrollTop: number) {
+    const screen = screenRef.current;
+    if (screen) screen.scrollTop = scrollTop;
   }
 
   const disabled = mutating || reordering;
@@ -164,7 +174,7 @@ export function VocabularyScreen({
 
   return (
     <>
-      <div className={styles.screen}>
+      <div ref={screenRef} className={styles.screen}>
         <VocabularyHeader
           learningCount={learning.length}
           practicingCount={practicing.length}
@@ -185,6 +195,8 @@ export function VocabularyScreen({
             activeTab={activeTab}
             pages={pages}
             onChange={changeTab}
+            getScrollTop={getScreenScrollTop}
+            restoreScrollTop={restoreScreenScrollTop}
           />
         </div>
 
