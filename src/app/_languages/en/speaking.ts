@@ -39,7 +39,7 @@ const GRAMMAR_FOCUSES = [
 
 const TOPIC_SYSTEM_PROMPT = `You design one English speaking-practice task for an adult learner.
 
-The user message supplies a target life domain, grammar focus, up to five recent tasks, and required phrases. Follow the selected domain and grammar focus exactly. The application displays the required phrases separately: do not use them to choose or shape the task's setting, conflict, learner role, or outcome.
+The user message supplies a target life domain, grammar focus, up to five recent tasks, and required phrases. Follow the selected domain and grammar focus exactly. The application displays the required phrases separately.
 
 Task quality rules:
 - Write in English and make the task answerable as a 1–3 minute voice response.
@@ -47,7 +47,7 @@ Task quality rules:
 - Make the scenario coherent as a whole, not just a collection of individually plausible details. Silently check that the setting, the learner's mission, the information they are asked to provide, and the intended outcome form a realistic causal chain.
 - Every detail the learner is asked to discuss must be relevant to completing the mission.
 - Ask for concrete, situation-specific information. Broad phrases such as "your needs", "your situation", or "your circumstances" are fine when the context gives them a clear referent; do not use them as substitutes for the exact mission-relevant change, problem, preference, or practical detail.
-- Do not force the grammar focus into an implausible real-world procedure. Ignore the required phrases when designing the scene; they remain available in the separate phrase list.
+- Choose the core communicative motive from the target domain, grammar focus, and recent-task comparison first. Then use the required phrases as optional inspiration. A naturally relevant phrase may influence concrete details or the setting, but do not force all phrases into one situation or let the phrase set alone determine the learner's role, conflict, mission, or outcome.
 - If you are unsure how an official, medical, legal, or other specialized process works, use a natural generic situation instead of inventing procedural details.
 - Give the learner one clear mission, not a lesson plan or checklist.
 - Keep the scene warm, vivid, conversational, and under 240 characters so the ending is complete.
@@ -56,8 +56,8 @@ Task quality rules:
 - When the focus is question formation, put the learner in a role where they must say their own questions.
 - For hypothetical or regret focuses, make the counterfactual condition unmistakable.
 - For a second-conditional focus, the scene itself must contain a natural "if" condition and "would", "could", or "might". Do not name the grammar construction.
-- Compare the full recent tasks before writing. Create a materially different situation and mission; do not reuse or lightly reskin their setting, conflict, learner role, emotional dynamic, decision, role-play, or outcome.
-- Prefer a neutral or agentic learner role. Treat being at fault, missing an obligation, arriving late, and having to justify or apologize as exceptional; never use that emotional dynamic when a recent task already used it. A regret focus can use private reflection or a harmless choice and does not require the learner to defend themselves to an authority figure.
+- Before writing, compare the full recent tasks by the learner's main communicative goal, social role and level of agency, relationship to the listener, emotional dynamic, and interaction pattern. Choose a natural combination for the target domain and grammar that is least similar to those tasks.
+- A change of setting alone is not enough. After drafting, silently replace the premise if its underlying goal, learner-listener relationship, or interaction pattern repeats a recent task. Vary how much agency the learner has instead of repeatedly placing them in the same social or emotional position.
 - Do not print required phrases in the title or scene because the application displays them separately.
 - Keep the title under 70 characters and avoid academic wording.`;
 
@@ -71,7 +71,7 @@ Set each criterion strictly:
 - missionRelevantDetails: every requested detail helps complete that mission; no detail exists merely to echo an unrelated required phrase.
 - requiredPhrasesNotForced: the scene does not awkwardly combine unrelated situations, objects, or decisions just to accommodate the required phrases.
 - naturalAndConcrete: the task sounds like a plausible human situation and is concrete enough for a 1–3 minute answer.
-- avoidsRepeatedLearnerBlame: compared with the recent tasks, the scene does not again make the learner responsible for a failure, missed obligation, lateness, or apology. If no recent task has that dynamic, judge whether the new task follows the default neutral or agentic learner role.
+- distinctUnderlyingPattern: compared with the recent tasks, the combination of main communicative goal, learner role and agency, listener relationship, emotional dynamic, and interaction pattern is materially different. A new setting with the same underlying interaction fails this criterion.
 
 Do not fail a task because the required phrases are absent. Do fail a task that mashes together unrelated concepts without one convincing situation connecting them. Keep the reason concise and specific.`;
 

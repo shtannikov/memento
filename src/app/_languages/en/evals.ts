@@ -159,7 +159,7 @@ export const SPEAKING_EVAL_CASES: SpeakingEvalCase[] = [
     kind: "topic",
     id: "speaking-topic-coherence",
     description:
-      "Creates a constructive public-service story without repeating a recent learner-at-fault setup or following negative practice phrases.",
+      "Chooses a distinct underlying public-service interaction instead of reskinning recent goals, while using negative practice phrases only when natural.",
     appId: "en",
     input: {
       targetDomain: "public services and civic life",
