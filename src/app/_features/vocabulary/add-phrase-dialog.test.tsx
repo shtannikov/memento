@@ -214,7 +214,7 @@ describe("AddPhraseDialog", () => {
     );
 
     expect(pageStyles).toContain(
-      ":global(html.dialog-open.keyboard-open) .mobileShell",
+      ":global(html.dialog-open) .mobileShell",
     );
     expect(pageStyles).toContain(
       "height: var(--dialog-background-height, 100dvh);",
@@ -284,13 +284,13 @@ describe("AddPhraseDialog", () => {
         "--dialog-viewport-height": "520px",
       });
       expect(dialog.style.top).toBe("");
-      expect(document.documentElement).toHaveClass("keyboard-open");
+      expect(document.documentElement).not.toHaveClass("keyboard-open");
       expect(document.documentElement).toHaveClass("dialog-open");
       expect(
         document.documentElement.style.getPropertyValue(
           "--visual-viewport-bottom",
         ),
-      ).toBe("528px");
+      ).toBe("");
       expect(
         document.documentElement.style.getPropertyValue(
           "--dialog-background-height",
@@ -317,11 +317,7 @@ describe("AddPhraseDialog", () => {
         "--dialog-viewport-center-y": "248px",
         "--dialog-viewport-height": "480px",
       });
-      expect(
-        document.documentElement.style.getPropertyValue(
-          "--visual-viewport-bottom",
-        ),
-      ).toBe("488px");
+      expect(document.documentElement).not.toHaveClass("keyboard-open");
       expect(
         document.documentElement.style.getPropertyValue(
           "--dialog-background-height",

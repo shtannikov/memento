@@ -38,13 +38,9 @@ export function AddPhraseDialog({
 
     const root = document.documentElement;
     const previousBodyOverflow = document.body.style.overflow;
-    const previousViewportBottom = root.style.getPropertyValue(
-      "--visual-viewport-bottom",
-    );
     const previousDialogBackgroundHeight = root.style.getPropertyValue(
       "--dialog-background-height",
     );
-    const wasKeyboardOpen = root.classList.contains("keyboard-open");
     const wasDialogOpen = root.classList.contains("dialog-open");
     document.body.style.overflow = "hidden";
     root.classList.add("dialog-open");
@@ -52,13 +48,13 @@ export function AddPhraseDialog({
 
     const viewport = globalThis.visualViewport;
     let animationFrame = 0;
-    let baselineHeight = Math.max(
+    const backgroundHeight = Math.max(
       globalThis.innerHeight,
       (viewport?.offsetTop ?? 0) + (viewport?.height ?? 0),
     );
     root.style.setProperty(
       "--dialog-background-height",
-      `${baselineHeight}px`,
+      `${backgroundHeight}px`,
     );
 
     function syncVisualViewport() {
@@ -68,12 +64,6 @@ export function AddPhraseDialog({
         const offsetLeft = viewport?.offsetLeft ?? 0;
         const width = viewport?.width ?? globalThis.innerWidth;
         const height = viewport?.height ?? globalThis.innerHeight;
-        const visibleBottom = offsetTop + height;
-        baselineHeight = Math.max(baselineHeight, visibleBottom);
-        root.style.setProperty(
-          "--dialog-background-height",
-          `${baselineHeight}px`,
-        );
         const dialog = addDialogRef.current;
 
         if (dialog) {
@@ -88,15 +78,6 @@ export function AddPhraseDialog({
           );
           dialog.style.setProperty("--dialog-viewport-height", `${height}px`);
         }
-
-        root.style.setProperty(
-          "--visual-viewport-bottom",
-          `${visibleBottom}px`,
-        );
-        root.classList.toggle(
-          "keyboard-open",
-          baselineHeight - visibleBottom >= 80,
-        );
       });
     }
 
@@ -111,14 +92,6 @@ export function AddPhraseDialog({
       viewport?.removeEventListener("scroll", syncVisualViewport);
       globalThis.removeEventListener("resize", syncVisualViewport);
       document.body.style.overflow = previousBodyOverflow;
-      if (previousViewportBottom) {
-        root.style.setProperty(
-          "--visual-viewport-bottom",
-          previousViewportBottom,
-        );
-      } else {
-        root.style.removeProperty("--visual-viewport-bottom");
-      }
       if (previousDialogBackgroundHeight) {
         root.style.setProperty(
           "--dialog-background-height",
@@ -127,7 +100,6 @@ export function AddPhraseDialog({
       } else {
         root.style.removeProperty("--dialog-background-height");
       }
-      root.classList.toggle("keyboard-open", wasKeyboardOpen);
       root.classList.toggle("dialog-open", wasDialogOpen);
       setTelegramColor(APP_BACKGROUND);
     };

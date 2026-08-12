@@ -25,8 +25,8 @@
   overflow: hidden;
 }
 
-:global(html.dialog-open.keyboard-open) .mobileShell,
-:global(html.dialog-open.keyboard-open) .canvas {
+:global(html.dialog-open) .mobileShell,
+:global(html.dialog-open) .canvas {
   height: var(--dialog-background-height, 100dvh);
   min-height: var(--dialog-background-height, 100dvh);
 }
