@@ -183,6 +183,9 @@ describe("AddPhraseDialog", () => {
     expect(dialogStyles).toContain(
       "background: var(--dialog-backdrop);",
     );
+    expect(dialogStyles).toContain(
+      "height: var(--dialog-background-height, 100dvh);",
+    );
   });
 
   it("anchors the mobile dialog below Telegram chrome", () => {
@@ -269,11 +272,11 @@ describe("AddPhraseDialog", () => {
     const overlay = dialog.previousElementSibling;
 
     await waitFor(() => {
-      expect(overlay).toHaveStyle({
-        top: "8px",
-        width: "390px",
-        height: "520px",
-      });
+      expect(overlay).toHaveStyle({ pointerEvents: "auto" });
+      expect((overlay as HTMLElement).style.top).toBe("");
+      expect((overlay as HTMLElement).style.left).toBe("");
+      expect((overlay as HTMLElement).style.width).toBe("");
+      expect((overlay as HTMLElement).style.height).toBe("");
       expect(dialog).toHaveStyle({
         "--dialog-viewport-top": "8px",
         "--dialog-viewport-center-x": "195px",
@@ -308,7 +311,7 @@ describe("AddPhraseDialog", () => {
     visualViewport.height = 480;
     visualViewport.dispatchEvent(new Event("resize"));
     await waitFor(() => {
-      expect(overlay).toHaveStyle({ height: "480px" });
+      expect((overlay as HTMLElement).style.height).toBe("");
       expect(dialog).toHaveStyle({
         "--dialog-viewport-top": "8px",
         "--dialog-viewport-center-y": "248px",

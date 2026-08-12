@@ -4,7 +4,7 @@
   top: 0;
   left: 0;
   width: 100%;
-  height: 100dvh;
+  height: var(--dialog-background-height, 100dvh);
   background: var(--dialog-backdrop);
   backdrop-filter: blur(4px);
   animation: fade-in 160ms ease both;

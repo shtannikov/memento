@@ -31,7 +31,6 @@ export function AddPhraseDialog({
 }: AddPhraseDialogProps) {
   const [term, setTerm] = useState("");
   const [definition, setDefinition] = useState("");
-  const addOverlayRef = useRef<HTMLDivElement>(null);
   const addDialogRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -75,15 +74,7 @@ export function AddPhraseDialog({
           "--dialog-background-height",
           `${baselineHeight}px`,
         );
-        const overlay = addOverlayRef.current;
         const dialog = addDialogRef.current;
-
-        if (overlay) {
-          overlay.style.top = `${offsetTop}px`;
-          overlay.style.left = `${offsetLeft}px`;
-          overlay.style.width = `${width}px`;
-          overlay.style.height = `${height}px`;
-        }
 
         if (dialog) {
           dialog.style.setProperty("--dialog-viewport-top", `${offsetTop}px`);
@@ -164,7 +155,7 @@ export function AddPhraseDialog({
   return (
     <Dialog.Root open={open}>
       <Dialog.Portal>
-        <Dialog.Overlay ref={addOverlayRef} className={styles.overlay} />
+        <Dialog.Overlay className={styles.overlay} />
         <Dialog.Content
           ref={addDialogRef}
           className={styles.addDialog}
