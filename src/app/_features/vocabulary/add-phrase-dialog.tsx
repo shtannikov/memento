@@ -42,6 +42,9 @@ export function AddPhraseDialog({
     const previousViewportBottom = root.style.getPropertyValue(
       "--visual-viewport-bottom",
     );
+    const previousDialogBackgroundHeight = root.style.getPropertyValue(
+      "--dialog-background-height",
+    );
     const wasKeyboardOpen = root.classList.contains("keyboard-open");
     const wasDialogOpen = root.classList.contains("dialog-open");
     document.body.style.overflow = "hidden";
@@ -54,6 +57,10 @@ export function AddPhraseDialog({
       globalThis.innerHeight,
       (viewport?.offsetTop ?? 0) + (viewport?.height ?? 0),
     );
+    root.style.setProperty(
+      "--dialog-background-height",
+      `${baselineHeight}px`,
+    );
 
     function syncVisualViewport() {
       cancelAnimationFrame(animationFrame);
@@ -64,6 +71,10 @@ export function AddPhraseDialog({
         const height = viewport?.height ?? globalThis.innerHeight;
         const visibleBottom = offsetTop + height;
         baselineHeight = Math.max(baselineHeight, visibleBottom);
+        root.style.setProperty(
+          "--dialog-background-height",
+          `${baselineHeight}px`,
+        );
         const overlay = addOverlayRef.current;
         const dialog = addDialogRef.current;
 
@@ -116,6 +127,14 @@ export function AddPhraseDialog({
         );
       } else {
         root.style.removeProperty("--visual-viewport-bottom");
+      }
+      if (previousDialogBackgroundHeight) {
+        root.style.setProperty(
+          "--dialog-background-height",
+          previousDialogBackgroundHeight,
+        );
+      } else {
+        root.style.removeProperty("--dialog-background-height");
       }
       root.classList.toggle("keyboard-open", wasKeyboardOpen);
       root.classList.toggle("dialog-open", wasDialogOpen);

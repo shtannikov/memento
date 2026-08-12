@@ -204,6 +204,23 @@ describe("AddPhraseDialog", () => {
     expect(dialogStyles).toContain("animation-name: dialog-in-mobile;");
   });
 
+  it("keeps the phrase list behind the keyboard while the dialog is open", () => {
+    const pageStyles = readFileSync(
+      join(process.cwd(), "src/app/page.module.css"),
+      "utf8",
+    );
+
+    expect(pageStyles).toContain(
+      ":global(html.dialog-open.keyboard-open) .mobileShell",
+    );
+    expect(pageStyles).toContain(
+      "height: var(--dialog-background-height, 100dvh);",
+    );
+    expect(pageStyles).toContain(
+      "min-height: var(--dialog-background-height, 100dvh);",
+    );
+  });
+
   it("clips the app shell and matches Telegram chrome above the iOS keyboard", async () => {
     const visualViewport = Object.assign(new EventTarget(), {
       height: 520,
@@ -271,6 +288,11 @@ describe("AddPhraseDialog", () => {
           "--visual-viewport-bottom",
         ),
       ).toBe("528px");
+      expect(
+        document.documentElement.style.getPropertyValue(
+          "--dialog-background-height",
+        ),
+      ).toBe("844px");
       expect(setBackgroundColor).toHaveBeenCalledWith(
         DIALOG_BACKDROP_SOLID,
       );
@@ -297,6 +319,11 @@ describe("AddPhraseDialog", () => {
           "--visual-viewport-bottom",
         ),
       ).toBe("488px");
+      expect(
+        document.documentElement.style.getPropertyValue(
+          "--dialog-background-height",
+        ),
+      ).toBe("844px");
     });
 
     unmount();
@@ -306,6 +333,11 @@ describe("AddPhraseDialog", () => {
     expect(
       document.documentElement.style.getPropertyValue(
         "--visual-viewport-bottom",
+      ),
+    ).toBe("");
+    expect(
+      document.documentElement.style.getPropertyValue(
+        "--dialog-background-height",
       ),
     ).toBe("");
     expect(setBackgroundColor).toHaveBeenLastCalledWith(APP_BACKGROUND);
