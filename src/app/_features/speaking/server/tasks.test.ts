@@ -128,7 +128,24 @@ describe("speaking task workflow", () => {
       result({ id: "task-old" }),
       result({ id: "task-new" }, "single"),
       result(null),
-      result([]),
+      result([{
+        domain: "education and personal growth",
+        grammar_focus: "past narration with tense contrast",
+      }]),
+      result([
+        {
+          topic: "Old topic",
+          prompt: "Old prompt",
+          domain: "work and career",
+          grammar_focus: "future plans and predictions",
+        },
+        {
+          topic: "Earlier topic",
+          prompt: "Earlier full prompt",
+          domain: "travel and transport",
+          grammar_focus: "polite requests and indirect questions",
+        },
+      ]),
       result(null),
     ]);
     mocks.getMementoDb.mockReturnValue(db);
@@ -160,12 +177,20 @@ describe("speaking task workflow", () => {
     });
     expect(mocks.generateSpeakingTopic).toHaveBeenCalledWith(
       expect.objectContaining({
-        previousTask: {
-          title: "Old topic",
-          speakingPrompt: "Old prompt",
-          domain: "work and career",
-          grammarFocus: "future plans and predictions",
-        },
+        recentTasks: [
+          {
+            title: "Old topic",
+            speakingPrompt: "Old prompt",
+            domain: "work and career",
+            grammarFocus: "future plans and predictions",
+          },
+          {
+            title: "Earlier topic",
+            speakingPrompt: "Earlier full prompt",
+            domain: "travel and transport",
+            grammarFocus: "polite requests and indirect questions",
+          },
+        ],
         requiredPhrases: ["new priority", "old priority"],
         targetDomain: expect.not.stringMatching(/^work and career$/i),
         targetGrammarFocus: expect.not.stringMatching(
@@ -175,6 +200,12 @@ describe("speaking task workflow", () => {
       42,
       "en",
     );
+    expect(db.queries[8]?.in).toHaveBeenCalledWith("status", [
+      "completed",
+      "active",
+      "superseded",
+    ]);
+    expect(db.queries[8]?.limit).toHaveBeenCalledWith(5);
   });
 
   it("keeps the active task when the daily generation limit is reached", async () => {
@@ -257,7 +288,24 @@ describe("speaking task workflow", () => {
       result({ id: "task-old" }),
       result({ id: "task-new" }, "single"),
       result(null),
-      result([]),
+      result([{
+        domain: "education and personal growth",
+        grammar_focus: "past narration with tense contrast",
+      }]),
+      result([
+        {
+          topic: "Old topic",
+          prompt: "Old prompt",
+          domain: "work and career",
+          grammar_focus: "future plans and predictions",
+        },
+        {
+          topic: "Earlier topic",
+          prompt: "Earlier full prompt",
+          domain: "travel and transport",
+          grammar_focus: "polite requests and indirect questions",
+        },
+      ]),
       result(null),
       result(null),
       result(null),
@@ -276,15 +324,15 @@ describe("speaking task workflow", () => {
     ).resolves.toBe("created");
 
     expect(mocks.sendTelegramMessage).toHaveBeenCalledOnce();
-    expect(db.queries[9]?.insert).toHaveBeenCalledWith({
+    expect(db.queries[10]?.insert).toHaveBeenCalledWith({
       task_id: "task-new",
       chat_id: 42,
       message_id: 99,
     });
-    expect(db.queries[10]?.update).toHaveBeenCalledWith(
+    expect(db.queries[11]?.update).toHaveBeenCalledWith(
       expect.objectContaining({ status: "active" }),
     );
-    expect(db.from).toHaveBeenCalledTimes(11);
+    expect(db.from).toHaveBeenCalledTimes(12);
   });
 
   it("restores the old active task when regenerated task delivery fails", async () => {
@@ -307,6 +355,7 @@ describe("speaking task workflow", () => {
       result(null),
       result(null),
       result(null),
+      result(null),
     ]);
     mocks.getMementoDb.mockReturnValue(db);
     mocks.generateSpeakingTopic.mockResolvedValue({
@@ -321,8 +370,8 @@ describe("speaking task workflow", () => {
       regenerateSpeakingTaskCommand(42, "en", 42, "task-old"),
     ).rejects.toThrow("delivery failed");
 
-    expect(db.queries[9]?.update).toHaveBeenCalledWith({ status: "failed" });
-    expect(db.queries[10]?.update).toHaveBeenCalledWith({ status: "active" });
+    expect(db.queries[10]?.update).toHaveBeenCalledWith({ status: "failed" });
+    expect(db.queries[11]?.update).toHaveBeenCalledWith({ status: "active" });
   });
 
   it("restores the old active task when regeneration fails", async () => {
@@ -344,6 +393,7 @@ describe("speaking task workflow", () => {
       result([]),
       result(null),
       result(null),
+      result(null),
     ]);
     mocks.getMementoDb.mockReturnValue(db);
     mocks.generateSpeakingTopic.mockRejectedValue(new Error("generation failed"));
@@ -352,9 +402,9 @@ describe("speaking task workflow", () => {
       "generation failed",
     );
 
-    expect(db.queries[8]?.update).toHaveBeenCalledWith({ status: "failed" });
-    expect(db.queries[9]?.update).toHaveBeenCalledWith({ status: "active" });
-    expect(db.queries[9]?.eq).toHaveBeenCalledWith("status", "superseded");
+    expect(db.queries[9]?.update).toHaveBeenCalledWith({ status: "failed" });
+    expect(db.queries[10]?.update).toHaveBeenCalledWith({ status: "active" });
+    expect(db.queries[10]?.eq).toHaveBeenCalledWith("status", "superseded");
   });
 
   it("does not call the model when Practicing is empty", async () => {
@@ -468,6 +518,7 @@ function result(
     "limit",
     "insert",
     "update",
+    "not",
   ]) {
     query[method] = vi.fn(() => query);
   }

@@ -429,8 +429,12 @@ describe("quiz generation contract", () => {
     const input = {
       targetDomain: "public services and appointments",
       targetGrammarFocus: "polite requests and indirect questions",
-      recentTopics: [{ topic: "A cancelled train", domain: "travel", grammarFocus: null }],
-      recentLearnerExcerpts: ["I needed to change the time."],
+      recentTasks: [{
+        title: "A cancelled train",
+        speakingPrompt: "Tell a station employee what happened and ask for help.",
+        domain: "travel",
+        grammarFocus: null,
+      }],
       requiredPhrases: ["take into account"],
     };
 
@@ -442,16 +446,25 @@ describe("quiz generation contract", () => {
     });
     expect(parse.mock.calls[0][0]).toMatchObject({ store: false });
     expect(JSON.stringify(parse.mock.calls[0][0].input)).toContain(
-      "I needed to change the time.",
+      "Tell a station employee what happened and ask for help.",
     );
     expect(ENGLISH_LANGUAGE.speaking?.topicSystemPrompt).toContain(
-      "they do not all need to fit the scene",
+      "up to five recent tasks",
     );
     expect(ENGLISH_LANGUAGE.speaking?.topicSystemPrompt).toContain(
       "form a realistic causal chain",
     );
     expect(ENGLISH_LANGUAGE.speaking?.topicSystemPrompt).toContain(
-      "create a materially different situation and mission",
+      "Create a materially different situation and mission",
+    );
+    expect(ENGLISH_LANGUAGE.speaking?.topicSystemPrompt).toContain(
+      "never use that emotional dynamic when a recent task already used it",
+    );
+    expect(ENGLISH_LANGUAGE.speaking?.topicSystemPrompt).toContain(
+      "do not use them to choose or shape the task's setting",
+    );
+    expect(ENGLISH_LANGUAGE.speaking?.topicSystemPrompt).toContain(
+      "under 240 characters",
     );
   });
 
@@ -464,6 +477,7 @@ describe("quiz generation contract", () => {
         missionRelevantDetails: false,
         requiredPhrasesNotForced: false,
         naturalAndConcrete: true,
+        avoidsRepeatedLearnerBlame: true,
         reason: "The job offer is unrelated to the neighbourhood repair mission.",
       },
     });
@@ -471,8 +485,7 @@ describe("quiz generation contract", () => {
     const input = {
       targetDomain: "housing and neighbourhood",
       targetGrammarFocus: "first conditional for realistic consequences",
-      recentTopics: [],
-      recentLearnerExcerpts: [],
+      recentTasks: [],
       requiredPhrases: ["a splinter", "a dead-end job"],
     };
     const topic = {

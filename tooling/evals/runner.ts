@@ -110,7 +110,7 @@ async function runSpeakingCase(evalCase: SpeakingEvalCase) {
   if (evalCase.kind === "topic") {
     const topic = await generateSpeakingTopic(evalCase.input, 1, evalCase.appId);
     const recentTitles = new Set(
-      evalCase.input.recentTopics.map((item) => item.topic.toLowerCase()),
+      evalCase.input.recentTasks.map((item) => item.title.toLowerCase()),
     );
     const grade = await gradeSpeakingTopic(
       evalCase.input,

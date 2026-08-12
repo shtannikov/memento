@@ -65,6 +65,7 @@ const SpeakingTopicGradeSchema = z.object({
   missionRelevantDetails: z.boolean(),
   requiredPhrasesNotForced: z.boolean(),
   naturalAndConcrete: z.boolean(),
+  avoidsRepeatedLearnerBlame: z.boolean(),
   reason: z.string().trim().min(1).max(500),
 });
 
@@ -328,7 +329,8 @@ export async function gradeSpeakingTopic(
       grade.oneClearMission &&
       grade.missionRelevantDetails &&
       grade.requiredPhrasesNotForced &&
-      grade.naturalAndConcrete,
+      grade.naturalAndConcrete &&
+      grade.avoidsRepeatedLearnerBlame,
   };
 }
 
