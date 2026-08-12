@@ -2,6 +2,7 @@ import {
   useEffect,
   useRef,
   useState,
+  type CSSProperties,
   type ReactNode,
   type UIEvent,
 } from "react";
@@ -11,7 +12,6 @@ import type { VocabularyStatus } from "../vocabulary.types";
 import { VocabularyTabs } from "./vocabulary-tabs";
 
 const TAB_PAGE_GUTTER = 24;
-const TAB_SCROLL_SETTLE_DELAY_MS = 120;
 
 export type SwipeableVocabularyTabPage = {
   value: VocabularyStatus;
@@ -28,11 +28,15 @@ export function SwipeableVocabularyTabs({
   onChange: (tab: VocabularyStatus) => void;
 }) {
   const activeIndex = pages.findIndex((page) => page.value === activeTab);
-  const [indicatorPosition, setIndicatorPosition] = useState(activeIndex);
+  const [initialIndex] = useState(activeIndex);
   const [isScrolling, setIsScrolling] = useState(false);
+  const pagerRef = useRef<HTMLDivElement>(null);
   const viewportRef = useRef<HTMLDivElement>(null);
-  const settleTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const hasPositionedViewportRef = useRef(false);
+
+  function setIndicatorPosition(position: number) {
+    pagerRef.current?.style.setProperty("--tab-position", String(position));
+  }
 
   function pageStep(viewport: HTMLDivElement) {
     return viewport.clientWidth + TAB_PAGE_GUTTER;
@@ -49,11 +53,6 @@ export function SwipeableVocabularyTabs({
   }
 
   function settleScroll(viewport: HTMLDivElement) {
-    if (settleTimeoutRef.current) {
-      clearTimeout(settleTimeoutRef.current);
-      settleTimeoutRef.current = null;
-    }
-
     const index = Math.round(pagePosition(viewport));
     const destination = pages[index];
     setIndicatorPosition(index);
@@ -76,12 +75,6 @@ export function SwipeableVocabularyTabs({
     ) {
       activeElement.blur();
     }
-
-    if (settleTimeoutRef.current) clearTimeout(settleTimeoutRef.current);
-    settleTimeoutRef.current = setTimeout(
-      () => settleScroll(viewport),
-      TAB_SCROLL_SETTLE_DELAY_MS,
-    );
   }
 
   useEffect(() => {
@@ -91,7 +84,10 @@ export function SwipeableVocabularyTabs({
     const left = activeIndex * pageStep(viewport);
     const behavior = hasPositionedViewportRef.current ? "smooth" : "auto";
     hasPositionedViewportRef.current = true;
-    setIndicatorPosition(activeIndex);
+    if (Math.abs(viewport.scrollLeft - left) < 1) {
+      setIndicatorPosition(activeIndex);
+      return;
+    }
 
     if (typeof viewport.scrollTo === "function") {
       viewport.scrollTo({ left, behavior });
@@ -100,20 +96,21 @@ export function SwipeableVocabularyTabs({
     }
   }, [activeIndex]);
 
-  useEffect(
-    () => () => {
-      if (settleTimeoutRef.current) clearTimeout(settleTimeoutRef.current);
-    },
-    [],
-  );
-
   return (
-    <div className={styles.tabPager}>
+    <div
+      ref={pagerRef}
+      className={styles.tabPager}
+      data-testid="tab-pager"
+      style={
+        {
+          "--tab-position": initialIndex,
+        } as CSSProperties
+      }
+    >
       <VocabularyTabs
         activeTab={activeTab}
         onChange={onChange}
         tabCount={pages.length}
-        indicatorPosition={indicatorPosition}
         dragging={isScrolling}
       />
       <div
@@ -122,6 +119,7 @@ export function SwipeableVocabularyTabs({
         data-scrolling={isScrolling}
         data-testid="tab-viewport"
         onScroll={handleScroll}
+        onScrollEnd={(event) => settleScroll(event.currentTarget)}
       >
         {pages.map((page) => {
           const isActive = page.value === activeTab;

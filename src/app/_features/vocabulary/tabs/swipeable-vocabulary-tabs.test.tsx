@@ -1,6 +1,6 @@
-import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { useState } from "react";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 import type { VocabularyStatus } from "../vocabulary.types";
 import {
@@ -11,13 +11,8 @@ import {
 const VIEWPORT_WIDTH = 320;
 const PAGE_STEP = VIEWPORT_WIDTH + 24;
 
-beforeEach(() => {
-  vi.useFakeTimers();
-});
-
 afterEach(() => {
   cleanup();
-  vi.useRealTimers();
 });
 
 function Pager({ statuses }: { statuses: VocabularyStatus[] }) {
@@ -53,7 +48,7 @@ function scrollToPage(index: number) {
   const viewport = getViewport();
   viewport.scrollLeft = index * PAGE_STEP;
   fireEvent.scroll(viewport);
-  act(() => vi.advanceTimersByTime(120));
+  fireEvent(viewport, new Event("scrollend"));
 }
 
 describe("SwipeableVocabularyTabs", () => {
@@ -77,12 +72,13 @@ describe("SwipeableVocabularyTabs", () => {
     viewport.scrollLeft = PAGE_STEP / 2;
     fireEvent.scroll(viewport);
 
-    expect(screen.getByRole("tablist")).toHaveStyle({
+    expect(screen.getByTestId("tab-pager")).toHaveStyle({
       "--tab-position": "0.5",
     });
     expect(viewport).toHaveAttribute("data-scrolling", "true");
+    expect(screen.getByRole("tabpanel", { name: "learning" })).toBeVisible();
 
-    act(() => vi.advanceTimersByTime(120));
+    fireEvent(viewport, new Event("scrollend"));
     expect(screen.getByRole("tabpanel", { name: "practicing" })).toBeVisible();
     expect(viewport).toHaveAttribute("data-scrolling", "false");
   });
@@ -135,7 +131,7 @@ describe("SwipeableVocabularyTabs", () => {
     fireEvent.scroll(viewport);
     viewport.scrollLeft = 0;
     fireEvent.scroll(viewport);
-    act(() => vi.advanceTimersByTime(120));
+    fireEvent(viewport, new Event("scrollend"));
 
     expect(screen.getByRole("tabpanel", { name: "learning" })).toBeVisible();
   });

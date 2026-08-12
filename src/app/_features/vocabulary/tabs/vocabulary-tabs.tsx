@@ -8,13 +8,11 @@ export function VocabularyTabs({
   activeTab,
   onChange,
   tabCount,
-  indicatorPosition,
   dragging,
 }: {
   activeTab: VocabularyStatus;
   onChange: (tab: VocabularyStatus) => void;
   tabCount: number;
-  indicatorPosition: number;
   dragging: boolean;
 }) {
   return (
@@ -29,7 +27,6 @@ export function VocabularyTabs({
         style={
           {
             "--tab-count": tabCount,
-            "--tab-position": indicatorPosition,
           } as CSSProperties
         }
       >
