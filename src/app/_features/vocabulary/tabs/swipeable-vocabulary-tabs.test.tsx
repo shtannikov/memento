@@ -83,6 +83,30 @@ describe("SwipeableVocabularyTabs", () => {
     );
   });
 
+  it("prevents native scrolling only during a horizontal swipe", () => {
+    render(<Pager statuses={["learning", "practicing", "learned"]} />);
+
+    const panel = screen.getByRole("tabpanel", { name: "learning" });
+    fireEvent.touchStart(panel, {
+      touches: [{ clientX: 250, clientY: 100 }],
+    });
+    const horizontalMoveWasNotCancelled = fireEvent.touchMove(panel, {
+      cancelable: true,
+      touches: [{ clientX: 160, clientY: 104 }],
+    });
+    expect(horizontalMoveWasNotCancelled).toBe(false);
+
+    fireEvent.touchCancel(panel);
+    fireEvent.touchStart(panel, {
+      touches: [{ clientX: 250, clientY: 100 }],
+    });
+    const verticalMoveWasNotCancelled = fireEvent.touchMove(panel, {
+      cancelable: true,
+      touches: [{ clientX: 246, clientY: 160 }],
+    });
+    expect(verticalMoveWasNotCancelled).toBe(true);
+  });
+
   it("removes text-input focus once a horizontal swipe starts", () => {
     render(<Pager statuses={["learning", "practicing", "learned"]} />);
 

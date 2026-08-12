@@ -168,7 +168,11 @@
 
 .tabViewport {
   position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  align-items: start;
   overflow: hidden;
+  overflow-anchor: none;
   flex: 1;
   background: #ffffff;
 }
@@ -182,9 +186,8 @@
 }
 
 .tabPage {
-  position: absolute;
-  top: 0;
-  left: 0;
+  position: relative;
+  grid-area: 1 / 1;
   width: 100%;
   background: #ffffff;
   pointer-events: none;
@@ -193,7 +196,6 @@
 }
 
 .tabPageActive {
-  position: relative;
   pointer-events: auto;
 }
 
