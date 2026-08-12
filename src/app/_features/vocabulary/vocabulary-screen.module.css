@@ -586,7 +586,7 @@
 }
 
 .screen[data-search-focused="true"] .floatingActions,
-:global(html.keyboard-open) .screen .floatingActions {
+:global(html.keyboard-actions-hidden) .screen .floatingActions {
   opacity: 0;
   transform: translate3d(0, 16px, 0) scale(0.96);
   transition:
@@ -625,7 +625,7 @@
 }
 
 .screen[data-search-focused="true"] .floatingButton,
-:global(html.keyboard-open) .screen .floatingButton {
+:global(html.keyboard-actions-hidden) .screen .floatingButton {
   pointer-events: none;
 }
 

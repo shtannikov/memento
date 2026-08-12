@@ -45,7 +45,15 @@ describe("isVirtualKeyboardOpen", () => {
     expect(
       isVirtualKeyboardOpen({
         baselineHeight: 844,
-        viewportHeight: 844,
+        viewportHeight: 780,
+        editableFocused: false,
+        keyboardWasOpen: true,
+      }),
+    ).toBe(true);
+    expect(
+      isVirtualKeyboardOpen({
+        baselineHeight: 844,
+        viewportHeight: 840,
         editableFocused: false,
         keyboardWasOpen: true,
       }),

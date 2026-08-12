@@ -58,19 +58,27 @@ export function MementoApp({
       const editableFocused =
         activeElement instanceof HTMLElement &&
         activeElement.matches("input, textarea, [contenteditable='true']");
-      const keyboardWasOpen = root.classList.contains("keyboard-open");
-      const keyboardOpen = isVirtualKeyboardOpen({
+      const keyboardWasConstrained = root.classList.contains(
+        "keyboard-actions-hidden",
+      );
+      const keyboardConstrained = isVirtualKeyboardOpen({
         baselineHeight,
         viewportHeight: height,
         editableFocused,
-        keyboardWasOpen,
+        keyboardWasOpen: keyboardWasConstrained,
       });
 
-      if (!editableFocused && !keyboardOpen) baselineHeight = height;
-      else if (!keyboardOpen) baselineHeight = Math.max(baselineHeight, height);
+      if (!editableFocused && !keyboardConstrained) baselineHeight = height;
+      else if (!keyboardConstrained) {
+        baselineHeight = Math.max(baselineHeight, height);
+      }
       root.style.setProperty("--visual-viewport-height", `${height}px`);
       root.style.setProperty("--visual-viewport-bottom", `${visibleBottom}px`);
-      root.classList.toggle("keyboard-open", keyboardOpen);
+      root.classList.toggle(
+        "keyboard-open",
+        keyboardConstrained && editableFocused,
+      );
+      root.classList.toggle("keyboard-actions-hidden", keyboardConstrained);
     }
     syncViewport();
     viewport?.addEventListener("resize", syncViewport);
@@ -83,6 +91,7 @@ export function MementoApp({
       document.removeEventListener("focusin", syncViewport);
       document.removeEventListener("focusout", syncViewport);
       root.classList.remove("keyboard-open");
+      root.classList.remove("keyboard-actions-hidden");
       root.style.removeProperty("--visual-viewport-height");
       root.style.removeProperty("--visual-viewport-bottom");
     };

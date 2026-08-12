@@ -1,4 +1,5 @@
 const VIRTUAL_KEYBOARD_MIN_HEIGHT_CHANGE = 80;
+const VIRTUAL_KEYBOARD_RESTORED_TOLERANCE = 8;
 
 export function isVirtualKeyboardOpen({
   baselineHeight,
@@ -11,8 +12,9 @@ export function isVirtualKeyboardOpen({
   editableFocused: boolean;
   keyboardWasOpen: boolean;
 }): boolean {
-  return (
-    (editableFocused || keyboardWasOpen) &&
-    baselineHeight - viewportHeight >= VIRTUAL_KEYBOARD_MIN_HEIGHT_CHANGE
-  );
+  const heightChange = baselineHeight - viewportHeight;
+  if (keyboardWasOpen) {
+    return heightChange > VIRTUAL_KEYBOARD_RESTORED_TOLERANCE;
+  }
+  return editableFocused && heightChange >= VIRTUAL_KEYBOARD_MIN_HEIGHT_CHANGE;
 }
