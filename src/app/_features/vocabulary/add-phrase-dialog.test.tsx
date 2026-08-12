@@ -187,6 +187,11 @@ describe("AddPhraseDialog", () => {
       "height: var(--dialog-background-height, 100dvh);",
     );
     expect(dialogStyles).not.toContain("backdrop-filter:");
+    expect(dialogStyles).toContain(".overlay {\n  position: absolute;");
+    expect(dialogStyles).toContain(
+      ".addDialog {\n  --dialog-viewport-top: 0px;",
+    );
+    expect(dialogStyles).toContain("\n  position: absolute;\n  z-index: 31;");
   });
 
   it("anchors the mobile dialog below Telegram chrome", () => {
@@ -236,6 +241,8 @@ describe("AddPhraseDialog", () => {
       width: 390,
       offsetTop: 8,
       offsetLeft: 0,
+      pageTop: 8,
+      pageLeft: 0,
     });
     const viewportDescriptor = Object.getOwnPropertyDescriptor(
       window,
@@ -315,7 +322,8 @@ describe("AddPhraseDialog", () => {
     expect(document.body).toHaveStyle({ overflow: "hidden" });
 
     visualViewport.height = 480;
-    visualViewport.offsetTop = 42;
+    visualViewport.offsetTop = 12;
+    visualViewport.pageTop = 42;
     visualViewport.dispatchEvent(new Event("resize"));
     expect((overlay as HTMLElement).style.height).toBe("");
     expect(dialog).toHaveStyle({

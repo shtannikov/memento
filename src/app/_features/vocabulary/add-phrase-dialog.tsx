@@ -47,9 +47,10 @@ export function AddPhraseDialog({
     setTelegramColor(DIALOG_BACKDROP_SOLID);
 
     const viewport = globalThis.visualViewport;
+    const initialViewportTop = viewport?.pageTop ?? viewport?.offsetTop ?? 0;
     const backgroundHeight = Math.max(
       globalThis.innerHeight,
-      (viewport?.offsetTop ?? 0) + (viewport?.height ?? 0),
+      initialViewportTop + (viewport?.height ?? 0),
     );
     root.style.setProperty(
       "--dialog-background-height",
@@ -57,21 +58,21 @@ export function AddPhraseDialog({
     );
 
     function syncVisualViewport() {
-      const offsetTop = viewport?.offsetTop ?? 0;
-      const offsetLeft = viewport?.offsetLeft ?? 0;
+      const viewportTop = viewport?.pageTop ?? viewport?.offsetTop ?? 0;
+      const viewportLeft = viewport?.pageLeft ?? viewport?.offsetLeft ?? 0;
       const width = viewport?.width ?? globalThis.innerWidth;
       const height = viewport?.height ?? globalThis.innerHeight;
       const dialog = addDialogRef.current;
 
       if (dialog) {
-        dialog.style.setProperty("--dialog-viewport-top", `${offsetTop}px`);
+        dialog.style.setProperty("--dialog-viewport-top", `${viewportTop}px`);
         dialog.style.setProperty(
           "--dialog-viewport-center-x",
-          `${offsetLeft + width / 2}px`,
+          `${viewportLeft + width / 2}px`,
         );
         dialog.style.setProperty(
           "--dialog-viewport-center-y",
-          `${offsetTop + height / 2}px`,
+          `${viewportTop + height / 2}px`,
         );
         dialog.style.setProperty("--dialog-viewport-height", `${height}px`);
       }
