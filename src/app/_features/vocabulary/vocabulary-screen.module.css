@@ -208,7 +208,7 @@
   overflow-y: auto;
   background: #ffffff;
   pointer-events: none;
-  overscroll-behavior-x: none;
+  overscroll-behavior: none;
   scroll-snap-align: start;
   scroll-snap-stop: always;
 }

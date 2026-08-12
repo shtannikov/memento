@@ -4,6 +4,7 @@ import {
   DIALOG_BACKDROP_SOLID,
   initializeTelegram,
   setTelegramColor,
+  setTelegramVerticalSwipes,
 } from "./telegram";
 
 afterEach(() => {
@@ -112,5 +113,43 @@ describe("initializeTelegram", () => {
       DIALOG_BACKDROP_SOLID,
     );
     themeColor.remove();
+  });
+
+  it("controls Telegram vertical swipes when supported", () => {
+    const disableVerticalSwipes = vi.fn();
+    const enableVerticalSwipes = vi.fn();
+    globalThis.Telegram = {
+      WebApp: {
+        initData: "signed",
+        ready: vi.fn(),
+        expand: vi.fn(),
+        disableVerticalSwipes,
+        enableVerticalSwipes,
+      },
+    };
+
+    setTelegramVerticalSwipes(false);
+    expect(disableVerticalSwipes).toHaveBeenCalledOnce();
+    expect(enableVerticalSwipes).not.toHaveBeenCalled();
+
+    setTelegramVerticalSwipes(true);
+    expect(enableVerticalSwipes).toHaveBeenCalledOnce();
+  });
+
+  it("ignores unavailable or failing vertical swipe controls", () => {
+    globalThis.Telegram = {
+      WebApp: {
+        initData: "signed",
+        ready: vi.fn(),
+        expand: vi.fn(),
+        disableVerticalSwipes: vi.fn(() => {
+          throw new Error("unsupported");
+        }),
+        isVersionAtLeast: vi.fn(() => false),
+      },
+    };
+
+    expect(() => setTelegramVerticalSwipes(true)).not.toThrow();
+    expect(() => setTelegramVerticalSwipes(false)).not.toThrow();
   });
 });

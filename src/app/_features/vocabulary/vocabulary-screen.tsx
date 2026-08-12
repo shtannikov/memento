@@ -17,6 +17,7 @@ import {
 } from "./tabs/swipeable-vocabulary-tabs";
 import { VocabularyHeader } from "./vocabulary-header";
 import { CheckIcon, PlayIcon, PlusIcon } from "@/app/_components/icons";
+import { setTelegramVerticalSwipes } from "@/app/_clients/telegram";
 import styles from "./vocabulary-screen.module.css";
 import type {
   NewVocabularyItem,
@@ -72,6 +73,11 @@ export function VocabularyScreen({
     },
     [],
   );
+
+  useEffect(() => {
+    setTelegramVerticalSwipes(false);
+    return () => setTelegramVerticalSwipes(true);
+  }, []);
 
   function showToast(message: string) {
     if (toastTimeoutRef.current) clearTimeout(toastTimeoutRef.current);

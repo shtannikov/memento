@@ -15,6 +15,7 @@ import type { VocabularyItem } from "./vocabulary.types";
 
 afterEach(() => {
   cleanup();
+  globalThis.Telegram = undefined;
   vi.restoreAllMocks();
 });
 
@@ -120,6 +121,41 @@ describe("VocabularyScreen", () => {
 
     fireEvent.blur(search);
     expect(vocabularyScreen).toHaveAttribute("data-search-focused", "false");
+  });
+
+  it("disables Telegram vertical swipes only while the vocabulary is open", () => {
+    const disableVerticalSwipes = vi.fn();
+    const enableVerticalSwipes = vi.fn();
+    globalThis.Telegram = {
+      WebApp: {
+        initData: "signed",
+        ready: vi.fn(),
+        expand: vi.fn(),
+        disableVerticalSwipes,
+        enableVerticalSwipes,
+      },
+    };
+
+    const { unmount } = render(
+      <VocabularyScreen
+        learning={[]}
+        practicing={[]}
+        learned={[]}
+        speakingEnabled
+        onAdd={vi.fn()}
+        onRemove={vi.fn()}
+        onChangeStatus={vi.fn()}
+        onReorderPracticing={vi.fn()}
+        onStartQuiz={vi.fn()}
+      />,
+    );
+
+    expect(disableVerticalSwipes).toHaveBeenCalledOnce();
+    expect(enableVerticalSwipes).not.toHaveBeenCalled();
+
+    unmount();
+    expect(enableVerticalSwipes).toHaveBeenCalledOnce();
+    globalThis.Telegram = undefined;
   });
 
   it("disables the quiz action when Learning has fewer than two phrases", async () => {

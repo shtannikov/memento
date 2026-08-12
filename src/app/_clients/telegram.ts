@@ -2,6 +2,7 @@ export type TelegramWebApp = {
   initData: string;
   ready(): void;
   expand(): void;
+  disableVerticalSwipes?(): void;
   enableVerticalSwipes?(): void;
   requestFullscreen?(): void;
   setBackgroundColor?(color: string): void;
@@ -65,6 +66,15 @@ export function setTelegramColor(color: string): void {
       // Theme setters vary across Telegram client versions.
     }
   }
+}
+
+export function setTelegramVerticalSwipes(enabled: boolean): void {
+  const webApp = globalThis.Telegram?.WebApp;
+  invokeIfSupported(
+    webApp,
+    "7.7",
+    enabled ? webApp?.enableVerticalSwipes : webApp?.disableVerticalSwipes,
+  );
 }
 
 function supports(
