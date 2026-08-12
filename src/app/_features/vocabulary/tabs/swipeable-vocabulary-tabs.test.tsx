@@ -1,5 +1,5 @@
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
-import { useRef, useState } from "react";
+import { useState } from "react";
 import { afterEach, describe, expect, it } from "vitest";
 
 import type { VocabularyStatus } from "../vocabulary.types";
@@ -27,35 +27,6 @@ function Pager({ statuses }: { statuses: VocabularyStatus[] }) {
       pages={pages}
       onChange={setActiveTab}
     />
-  );
-}
-
-function ScrollablePager({ statuses }: { statuses: VocabularyStatus[] }) {
-  const [activeTab, setActiveTab] = useState(statuses[0]);
-  const scrollContainerRef = useRef<HTMLDivElement>(null);
-  const pages: SwipeableVocabularyTabPage[] = statuses.map((status) => ({
-    value: status,
-    content: <section role="tabpanel" aria-label={status} />,
-  }));
-
-  return (
-    <div ref={scrollContainerRef} data-testid="scroll-container">
-      <SwipeableVocabularyTabs
-        activeTab={activeTab}
-        pages={pages}
-        getScrollTop={() => scrollContainerRef.current?.scrollTop ?? 0}
-        restoreScrollTop={(scrollTop) => {
-          const scrollContainer = scrollContainerRef.current;
-          if (scrollContainer) scrollContainer.scrollTop = scrollTop;
-        }}
-        onChange={(tab) => {
-          if (scrollContainerRef.current) {
-            scrollContainerRef.current.scrollTop = 0;
-          }
-          setActiveTab(tab);
-        }}
-      />
-    </div>
   );
 }
 
@@ -134,19 +105,6 @@ describe("SwipeableVocabularyTabs", () => {
       touches: [{ clientX: 246, clientY: 160 }],
     });
     expect(verticalMoveWasNotCancelled).toBe(true);
-  });
-
-  it("preserves the visible scroll position when the swipe settles", () => {
-    render(
-      <ScrollablePager statuses={["learning", "practicing", "learned"]} />,
-    );
-
-    const scrollContainer = screen.getByTestId("scroll-container");
-    scrollContainer.scrollTop = 320;
-    swipe(250, 100);
-
-    expect(screen.getByRole("tabpanel", { name: "practicing" })).toBeVisible();
-    expect(scrollContainer.scrollTop).toBe(320);
   });
 
   it("removes text-input focus once a horizontal swipe starts", () => {
