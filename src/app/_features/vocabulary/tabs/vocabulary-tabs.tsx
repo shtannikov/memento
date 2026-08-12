@@ -8,12 +8,10 @@ export function VocabularyTabs({
   activeTab,
   onChange,
   tabCount,
-  dragging,
 }: {
   activeTab: VocabularyStatus;
   onChange: (tab: VocabularyStatus) => void;
   tabCount: number;
-  dragging: boolean;
 }) {
   return (
     <Tabs.Root
@@ -23,7 +21,7 @@ export function VocabularyTabs({
       <Tabs.List
         className={styles.tabs}
         aria-label="Vocabulary status"
-        data-dragging={dragging}
+        data-dragging="false"
         style={
           {
             "--tab-count": tabCount,
@@ -31,11 +29,28 @@ export function VocabularyTabs({
         }
       >
         <span className={styles.tabIndicator} aria-hidden="true" />
-        <Tabs.Trigger value="learning">Learning</Tabs.Trigger>
+        <Tabs.Trigger
+          value="learning"
+          data-visual-state={activeTab === "learning" ? "active" : "inactive"}
+        >
+          Learning
+        </Tabs.Trigger>
         {tabCount === 3 && (
-          <Tabs.Trigger value="practicing">Practicing</Tabs.Trigger>
+          <Tabs.Trigger
+            value="practicing"
+            data-visual-state={
+              activeTab === "practicing" ? "active" : "inactive"
+            }
+          >
+            Practicing
+          </Tabs.Trigger>
         )}
-        <Tabs.Trigger value="learned">Learned</Tabs.Trigger>
+        <Tabs.Trigger
+          value="learned"
+          data-visual-state={activeTab === "learned" ? "active" : "inactive"}
+        >
+          Learned
+        </Tabs.Trigger>
       </Tabs.List>
     </Tabs.Root>
   );

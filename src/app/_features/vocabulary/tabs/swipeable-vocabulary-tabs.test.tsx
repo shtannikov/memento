@@ -77,6 +77,14 @@ describe("SwipeableVocabularyTabs", () => {
     });
     expect(viewport).toHaveAttribute("data-scrolling", "true");
     expect(screen.getByRole("tabpanel", { name: "learning" })).toBeVisible();
+    expect(screen.getByRole("tab", { name: "Learning" })).toHaveAttribute(
+      "data-visual-state",
+      "inactive",
+    );
+    expect(screen.getByRole("tab", { name: "Practicing" })).toHaveAttribute(
+      "data-visual-state",
+      "active",
+    );
 
     fireEvent(viewport, new Event("scrollend"));
     expect(screen.getByRole("tabpanel", { name: "practicing" })).toBeVisible();

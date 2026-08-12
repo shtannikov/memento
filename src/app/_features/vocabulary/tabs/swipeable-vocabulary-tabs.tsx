@@ -32,14 +32,18 @@ export function SwipeableVocabularyTabs({
 }) {
   const activeIndex = pages.findIndex((page) => page.value === activeTab);
   const [initialIndex] = useState(activeIndex);
-  const [isScrolling, setIsScrolling] = useState(false);
   const pagerRef = useRef<HTMLDivElement>(null);
   const viewportRef = useRef<HTMLDivElement>(null);
   const hasPositionedViewportRef = useRef(false);
 
   const setIndicatorPosition = useCallback(
     (position: number) => {
-      pagerRef.current?.style.setProperty("--tab-position", String(position));
+      const pager = pagerRef.current;
+      pager?.style.setProperty("--tab-position", String(position));
+      const visualIndex = Math.round(position);
+      pager?.querySelectorAll<HTMLElement>("[role='tab']").forEach((tab, index) => {
+        tab.dataset.visualState = index === visualIndex ? "active" : "inactive";
+      });
       onProgress?.(position);
     },
     [onProgress],
@@ -63,7 +67,7 @@ export function SwipeableVocabularyTabs({
     const index = Math.round(pagePosition(viewport));
     const destination = pages[index];
     setIndicatorPosition(index);
-    setIsScrolling(false);
+    setScrolling(false, viewport);
     if (destination && destination.value !== activeTab) {
       onChange(destination.value);
     }
@@ -72,7 +76,7 @@ export function SwipeableVocabularyTabs({
   function handleScroll(event: UIEvent<HTMLDivElement>) {
     const viewport = event.currentTarget;
     setIndicatorPosition(pagePosition(viewport));
-    setIsScrolling(true);
+    setScrolling(true, viewport);
 
     const activeElement = document.activeElement;
     if (
@@ -82,6 +86,12 @@ export function SwipeableVocabularyTabs({
     ) {
       activeElement.blur();
     }
+  }
+
+  function setScrolling(scrolling: boolean, viewport: HTMLDivElement) {
+    viewport.dataset.scrolling = String(scrolling);
+    const tabList = pagerRef.current?.querySelector<HTMLElement>("[role='tablist']");
+    if (tabList) tabList.dataset.dragging = String(scrolling);
   }
 
   function handlePageScroll(event: UIEvent<HTMLDivElement>) {
@@ -124,12 +134,11 @@ export function SwipeableVocabularyTabs({
         activeTab={activeTab}
         onChange={onChange}
         tabCount={pages.length}
-        dragging={isScrolling}
       />
       <div
         ref={viewportRef}
         className={styles.tabViewport}
-        data-scrolling={isScrolling}
+        data-scrolling="false"
         data-testid="tab-viewport"
         onScroll={handleScroll}
         onScrollEnd={(event) => settleScroll(event.currentTarget)}

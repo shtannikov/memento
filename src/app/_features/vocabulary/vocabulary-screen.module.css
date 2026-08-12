@@ -168,7 +168,7 @@
     box-shadow 160ms ease;
 }
 
-.tabs button[data-state="active"] {
+.tabs button[data-visual-state="active"] {
   color: #0f0f23;
 }
 
