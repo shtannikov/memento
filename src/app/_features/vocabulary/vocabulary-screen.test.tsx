@@ -123,7 +123,7 @@ describe("VocabularyScreen", () => {
     expect(vocabularyScreen).toHaveAttribute("data-search-focused", "false");
   });
 
-  it("disables Telegram vertical swipes only while the vocabulary is open", () => {
+  it("gives list gestures to the app and header gestures to Telegram", () => {
     const disableVerticalSwipes = vi.fn();
     const enableVerticalSwipes = vi.fn();
     globalThis.Telegram = {
@@ -150,11 +150,25 @@ describe("VocabularyScreen", () => {
       />,
     );
 
+    expect(disableVerticalSwipes).not.toHaveBeenCalled();
+    expect(enableVerticalSwipes).not.toHaveBeenCalled();
+
+    const header = screen.getByRole("banner");
+    fireEvent.touchStart(header);
+    fireEvent.touchEnd(header, { touches: [] });
+    expect(disableVerticalSwipes).not.toHaveBeenCalled();
+    expect(enableVerticalSwipes).not.toHaveBeenCalled();
+
+    const viewport = screen.getByTestId("tab-viewport");
+    fireEvent.touchStart(viewport, { touches: [{ identifier: 1 }] });
     expect(disableVerticalSwipes).toHaveBeenCalledOnce();
     expect(enableVerticalSwipes).not.toHaveBeenCalled();
 
-    unmount();
+    fireEvent.touchEnd(viewport, { touches: [] });
     expect(enableVerticalSwipes).toHaveBeenCalledOnce();
+
+    unmount();
+    expect(enableVerticalSwipes).toHaveBeenCalledTimes(2);
     globalThis.Telegram = undefined;
   });
 

@@ -208,9 +208,11 @@
   overflow-y: auto;
   background: #ffffff;
   pointer-events: none;
-  overscroll-behavior: none;
+  overscroll-behavior-x: none;
+  overscroll-behavior-y: contain;
   scroll-snap-align: start;
   scroll-snap-stop: always;
+  -webkit-overflow-scrolling: touch;
 }
 
 .tabPageActive {

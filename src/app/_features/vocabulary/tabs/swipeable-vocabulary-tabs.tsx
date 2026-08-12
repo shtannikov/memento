@@ -5,6 +5,7 @@ import {
   useState,
   type CSSProperties,
   type ReactNode,
+  type TouchEvent,
   type UIEvent,
 } from "react";
 
@@ -24,11 +25,13 @@ export function SwipeableVocabularyTabs({
   pages,
   onChange,
   onProgress,
+  onListGestureActiveChange,
 }: {
   activeTab: VocabularyStatus;
   pages: readonly SwipeableVocabularyTabPage[];
   onChange: (tab: VocabularyStatus) => void;
   onProgress?: (position: number) => void;
+  onListGestureActiveChange?: (active: boolean) => void;
 }) {
   const activeIndex = pages.findIndex((page) => page.value === activeTab);
   const [initialIndex] = useState(activeIndex);
@@ -100,6 +103,10 @@ export function SwipeableVocabularyTabs({
     );
   }
 
+  function handleListGestureEnd(event: TouchEvent<HTMLDivElement>) {
+    if (event.touches.length === 0) onListGestureActiveChange?.(false);
+  }
+
   useEffect(() => {
     const viewport = viewportRef.current;
     if (!viewport || activeIndex < 0) return;
@@ -142,6 +149,9 @@ export function SwipeableVocabularyTabs({
         data-testid="tab-viewport"
         onScroll={handleScroll}
         onScrollEnd={(event) => settleScroll(event.currentTarget)}
+        onTouchStartCapture={() => onListGestureActiveChange?.(true)}
+        onTouchEndCapture={handleListGestureEnd}
+        onTouchCancelCapture={handleListGestureEnd}
       >
         {pages.map((page) => {
           const isActive = page.value === activeTab;

@@ -75,8 +75,11 @@ export function VocabularyScreen({
   );
 
   useEffect(() => {
-    setTelegramVerticalSwipes(false);
     return () => setTelegramVerticalSwipes(true);
+  }, []);
+
+  const updateListGesture = useCallback((active: boolean) => {
+    setTelegramVerticalSwipes(!active);
   }, []);
 
   function showToast(message: string) {
@@ -232,6 +235,7 @@ export function VocabularyScreen({
             pages={pages}
             onChange={changeTab}
             onProgress={updateLearningActions}
+            onListGestureActiveChange={updateListGesture}
           />
         </div>
 

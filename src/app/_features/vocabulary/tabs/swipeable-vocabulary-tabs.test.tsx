@@ -15,7 +15,13 @@ afterEach(() => {
   cleanup();
 });
 
-function Pager({ statuses }: { statuses: VocabularyStatus[] }) {
+function Pager({
+  statuses,
+  onListGestureActiveChange,
+}: {
+  statuses: VocabularyStatus[];
+  onListGestureActiveChange?: (active: boolean) => void;
+}) {
   const [activeTab, setActiveTab] = useState(statuses[0]);
   const pages: SwipeableVocabularyTabPage[] = statuses.map((status) => ({
     value: status,
@@ -31,6 +37,7 @@ function Pager({ statuses }: { statuses: VocabularyStatus[] }) {
       activeTab={activeTab}
       pages={pages}
       onChange={setActiveTab}
+      onListGestureActiveChange={onListGestureActiveChange}
     />
   );
 }
@@ -132,6 +139,25 @@ describe("SwipeableVocabularyTabs", () => {
     fireEvent.scroll(viewport);
 
     expect(input).not.toHaveFocus();
+  });
+
+  it("keeps Telegram swipes disabled for the complete list touch gesture", () => {
+    const onListGestureActiveChange = vi.fn();
+    render(
+      <Pager
+        statuses={["learning", "practicing", "learned"]}
+        onListGestureActiveChange={onListGestureActiveChange}
+      />,
+    );
+
+    const viewport = getViewport();
+    fireEvent.touchStart(viewport, { touches: [{ identifier: 1 }] });
+    fireEvent.touchEnd(viewport, { touches: [{ identifier: 2 }] });
+    expect(onListGestureActiveChange).toHaveBeenCalledTimes(1);
+    expect(onListGestureActiveChange).toHaveBeenLastCalledWith(true);
+
+    fireEvent.touchCancel(viewport, { touches: [] });
+    expect(onListGestureActiveChange).toHaveBeenLastCalledWith(false);
   });
 
   it("keeps the current tab when native snapping returns to its page", () => {
