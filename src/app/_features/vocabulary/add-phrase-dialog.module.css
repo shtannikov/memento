@@ -1,26 +1,21 @@
 .overlay {
   position: absolute;
   z-index: 30;
-  top: 0;
+  top: -100px;
   left: 0;
   width: 100%;
-  height: var(--dialog-background-height, 100dvh);
+  height: calc(var(--dialog-background-height, 100dvh) + 200px);
   background: var(--dialog-backdrop);
   animation: fade-in 160ms ease both;
 }
 
 .addDialog {
-  --dialog-viewport-top: 0px;
-  --dialog-viewport-center-x: 50vw;
-  --dialog-viewport-center-y: 50dvh;
-  --dialog-viewport-height: 100dvh;
-
   position: absolute;
   z-index: 31;
-  left: var(--dialog-viewport-center-x);
-  top: var(--dialog-viewport-center-y);
+  left: 50%;
+  top: 50dvh;
   width: min(calc(100% - 40px), 384px);
-  max-height: calc(var(--dialog-viewport-height) - 40px);
+  max-height: calc(100dvh - 40px);
   padding: 24px;
   border-radius: 24px;
   background: white;
@@ -171,12 +166,8 @@
       calc(env(safe-area-inset-top, 0px) + 44px)
     );
 
-    top: calc(
-      var(--dialog-viewport-top) + var(--dialog-top-clearance)
-    );
-    max-height: calc(
-      var(--dialog-viewport-height) - var(--dialog-top-clearance) - 20px
-    );
+    top: var(--dialog-top-clearance);
+    max-height: calc(100dvh - var(--dialog-top-clearance) - 20px);
     transform: translateX(-50%);
     animation-name: dialog-in-mobile;
   }

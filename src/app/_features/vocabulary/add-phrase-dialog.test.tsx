@@ -184,13 +184,12 @@ describe("AddPhraseDialog", () => {
       "background: var(--dialog-backdrop);",
     );
     expect(dialogStyles).toContain(
-      "height: var(--dialog-background-height, 100dvh);",
+      "height: calc(var(--dialog-background-height, 100dvh) + 200px);",
     );
     expect(dialogStyles).not.toContain("backdrop-filter:");
     expect(dialogStyles).toContain(".overlay {\n  position: absolute;");
-    expect(dialogStyles).toContain(
-      ".addDialog {\n  --dialog-viewport-top: 0px;",
-    );
+    expect(dialogStyles).toContain("top: -100px;");
+    expect(dialogStyles).toContain(".addDialog {\n  position: absolute;");
     expect(dialogStyles).toContain("\n  position: absolute;\n  z-index: 31;");
   });
 
@@ -208,7 +207,7 @@ describe("AddPhraseDialog", () => {
       "var(--tg-content-safe-area-inset-top, 0px) + 44px",
     );
     expect(dialogStyles).toContain(
-      "var(--dialog-viewport-top) + var(--dialog-top-clearance)",
+      "top: var(--dialog-top-clearance);",
     );
     expect(dialogStyles).toContain("animation-name: dialog-in-mobile;");
   });
@@ -231,11 +230,10 @@ describe("AddPhraseDialog", () => {
     expect(pageStyles).toContain(
       ":global(html.dialog-open) .mobileShell {\n  filter: blur(4px);",
     );
-    expect(pageStyles).toContain("transform: scale(1.03);");
-    expect(pageStyles).toContain("transform-origin: center;");
+    expect(pageStyles).not.toContain("transform: scale(1.03);");
   });
 
-  it("clips the app shell and matches Telegram chrome above the iOS keyboard", async () => {
+  it("prevents focus changes from panning the iOS visual viewport", async () => {
     const visualViewport = Object.assign(new EventTarget(), {
       height: 520,
       width: 390,
@@ -260,6 +258,10 @@ describe("AddPhraseDialog", () => {
       configurable: true,
       value: 844,
     });
+    const addViewportListener = vi.spyOn(
+      visualViewport,
+      "addEventListener",
+    );
     const setBackgroundColor = vi.fn();
     const setHeaderColor = vi.fn();
     const setBottomBarColor = vi.fn();
@@ -283,6 +285,7 @@ describe("AddPhraseDialog", () => {
     );
     const dialog = screen.getByRole("dialog");
     const overlay = dialog.previousElementSibling;
+    const definition = screen.getByLabelText("Definition");
 
     await waitFor(() => {
       expect(overlay).toHaveStyle({ pointerEvents: "auto" });
@@ -290,12 +293,6 @@ describe("AddPhraseDialog", () => {
       expect((overlay as HTMLElement).style.left).toBe("");
       expect((overlay as HTMLElement).style.width).toBe("");
       expect((overlay as HTMLElement).style.height).toBe("");
-      expect(dialog).toHaveStyle({
-        "--dialog-viewport-top": "8px",
-        "--dialog-viewport-center-x": "195px",
-        "--dialog-viewport-center-y": "268px",
-        "--dialog-viewport-height": "520px",
-      });
       expect(dialog.style.top).toBe("");
       expect(document.documentElement).not.toHaveClass("keyboard-open");
       expect(document.documentElement).toHaveClass("dialog-open");
@@ -320,17 +317,14 @@ describe("AddPhraseDialog", () => {
       );
     });
     expect(document.body).toHaveStyle({ overflow: "hidden" });
+    expect(addViewportListener).not.toHaveBeenCalled();
 
-    visualViewport.height = 480;
-    visualViewport.offsetTop = 12;
-    visualViewport.pageTop = 42;
-    visualViewport.dispatchEvent(new Event("resize"));
-    expect((overlay as HTMLElement).style.height).toBe("");
-    expect(dialog).toHaveStyle({
-      "--dialog-viewport-top": "42px",
-      "--dialog-viewport-center-y": "282px",
-      "--dialog-viewport-height": "480px",
-    });
+    const focus = vi.spyOn(definition, "focus");
+    expect(fireEvent.pointerDown(definition)).toBe(false);
+    expect(focus).toHaveBeenCalledWith({ preventScroll: true });
+    expect(definition).toHaveFocus();
+    expect(dialog.style.getPropertyValue("--dialog-viewport-top")).toBe("");
+    expect(dialog.style.getPropertyValue("--dialog-viewport-height")).toBe("");
     expect(document.documentElement).not.toHaveClass("keyboard-open");
     expect(
       document.documentElement.style.getPropertyValue(

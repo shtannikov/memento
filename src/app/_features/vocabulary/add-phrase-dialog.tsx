@@ -1,6 +1,11 @@
 import * as Dialog from "@radix-ui/react-dialog";
 import { X } from "lucide-react";
-import { FormEvent, useEffect, useRef, useState } from "react";
+import {
+  FormEvent,
+  PointerEvent as ReactPointerEvent,
+  useEffect,
+  useState,
+} from "react";
 
 import styles from "./add-phrase-dialog.module.css";
 import {
@@ -31,7 +36,6 @@ export function AddPhraseDialog({
 }: AddPhraseDialogProps) {
   const [term, setTerm] = useState("");
   const [definition, setDefinition] = useState("");
-  const addDialogRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!open) return;
@@ -46,48 +50,13 @@ export function AddPhraseDialog({
     root.classList.add("dialog-open");
     setTelegramColor(DIALOG_BACKDROP_SOLID);
 
-    const viewport = globalThis.visualViewport;
-    const initialViewportTop = viewport?.pageTop ?? viewport?.offsetTop ?? 0;
-    const backgroundHeight = Math.max(
-      globalThis.innerHeight,
-      initialViewportTop + (viewport?.height ?? 0),
-    );
+    const backgroundHeight = globalThis.innerHeight;
     root.style.setProperty(
       "--dialog-background-height",
       `${backgroundHeight}px`,
     );
 
-    function syncVisualViewport() {
-      const viewportTop = viewport?.pageTop ?? viewport?.offsetTop ?? 0;
-      const viewportLeft = viewport?.pageLeft ?? viewport?.offsetLeft ?? 0;
-      const width = viewport?.width ?? globalThis.innerWidth;
-      const height = viewport?.height ?? globalThis.innerHeight;
-      const dialog = addDialogRef.current;
-
-      if (dialog) {
-        dialog.style.setProperty("--dialog-viewport-top", `${viewportTop}px`);
-        dialog.style.setProperty(
-          "--dialog-viewport-center-x",
-          `${viewportLeft + width / 2}px`,
-        );
-        dialog.style.setProperty(
-          "--dialog-viewport-center-y",
-          `${viewportTop + height / 2}px`,
-        );
-        dialog.style.setProperty("--dialog-viewport-height", `${height}px`);
-      }
-    }
-
-    const initialAnimationFrame = requestAnimationFrame(syncVisualViewport);
-    viewport?.addEventListener("resize", syncVisualViewport);
-    viewport?.addEventListener("scroll", syncVisualViewport);
-    globalThis.addEventListener("resize", syncVisualViewport);
-
     return () => {
-      cancelAnimationFrame(initialAnimationFrame);
-      viewport?.removeEventListener("resize", syncVisualViewport);
-      viewport?.removeEventListener("scroll", syncVisualViewport);
-      globalThis.removeEventListener("resize", syncVisualViewport);
       document.body.style.overflow = previousBodyOverflow;
       if (previousDialogBackgroundHeight) {
         root.style.setProperty(
@@ -101,6 +70,15 @@ export function AddPhraseDialog({
       setTelegramColor(APP_BACKGROUND);
     };
   }, [open]);
+
+  function focusWithoutViewportPan(
+    event: ReactPointerEvent<HTMLInputElement>,
+  ) {
+    if (document.activeElement === event.currentTarget) return;
+
+    event.preventDefault();
+    event.currentTarget.focus({ preventScroll: true });
+  }
 
   function closeAddDialog() {
     setTerm("");
@@ -126,7 +104,6 @@ export function AddPhraseDialog({
       <Dialog.Portal>
         <Dialog.Overlay className={styles.overlay} />
         <Dialog.Content
-          ref={addDialogRef}
           className={styles.addDialog}
           aria-describedby={undefined}
           onEscapeKeyDown={(event) => event.preventDefault()}
@@ -154,6 +131,7 @@ export function AddPhraseDialog({
                 id="add-phrase-term"
                 aria-describedby="add-phrase-term-count"
                 autoFocus
+                onPointerDown={focusWithoutViewportPan}
                 value={term}
                 onChange={(event) => setTerm(event.target.value)}
                 placeholder="e.g. to be in charge of sth"
@@ -178,6 +156,7 @@ export function AddPhraseDialog({
               <input
                 id="add-phrase-definition"
                 aria-describedby="add-phrase-definition-count"
+                onPointerDown={focusWithoutViewportPan}
                 value={definition}
                 onChange={(event) => setDefinition(event.target.value)}
                 placeholder="e.g. to have responsibility for sth"
