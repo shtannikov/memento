@@ -21,6 +21,14 @@ import type { VocabularyItem } from "./vocabulary.types";
 
 const ACTIVE_PRACTICE_LIMIT = 3;
 
+export function canAutoScrollPracticingQueue(element: Element): boolean {
+  return element.classList.contains(styles.tabPage);
+}
+
+const PRACTICING_AUTO_SCROLL = {
+  canScroll: canAutoScrollPracticingQueue,
+};
+
 export function reorderPracticingItems(
   items: VocabularyItem[],
   activeId: string | number,
@@ -70,6 +78,7 @@ export function PracticingQueue({
     <DndContext
       sensors={sensors}
       collisionDetection={closestCenter}
+      autoScroll={PRACTICING_AUTO_SCROLL}
       onDragEnd={handleDragEnd}
     >
       <SortableContext
