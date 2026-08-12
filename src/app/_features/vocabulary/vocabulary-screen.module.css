@@ -299,6 +299,7 @@
   width: 100%;
   min-width: 0;
   padding: 11px 0;
+  appearance: none;
   color: #0f0f23;
   border: 0;
   outline: 0;
@@ -306,6 +307,7 @@
   font: inherit;
   font-size: 14px;
   line-height: 20px;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .search input::placeholder {
@@ -583,7 +585,7 @@
   will-change: opacity, transform;
 }
 
-:global(html.keyboard-open) .screen[data-search-focused="true"] .floatingActions {
+.screen[data-search-focused="true"] .floatingActions {
   opacity: 0;
   transform: translate3d(0, 16px, 0) scale(0.96);
   transition:
@@ -621,9 +623,7 @@
   pointer-events: auto;
 }
 
-:global(html.keyboard-open)
-  .screen[data-search-focused="true"]
-  .floatingButton {
+.screen[data-search-focused="true"] .floatingButton {
   pointer-events: none;
 }
 
