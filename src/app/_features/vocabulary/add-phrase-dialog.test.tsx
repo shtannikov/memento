@@ -185,6 +185,25 @@ describe("AddPhraseDialog", () => {
     );
   });
 
+  it("anchors the mobile dialog below Telegram chrome", () => {
+    const dialogStyles = readFileSync(
+      join(
+        process.cwd(),
+        "src/app/_features/vocabulary/add-phrase-dialog.module.css",
+      ),
+      "utf8",
+    );
+
+    expect(dialogStyles).toContain("--dialog-top-clearance: max(");
+    expect(dialogStyles).toContain(
+      "var(--tg-content-safe-area-inset-top, 0px) + 44px",
+    );
+    expect(dialogStyles).toContain(
+      "var(--dialog-viewport-top) + var(--dialog-top-clearance)",
+    );
+    expect(dialogStyles).toContain("animation-name: dialog-in-mobile;");
+  });
+
   it("clips the app shell and matches Telegram chrome above the iOS keyboard", async () => {
     const visualViewport = Object.assign(new EventTarget(), {
       height: 520,
@@ -238,6 +257,13 @@ describe("AddPhraseDialog", () => {
         width: "390px",
         height: "520px",
       });
+      expect(dialog).toHaveStyle({
+        "--dialog-viewport-top": "8px",
+        "--dialog-viewport-center-x": "195px",
+        "--dialog-viewport-center-y": "268px",
+        "--dialog-viewport-height": "520px",
+      });
+      expect(dialog.style.top).toBe("");
       expect(document.documentElement).toHaveClass("keyboard-open");
       expect(document.documentElement).toHaveClass("dialog-open");
       expect(
@@ -261,6 +287,11 @@ describe("AddPhraseDialog", () => {
     visualViewport.dispatchEvent(new Event("resize"));
     await waitFor(() => {
       expect(overlay).toHaveStyle({ height: "480px" });
+      expect(dialog).toHaveStyle({
+        "--dialog-viewport-top": "8px",
+        "--dialog-viewport-center-y": "248px",
+        "--dialog-viewport-height": "480px",
+      });
       expect(
         document.documentElement.style.getPropertyValue(
           "--visual-viewport-bottom",

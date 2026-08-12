@@ -75,9 +75,16 @@ export function AddPhraseDialog({
         }
 
         if (dialog) {
-          dialog.style.top = `${offsetTop + height / 2}px`;
-          dialog.style.left = `${offsetLeft + width / 2}px`;
-          dialog.style.maxHeight = `${Math.max(0, height - 40)}px`;
+          dialog.style.setProperty("--dialog-viewport-top", `${offsetTop}px`);
+          dialog.style.setProperty(
+            "--dialog-viewport-center-x",
+            `${offsetLeft + width / 2}px`,
+          );
+          dialog.style.setProperty(
+            "--dialog-viewport-center-y",
+            `${offsetTop + height / 2}px`,
+          );
+          dialog.style.setProperty("--dialog-viewport-height", `${height}px`);
         }
 
         root.style.setProperty(

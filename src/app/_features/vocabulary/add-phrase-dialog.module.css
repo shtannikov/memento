@@ -11,11 +11,17 @@
 }
 
 .addDialog {
+  --dialog-viewport-top: 0px;
+  --dialog-viewport-center-x: 50vw;
+  --dialog-viewport-center-y: 50dvh;
+  --dialog-viewport-height: 100dvh;
+
   position: fixed;
   z-index: 31;
-  left: 50%;
-  top: 50%;
+  left: var(--dialog-viewport-center-x);
+  top: var(--dialog-viewport-center-y);
   width: min(calc(100% - 40px), 384px);
+  max-height: calc(var(--dialog-viewport-height) - 40px);
   padding: 24px;
   border-radius: 24px;
   background: white;
@@ -158,6 +164,24 @@
 }
 
 @media (max-width: 600px) {
+  .addDialog {
+    --dialog-top-clearance: max(
+      88px,
+      calc(var(--tg-content-safe-area-inset-top, 0px) + 44px),
+      calc(var(--tg-safe-area-inset-top, 0px) + 44px),
+      calc(env(safe-area-inset-top, 0px) + 44px)
+    );
+
+    top: calc(
+      var(--dialog-viewport-top) + var(--dialog-top-clearance)
+    );
+    max-height: calc(
+      var(--dialog-viewport-height) - var(--dialog-top-clearance) - 20px
+    );
+    transform: translateX(-50%);
+    animation-name: dialog-in-mobile;
+  }
+
   .form input {
     font-size: 1rem;
   }
@@ -173,5 +197,12 @@
   from {
     opacity: 0;
     transform: translate(-50%, calc(-50% + 12px)) scale(0.98);
+  }
+}
+
+@keyframes dialog-in-mobile {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 12px) scale(0.98);
   }
 }
