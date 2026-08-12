@@ -24,3 +24,13 @@
   min-height: 0;
   overflow: hidden;
 }
+
+:global(html.dialog-open) .mobileShell,
+:global(html.dialog-open) .canvas {
+  height: var(--dialog-background-height, 100dvh);
+  min-height: var(--dialog-background-height, 100dvh);
+}
+
+:global(html.dialog-open) .mobileShell {
+  filter: blur(4px);
+}

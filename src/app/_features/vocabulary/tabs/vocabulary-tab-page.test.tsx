@@ -51,6 +51,7 @@ describe("VocabularyTabPage", () => {
     const user = userEvent.setup();
     render(<SearchablePage />);
     const search = screen.getByRole("searchbox", { name: "Search phrases" });
+    expect(screen.getByTestId("search-dock")).toContainElement(search);
 
     expect(search).toHaveAttribute("autocorrect", "off");
     expect(search).toHaveAttribute("autocapitalize", "none");

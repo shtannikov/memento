@@ -1,4 +1,10 @@
-import { useEffect, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type FocusEvent,
+} from "react";
 import { createPortal } from "react-dom";
 
 import { AddPhraseDialog } from "./add-phrase-dialog";
@@ -11,6 +17,7 @@ import {
 } from "./tabs/swipeable-vocabulary-tabs";
 import { VocabularyHeader } from "./vocabulary-header";
 import { CheckIcon, PlayIcon, PlusIcon } from "@/app/_components/icons";
+import { setTelegramVerticalSwipes } from "@/app/_clients/telegram";
 import styles from "./vocabulary-screen.module.css";
 import type {
   NewVocabularyItem,
@@ -57,6 +64,7 @@ export function VocabularyScreen({
   const [toast, setToast] = useState<{ id: number; message: string } | null>(
     null,
   );
+  const screenRef = useRef<HTMLDivElement>(null);
   const toastTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(
@@ -65,6 +73,14 @@ export function VocabularyScreen({
     },
     [],
   );
+
+  useEffect(() => {
+    return () => setTelegramVerticalSwipes(true);
+  }, []);
+
+  const updateListGesture = useCallback((active: boolean) => {
+    setTelegramVerticalSwipes(!active);
+  }, []);
 
   function showToast(message: string) {
     if (toastTimeoutRef.current) clearTimeout(toastTimeoutRef.current);
@@ -109,6 +125,31 @@ export function VocabularyScreen({
   function changeTab(tab: VocabularyStatus) {
     setActiveTab(tab);
     setSearchQuery("");
+  }
+
+  const updateLearningActions = useCallback((position: number) => {
+    const screen = screenRef.current;
+    if (!screen) return;
+
+    const progress = Math.max(0, Math.min(1, 1 - position));
+    screen.style.setProperty("--learning-actions-opacity", String(progress));
+    screen.style.setProperty(
+      "--learning-actions-scale",
+      String(0.96 + progress * 0.04),
+    );
+    screen.style.setProperty(
+      "--learning-actions-y",
+      `${Math.round((1 - progress) * 16)}px`,
+    );
+    screen.dataset.learningActionsVisible = String(progress >= 0.5);
+  }, []);
+
+  function updateSearchFocus(event: FocusEvent<HTMLDivElement>) {
+    const screen = screenRef.current;
+    if (!screen || !(event.target instanceof HTMLInputElement)) return;
+    if (event.target.type !== "search") return;
+
+    screen.dataset.searchFocused = String(event.type === "focus");
   }
 
   const disabled = mutating || reordering;
@@ -164,7 +205,15 @@ export function VocabularyScreen({
 
   return (
     <>
-      <div className={styles.screen}>
+      <div
+        ref={screenRef}
+        className={styles.screen}
+        data-learning-actions-visible={activeTab === "learning"}
+        data-search-focused="false"
+        data-testid="vocabulary-screen"
+        onFocusCapture={updateSearchFocus}
+        onBlurCapture={updateSearchFocus}
+      >
         <VocabularyHeader
           learningCount={learning.length}
           practicingCount={practicing.length}
@@ -185,31 +234,38 @@ export function VocabularyScreen({
             activeTab={activeTab}
             pages={pages}
             onChange={changeTab}
+            onProgress={updateLearningActions}
+            onListGestureActiveChange={updateListGesture}
           />
         </div>
 
-        {activeTab === "learning" && (
-          <div className={styles.floatingActions}>
-            <button
-              className={styles.floatingButton}
-              disabled={mutating}
-              aria-busy={mutating}
-              onClick={() => setAddOpen(true)}
-            >
-              <PlusIcon />
-              Add phrase
-            </button>
-            <button
-              className={styles.floatingButton}
-              disabled={mutating || learning.length < 2}
-              aria-busy={mutating}
-              onClick={onStartQuiz}
-            >
-              <PlayIcon />
-              Start quiz
-            </button>
-          </div>
-        )}
+        <div
+          className={`${styles.floatingActions} ${
+            addOpen ? styles.floatingActionsDialogOpen : ""
+          }`}
+          data-testid="learning-actions"
+          inert={activeTab !== "learning" || addOpen}
+          aria-hidden={activeTab !== "learning" || addOpen}
+        >
+          <button
+            className={styles.floatingButton}
+            disabled={mutating}
+            aria-busy={mutating}
+            onClick={() => setAddOpen(true)}
+          >
+            <PlusIcon />
+            Add phrase
+          </button>
+          <button
+            className={styles.floatingButton}
+            disabled={mutating || learning.length < 2}
+            aria-busy={mutating}
+            onClick={onStartQuiz}
+          >
+            <PlayIcon />
+            Start quiz
+          </button>
+        </div>
       </div>
 
       <AddPhraseDialog

@@ -7,6 +7,7 @@ import { QuizRound } from "@/app/_features/quiz/quiz-round";
 import { useVocabulary } from "@/app/_features/vocabulary/use-vocabulary";
 import { VocabularyScreen } from "@/app/_features/vocabulary/vocabulary-screen";
 import { initializeTelegram } from "@/app/_clients/telegram";
+import { isVirtualKeyboardOpen } from "@/app/_clients/viewport";
 import type { AppId } from "@/app/app-config";
 import { StatusScreen } from "@/app/_components/status-screen";
 
@@ -48,26 +49,49 @@ export function MementoApp({
   useEffect(() => {
     const viewport = globalThis.visualViewport;
     const root = document.documentElement;
-    let baselineHeight = Math.max(
-      globalThis.innerHeight,
-      (viewport?.offsetTop ?? 0) + (viewport?.height ?? 0),
-    );
+    let baselineHeight = viewport?.height ?? globalThis.innerHeight;
 
     function syncViewport() {
       const height = viewport?.height ?? globalThis.innerHeight;
       const visibleBottom = (viewport?.offsetTop ?? 0) + height;
-      baselineHeight = Math.max(baselineHeight, visibleBottom);
+      const activeElement = document.activeElement;
+      const editableFocused =
+        activeElement instanceof HTMLElement &&
+        activeElement.matches("input, textarea, [contenteditable='true']");
+      const keyboardWasConstrained = root.classList.contains(
+        "keyboard-actions-hidden",
+      );
+      const keyboardConstrained = isVirtualKeyboardOpen({
+        baselineHeight,
+        viewportHeight: height,
+        editableFocused,
+        keyboardWasOpen: keyboardWasConstrained,
+      });
+
+      if (!editableFocused && !keyboardConstrained) baselineHeight = height;
+      else if (!keyboardConstrained) {
+        baselineHeight = Math.max(baselineHeight, height);
+      }
       root.style.setProperty("--visual-viewport-height", `${height}px`);
       root.style.setProperty("--visual-viewport-bottom", `${visibleBottom}px`);
-      root.classList.toggle("keyboard-open", baselineHeight - visibleBottom >= 80);
+      root.classList.toggle(
+        "keyboard-open",
+        keyboardConstrained && editableFocused,
+      );
+      root.classList.toggle("keyboard-actions-hidden", keyboardConstrained);
     }
     syncViewport();
     viewport?.addEventListener("resize", syncViewport);
     viewport?.addEventListener("scroll", syncViewport);
+    document.addEventListener("focusin", syncViewport);
+    document.addEventListener("focusout", syncViewport);
     return () => {
       viewport?.removeEventListener("resize", syncViewport);
       viewport?.removeEventListener("scroll", syncViewport);
+      document.removeEventListener("focusin", syncViewport);
+      document.removeEventListener("focusout", syncViewport);
       root.classList.remove("keyboard-open");
+      root.classList.remove("keyboard-actions-hidden");
       root.style.removeProperty("--visual-viewport-height");
       root.style.removeProperty("--visual-viewport-bottom");
     };

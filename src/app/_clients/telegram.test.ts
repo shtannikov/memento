@@ -4,6 +4,7 @@ import {
   DIALOG_BACKDROP_SOLID,
   initializeTelegram,
   setTelegramColor,
+  setTelegramVerticalSwipes,
 } from "./telegram";
 
 afterEach(() => {
@@ -11,29 +12,29 @@ afterEach(() => {
 });
 
 describe("initializeTelegram", () => {
-  it("readies, expands, disables vertical swipes, and requests fullscreen", () => {
+  it("readies, expands, enables vertical swipes, and requests fullscreen", () => {
     const ready = vi.fn();
     const expand = vi.fn();
-    const disableVerticalSwipes = vi.fn();
+    const enableVerticalSwipes = vi.fn();
     const requestFullscreen = vi.fn();
     globalThis.Telegram = {
       WebApp: {
         initData: "signed",
         ready,
         expand,
-        disableVerticalSwipes,
+        enableVerticalSwipes,
         requestFullscreen,
       },
     };
     expect(initializeTelegram("Memento")).toBe("signed");
     expect(ready).toHaveBeenCalledOnce();
     expect(expand).toHaveBeenCalledOnce();
-    expect(disableVerticalSwipes).toHaveBeenCalledOnce();
+    expect(enableVerticalSwipes).toHaveBeenCalledOnce();
     expect(requestFullscreen).toHaveBeenCalledOnce();
   });
 
   it("keeps older Telegram clients usable", () => {
-    const disableVerticalSwipes = vi.fn();
+    const enableVerticalSwipes = vi.fn();
     const requestFullscreen = vi.fn();
     const isVersionAtLeast = vi.fn(() => false);
     globalThis.Telegram = {
@@ -41,7 +42,7 @@ describe("initializeTelegram", () => {
         initData: "signed",
         ready: vi.fn(),
         expand: vi.fn(),
-        disableVerticalSwipes,
+        enableVerticalSwipes,
         requestFullscreen,
         isVersionAtLeast,
       },
@@ -50,7 +51,7 @@ describe("initializeTelegram", () => {
     expect(initializeTelegram("Memento")).toBe("signed");
     expect(isVersionAtLeast).toHaveBeenCalledWith("7.7");
     expect(isVersionAtLeast).toHaveBeenCalledWith("8.0");
-    expect(disableVerticalSwipes).not.toHaveBeenCalled();
+    expect(enableVerticalSwipes).not.toHaveBeenCalled();
     expect(requestFullscreen).not.toHaveBeenCalled();
   });
 
@@ -60,7 +61,7 @@ describe("initializeTelegram", () => {
         initData: "signed",
         ready: vi.fn(),
         expand: vi.fn(),
-        disableVerticalSwipes: vi.fn(() => {
+        enableVerticalSwipes: vi.fn(() => {
           throw new Error("unsupported");
         }),
         requestFullscreen: vi.fn(() => {
@@ -112,5 +113,43 @@ describe("initializeTelegram", () => {
       DIALOG_BACKDROP_SOLID,
     );
     themeColor.remove();
+  });
+
+  it("controls Telegram vertical swipes when supported", () => {
+    const disableVerticalSwipes = vi.fn();
+    const enableVerticalSwipes = vi.fn();
+    globalThis.Telegram = {
+      WebApp: {
+        initData: "signed",
+        ready: vi.fn(),
+        expand: vi.fn(),
+        disableVerticalSwipes,
+        enableVerticalSwipes,
+      },
+    };
+
+    setTelegramVerticalSwipes(false);
+    expect(disableVerticalSwipes).toHaveBeenCalledOnce();
+    expect(enableVerticalSwipes).not.toHaveBeenCalled();
+
+    setTelegramVerticalSwipes(true);
+    expect(enableVerticalSwipes).toHaveBeenCalledOnce();
+  });
+
+  it("ignores unavailable or failing vertical swipe controls", () => {
+    globalThis.Telegram = {
+      WebApp: {
+        initData: "signed",
+        ready: vi.fn(),
+        expand: vi.fn(),
+        disableVerticalSwipes: vi.fn(() => {
+          throw new Error("unsupported");
+        }),
+        isVersionAtLeast: vi.fn(() => false),
+      },
+    };
+
+    expect(() => setTelegramVerticalSwipes(true)).not.toThrow();
+    expect(() => setTelegramVerticalSwipes(false)).not.toThrow();
   });
 });

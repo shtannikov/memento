@@ -1,6 +1,11 @@
 import * as Dialog from "@radix-ui/react-dialog";
 import { X } from "lucide-react";
-import { FormEvent, useEffect, useRef, useState } from "react";
+import {
+  FormEvent,
+  PointerEvent as ReactPointerEvent,
+  useEffect,
+  useState,
+} from "react";
 
 import styles from "./add-phrase-dialog.module.css";
 import {
@@ -31,90 +36,49 @@ export function AddPhraseDialog({
 }: AddPhraseDialogProps) {
   const [term, setTerm] = useState("");
   const [definition, setDefinition] = useState("");
-  const addOverlayRef = useRef<HTMLDivElement>(null);
-  const addDialogRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!open) return;
 
     const root = document.documentElement;
     const previousBodyOverflow = document.body.style.overflow;
-    const previousViewportBottom = root.style.getPropertyValue(
-      "--visual-viewport-bottom",
+    const previousDialogBackgroundHeight = root.style.getPropertyValue(
+      "--dialog-background-height",
     );
-    const wasKeyboardOpen = root.classList.contains("keyboard-open");
     const wasDialogOpen = root.classList.contains("dialog-open");
     document.body.style.overflow = "hidden";
     root.classList.add("dialog-open");
     setTelegramColor(DIALOG_BACKDROP_SOLID);
 
-    const viewport = globalThis.visualViewport;
-    let animationFrame = 0;
-    let baselineHeight = Math.max(
-      globalThis.innerHeight,
-      (viewport?.offsetTop ?? 0) + (viewport?.height ?? 0),
+    const backgroundHeight = globalThis.innerHeight;
+    root.style.setProperty(
+      "--dialog-background-height",
+      `${backgroundHeight}px`,
     );
 
-    function syncVisualViewport() {
-      cancelAnimationFrame(animationFrame);
-      animationFrame = requestAnimationFrame(() => {
-        const offsetTop = viewport?.offsetTop ?? 0;
-        const offsetLeft = viewport?.offsetLeft ?? 0;
-        const width = viewport?.width ?? globalThis.innerWidth;
-        const height = viewport?.height ?? globalThis.innerHeight;
-        const visibleBottom = offsetTop + height;
-        baselineHeight = Math.max(baselineHeight, visibleBottom);
-        const overlay = addOverlayRef.current;
-        const dialog = addDialogRef.current;
-
-        if (overlay) {
-          overlay.style.top = `${offsetTop}px`;
-          overlay.style.left = `${offsetLeft}px`;
-          overlay.style.width = `${width}px`;
-          overlay.style.height = `${height}px`;
-        }
-
-        if (dialog) {
-          dialog.style.top = `${offsetTop + height / 2}px`;
-          dialog.style.left = `${offsetLeft + width / 2}px`;
-          dialog.style.maxHeight = `${Math.max(0, height - 40)}px`;
-        }
-
-        root.style.setProperty(
-          "--visual-viewport-bottom",
-          `${visibleBottom}px`,
-        );
-        root.classList.toggle(
-          "keyboard-open",
-          baselineHeight - visibleBottom >= 80,
-        );
-      });
-    }
-
-    syncVisualViewport();
-    viewport?.addEventListener("resize", syncVisualViewport);
-    viewport?.addEventListener("scroll", syncVisualViewport);
-    globalThis.addEventListener("resize", syncVisualViewport);
-
     return () => {
-      cancelAnimationFrame(animationFrame);
-      viewport?.removeEventListener("resize", syncVisualViewport);
-      viewport?.removeEventListener("scroll", syncVisualViewport);
-      globalThis.removeEventListener("resize", syncVisualViewport);
       document.body.style.overflow = previousBodyOverflow;
-      if (previousViewportBottom) {
+      if (previousDialogBackgroundHeight) {
         root.style.setProperty(
-          "--visual-viewport-bottom",
-          previousViewportBottom,
+          "--dialog-background-height",
+          previousDialogBackgroundHeight,
         );
       } else {
-        root.style.removeProperty("--visual-viewport-bottom");
+        root.style.removeProperty("--dialog-background-height");
       }
-      root.classList.toggle("keyboard-open", wasKeyboardOpen);
       root.classList.toggle("dialog-open", wasDialogOpen);
       setTelegramColor(APP_BACKGROUND);
     };
   }, [open]);
+
+  function focusWithoutViewportPan(
+    event: ReactPointerEvent<HTMLInputElement>,
+  ) {
+    if (document.activeElement === event.currentTarget) return;
+
+    event.preventDefault();
+    event.currentTarget.focus({ preventScroll: true });
+  }
 
   function closeAddDialog() {
     setTerm("");
@@ -138,9 +102,8 @@ export function AddPhraseDialog({
   return (
     <Dialog.Root open={open}>
       <Dialog.Portal>
-        <Dialog.Overlay ref={addOverlayRef} className={styles.overlay} />
+        <Dialog.Overlay className={styles.overlay} />
         <Dialog.Content
-          ref={addDialogRef}
           className={styles.addDialog}
           aria-describedby={undefined}
           onEscapeKeyDown={(event) => event.preventDefault()}
@@ -168,6 +131,7 @@ export function AddPhraseDialog({
                 id="add-phrase-term"
                 aria-describedby="add-phrase-term-count"
                 autoFocus
+                onPointerDown={focusWithoutViewportPan}
                 value={term}
                 onChange={(event) => setTerm(event.target.value)}
                 placeholder="e.g. to be in charge of sth"
@@ -192,6 +156,7 @@ export function AddPhraseDialog({
               <input
                 id="add-phrase-definition"
                 aria-describedby="add-phrase-definition-count"
+                onPointerDown={focusWithoutViewportPan}
                 value={definition}
                 onChange={(event) => setDefinition(event.target.value)}
                 placeholder="e.g. to have responsibility for sth"

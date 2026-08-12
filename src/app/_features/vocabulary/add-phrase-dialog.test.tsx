@@ -183,14 +183,64 @@ describe("AddPhraseDialog", () => {
     expect(dialogStyles).toContain(
       "background: var(--dialog-backdrop);",
     );
+    expect(dialogStyles).toContain(
+      "height: calc(var(--dialog-background-height, 100dvh) + 200px);",
+    );
+    expect(dialogStyles).not.toContain("backdrop-filter:");
+    expect(dialogStyles).toContain(".overlay {\n  position: absolute;");
+    expect(dialogStyles).toContain("top: -100px;");
+    expect(dialogStyles).toContain(".addDialog {\n  position: absolute;");
+    expect(dialogStyles).toContain("\n  position: absolute;\n  z-index: 31;");
   });
 
-  it("clips the app shell and matches Telegram chrome above the iOS keyboard", async () => {
+  it("anchors the mobile dialog below Telegram chrome", () => {
+    const dialogStyles = readFileSync(
+      join(
+        process.cwd(),
+        "src/app/_features/vocabulary/add-phrase-dialog.module.css",
+      ),
+      "utf8",
+    );
+
+    expect(dialogStyles).toContain("--dialog-top-clearance: max(");
+    expect(dialogStyles).toContain(
+      "var(--tg-content-safe-area-inset-top, 0px) + 44px",
+    );
+    expect(dialogStyles).toContain(
+      "top: var(--dialog-top-clearance);",
+    );
+    expect(dialogStyles).toContain("animation-name: dialog-in-mobile;");
+  });
+
+  it("keeps the phrase list behind the keyboard while the dialog is open", () => {
+    const pageStyles = readFileSync(
+      join(process.cwd(), "src/app/page.module.css"),
+      "utf8",
+    );
+
+    expect(pageStyles).toContain(
+      ":global(html.dialog-open) .mobileShell",
+    );
+    expect(pageStyles).toContain(
+      "height: var(--dialog-background-height, 100dvh);",
+    );
+    expect(pageStyles).toContain(
+      "min-height: var(--dialog-background-height, 100dvh);",
+    );
+    expect(pageStyles).toContain(
+      ":global(html.dialog-open) .mobileShell {\n  filter: blur(4px);",
+    );
+    expect(pageStyles).not.toContain("transform: scale(1.03);");
+  });
+
+  it("prevents focus changes from panning the iOS visual viewport", async () => {
     const visualViewport = Object.assign(new EventTarget(), {
       height: 520,
       width: 390,
       offsetTop: 8,
       offsetLeft: 0,
+      pageTop: 8,
+      pageLeft: 0,
     });
     const viewportDescriptor = Object.getOwnPropertyDescriptor(
       window,
@@ -208,6 +258,10 @@ describe("AddPhraseDialog", () => {
       configurable: true,
       value: 844,
     });
+    const addViewportListener = vi.spyOn(
+      visualViewport,
+      "addEventListener",
+    );
     const setBackgroundColor = vi.fn();
     const setHeaderColor = vi.fn();
     const setBottomBarColor = vi.fn();
@@ -231,20 +285,27 @@ describe("AddPhraseDialog", () => {
     );
     const dialog = screen.getByRole("dialog");
     const overlay = dialog.previousElementSibling;
+    const definition = screen.getByLabelText("Definition");
 
     await waitFor(() => {
-      expect(overlay).toHaveStyle({
-        top: "8px",
-        width: "390px",
-        height: "520px",
-      });
-      expect(document.documentElement).toHaveClass("keyboard-open");
+      expect(overlay).toHaveStyle({ pointerEvents: "auto" });
+      expect((overlay as HTMLElement).style.top).toBe("");
+      expect((overlay as HTMLElement).style.left).toBe("");
+      expect((overlay as HTMLElement).style.width).toBe("");
+      expect((overlay as HTMLElement).style.height).toBe("");
+      expect(dialog.style.top).toBe("");
+      expect(document.documentElement).not.toHaveClass("keyboard-open");
       expect(document.documentElement).toHaveClass("dialog-open");
       expect(
         document.documentElement.style.getPropertyValue(
           "--visual-viewport-bottom",
         ),
-      ).toBe("528px");
+      ).toBe("");
+      expect(
+        document.documentElement.style.getPropertyValue(
+          "--dialog-background-height",
+        ),
+      ).toBe("844px");
       expect(setBackgroundColor).toHaveBeenCalledWith(
         DIALOG_BACKDROP_SOLID,
       );
@@ -256,17 +317,20 @@ describe("AddPhraseDialog", () => {
       );
     });
     expect(document.body).toHaveStyle({ overflow: "hidden" });
+    expect(addViewportListener).not.toHaveBeenCalled();
 
-    visualViewport.height = 480;
-    visualViewport.dispatchEvent(new Event("resize"));
-    await waitFor(() => {
-      expect(overlay).toHaveStyle({ height: "480px" });
-      expect(
-        document.documentElement.style.getPropertyValue(
-          "--visual-viewport-bottom",
-        ),
-      ).toBe("488px");
-    });
+    const focus = vi.spyOn(definition, "focus");
+    expect(fireEvent.pointerDown(definition)).toBe(false);
+    expect(focus).toHaveBeenCalledWith({ preventScroll: true });
+    expect(definition).toHaveFocus();
+    expect(dialog.style.getPropertyValue("--dialog-viewport-top")).toBe("");
+    expect(dialog.style.getPropertyValue("--dialog-viewport-height")).toBe("");
+    expect(document.documentElement).not.toHaveClass("keyboard-open");
+    expect(
+      document.documentElement.style.getPropertyValue(
+        "--dialog-background-height",
+      ),
+    ).toBe("844px");
 
     unmount();
     expect(document.body.style.overflow).toBe("");
@@ -275,6 +339,11 @@ describe("AddPhraseDialog", () => {
     expect(
       document.documentElement.style.getPropertyValue(
         "--visual-viewport-bottom",
+      ),
+    ).toBe("");
+    expect(
+      document.documentElement.style.getPropertyValue(
+        "--dialog-background-height",
       ),
     ).toBe("");
     expect(setBackgroundColor).toHaveBeenLastCalledWith(APP_BACKGROUND);

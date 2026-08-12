@@ -12,9 +12,11 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { VocabularyScreen } from "./vocabulary-screen";
 import type { VocabularyItem } from "./vocabulary.types";
+import styles from "./vocabulary-screen.module.css";
 
 afterEach(() => {
   cleanup();
+  globalThis.Telegram = undefined;
   vi.restoreAllMocks();
 });
 
@@ -40,13 +42,10 @@ describe("VocabularyScreen", () => {
     });
     await user.type(learningSearch, "follow");
 
-    const learningPanel = screen.getByRole("tabpanel", { name: "Learning" });
-    fireEvent.touchStart(learningPanel, {
-      touches: [{ clientX: 250, clientY: 100 }],
-    });
-    fireEvent.touchMove(learningPanel, {
-      touches: [{ clientX: 160, clientY: 104 }],
-    });
+    const viewport = screen.getByTestId("tab-viewport");
+    Object.defineProperty(viewport, "clientWidth", { value: 320 });
+    viewport.scrollLeft = 90;
+    fireEvent.scroll(viewport);
 
     const searches = screen.getAllByRole("searchbox", {
       name: "Search phrases",
@@ -54,6 +53,154 @@ describe("VocabularyScreen", () => {
     });
     expect(searches[0]).toHaveValue("follow");
     expect(searches[1]).toHaveValue("");
+  });
+
+  it("animates the Learning actions continuously with tab progress", () => {
+    render(
+      <VocabularyScreen
+        learning={[]}
+        practicing={[]}
+        learned={[]}
+        speakingEnabled
+        onAdd={vi.fn()}
+        onRemove={vi.fn()}
+        onChangeStatus={vi.fn()}
+        onReorderPracticing={vi.fn()}
+        onStartQuiz={vi.fn()}
+      />,
+    );
+
+    const viewport = screen.getByTestId("tab-viewport");
+    const vocabularyScreen = screen.getByTestId("vocabulary-screen");
+    const actions = screen.getByTestId("learning-actions");
+    Object.defineProperty(viewport, "clientWidth", { value: 320 });
+
+    viewport.scrollLeft = 172;
+    fireEvent.scroll(viewport);
+
+    expect(vocabularyScreen).toHaveStyle({
+      "--learning-actions-opacity": "0.5",
+      "--learning-actions-scale": "0.98",
+      "--learning-actions-y": "8px",
+    });
+    expect(actions).not.toHaveAttribute("aria-hidden", "true");
+
+    viewport.scrollLeft = 344;
+    fireEvent.scroll(viewport);
+    fireEvent(viewport, new Event("scrollend"));
+
+    expect(vocabularyScreen).toHaveStyle({
+      "--learning-actions-opacity": "0",
+      "--learning-actions-scale": "0.96",
+      "--learning-actions-y": "16px",
+    });
+    expect(actions).toHaveAttribute("aria-hidden", "true");
+    expect(actions).toHaveAttribute("inert");
+  });
+
+  it("marks the screen while a search input is focused", () => {
+    render(
+      <VocabularyScreen
+        learning={[]}
+        practicing={[]}
+        learned={[]}
+        speakingEnabled
+        onAdd={vi.fn()}
+        onRemove={vi.fn()}
+        onChangeStatus={vi.fn()}
+        onReorderPracticing={vi.fn()}
+        onStartQuiz={vi.fn()}
+      />,
+    );
+
+    const vocabularyScreen = screen.getByTestId("vocabulary-screen");
+    const search = screen.getByRole("searchbox", { name: "Search phrases" });
+    expect(vocabularyScreen).toHaveAttribute("data-search-focused", "false");
+
+    fireEvent.focus(search);
+    expect(vocabularyScreen).toHaveAttribute("data-search-focused", "true");
+
+    fireEvent.blur(search);
+    expect(vocabularyScreen).toHaveAttribute("data-search-focused", "false");
+  });
+
+  it("hides the Learning actions before the Add Phrase keyboard opens", async () => {
+    const user = userEvent.setup();
+    render(
+      <VocabularyScreen
+        learning={[]}
+        practicing={[]}
+        learned={[]}
+        speakingEnabled
+        onAdd={vi.fn()}
+        onRemove={vi.fn()}
+        onChangeStatus={vi.fn()}
+        onReorderPracticing={vi.fn()}
+        onStartQuiz={vi.fn()}
+      />,
+    );
+
+    const actions = screen.getByTestId("learning-actions");
+    await user.click(screen.getByRole("button", { name: "Add phrase" }));
+
+    expect(screen.getByRole("dialog")).toBeInTheDocument();
+    expect(actions).toHaveClass(styles.floatingActionsDialogOpen);
+    expect(actions).toHaveAttribute("aria-hidden", "true");
+    expect(actions).toHaveAttribute("inert");
+
+    await user.click(
+      screen.getByRole("button", { name: "Close add word dialog" }),
+    );
+    expect(actions).not.toHaveClass(styles.floatingActionsDialogOpen);
+  });
+
+  it("gives list gestures to the app and header gestures to Telegram", () => {
+    const disableVerticalSwipes = vi.fn();
+    const enableVerticalSwipes = vi.fn();
+    globalThis.Telegram = {
+      WebApp: {
+        initData: "signed",
+        ready: vi.fn(),
+        expand: vi.fn(),
+        disableVerticalSwipes,
+        enableVerticalSwipes,
+      },
+    };
+
+    const { unmount } = render(
+      <VocabularyScreen
+        learning={[]}
+        practicing={[]}
+        learned={[]}
+        speakingEnabled
+        onAdd={vi.fn()}
+        onRemove={vi.fn()}
+        onChangeStatus={vi.fn()}
+        onReorderPracticing={vi.fn()}
+        onStartQuiz={vi.fn()}
+      />,
+    );
+
+    expect(disableVerticalSwipes).not.toHaveBeenCalled();
+    expect(enableVerticalSwipes).not.toHaveBeenCalled();
+
+    const header = screen.getByRole("banner");
+    fireEvent.touchStart(header);
+    fireEvent.touchEnd(header, { touches: [] });
+    expect(disableVerticalSwipes).not.toHaveBeenCalled();
+    expect(enableVerticalSwipes).not.toHaveBeenCalled();
+
+    const viewport = screen.getByTestId("tab-viewport");
+    fireEvent.touchStart(viewport, { touches: [{ identifier: 1 }] });
+    expect(disableVerticalSwipes).toHaveBeenCalledOnce();
+    expect(enableVerticalSwipes).not.toHaveBeenCalled();
+
+    fireEvent.touchEnd(viewport, { touches: [] });
+    expect(enableVerticalSwipes).toHaveBeenCalledOnce();
+
+    unmount();
+    expect(enableVerticalSwipes).toHaveBeenCalledTimes(2);
+    globalThis.Telegram = undefined;
   });
 
   it("disables the quiz action when Learning has fewer than two phrases", async () => {
