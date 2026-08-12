@@ -3,46 +3,15 @@ import {
   useRef,
   useState,
   type ReactNode,
-  type TouchEvent as ReactTouchEvent,
+  type UIEvent,
 } from "react";
 
 import styles from "../vocabulary-screen.module.css";
 import type { VocabularyStatus } from "../vocabulary.types";
 import { VocabularyTabs } from "./vocabulary-tabs";
 
-const TAB_SWIPE_AXIS_RATIO = 1.25;
-const TAB_SWIPE_LOCK_DISTANCE = 8;
-const TAB_SWIPE_MIN_FLICK_DISTANCE = 50;
-const TAB_SWIPE_MAX_SETTLE_DISTANCE = 90;
-const TAB_SWIPE_VELOCITY = 0.5;
-const TAB_SWIPE_EDGE_RESISTANCE = 0.24;
 const TAB_PAGE_GUTTER = 24;
-
-type TabSwipe = {
-  axis: "pending" | "horizontal" | "vertical";
-  dragStarted: boolean;
-  startX: number;
-  startY: number;
-  startedAt: number;
-  width: number;
-};
-
-type SwipeDestination = {
-  index: number;
-  scrollTop: number;
-  verticalOffset: number;
-  value: VocabularyStatus;
-};
-
-function resolveSwipeAxis(deltaX: number, deltaY: number): TabSwipe["axis"] {
-  if (Math.max(Math.abs(deltaX), Math.abs(deltaY)) < TAB_SWIPE_LOCK_DISTANCE) {
-    return "pending";
-  }
-
-  return Math.abs(deltaX) > Math.abs(deltaY) * TAB_SWIPE_AXIS_RATIO
-    ? "horizontal"
-    : "vertical";
-}
+const TAB_SCROLL_SETTLE_DELAY_MS = 120;
 
 export type SwipeableVocabularyTabPage = {
   value: VocabularyStatus;
@@ -53,264 +22,115 @@ export function SwipeableVocabularyTabs({
   activeTab,
   pages,
   onChange,
-  getScrollContainer,
 }: {
   activeTab: VocabularyStatus;
   pages: readonly SwipeableVocabularyTabPage[];
   onChange: (tab: VocabularyStatus) => void;
-  getScrollContainer?: () => HTMLElement | null;
 }) {
-  const [dragOffset, setDragOffset] = useState(0);
-  const [dragWidth, setDragWidth] = useState(0);
-  const [isDragging, setIsDragging] = useState(false);
-  const [swipeDestination, setSwipeDestination] =
-    useState<SwipeDestination | null>(null);
-  const pageRefs = useRef(new Map<VocabularyStatus, HTMLDivElement>());
-  const pagerRef = useRef<HTMLDivElement>(null);
-  const swipeDestinationRef = useRef<SwipeDestination | null>(null);
-  const swipeRef = useRef<TabSwipe | null>(null);
   const activeIndex = pages.findIndex((page) => page.value === activeTab);
-  const indicatorPosition = Math.min(
-    pages.length - 1,
-    Math.max(
-      0,
-      activeIndex -
-        (dragWidth ? dragOffset / (dragWidth + TAB_PAGE_GUTTER) : 0),
-    ),
-  );
+  const [indicatorPosition, setIndicatorPosition] = useState(activeIndex);
+  const [isScrolling, setIsScrolling] = useState(false);
+  const viewportRef = useRef<HTMLDivElement>(null);
+  const settleTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const hasPositionedViewportRef = useRef(false);
+
+  function pageStep(viewport: HTMLDivElement) {
+    return viewport.clientWidth + TAB_PAGE_GUTTER;
+  }
+
+  function pagePosition(viewport: HTMLDivElement) {
+    const step = pageStep(viewport);
+    if (!step) return 0;
+
+    return Math.min(
+      pages.length - 1,
+      Math.max(0, viewport.scrollLeft / step),
+    );
+  }
+
+  function settleScroll(viewport: HTMLDivElement) {
+    if (settleTimeoutRef.current) {
+      clearTimeout(settleTimeoutRef.current);
+      settleTimeoutRef.current = null;
+    }
+
+    const index = Math.round(pagePosition(viewport));
+    const destination = pages[index];
+    setIndicatorPosition(index);
+    setIsScrolling(false);
+    if (destination && destination.value !== activeTab) {
+      onChange(destination.value);
+    }
+  }
+
+  function handleScroll(event: UIEvent<HTMLDivElement>) {
+    const viewport = event.currentTarget;
+    setIndicatorPosition(pagePosition(viewport));
+    setIsScrolling(true);
+
+    const activeElement = document.activeElement;
+    if (
+      activeElement instanceof HTMLElement &&
+      viewport.contains(activeElement) &&
+      activeElement.matches("input, textarea, [contenteditable='true']")
+    ) {
+      activeElement.blur();
+    }
+
+    if (settleTimeoutRef.current) clearTimeout(settleTimeoutRef.current);
+    settleTimeoutRef.current = setTimeout(
+      () => settleScroll(viewport),
+      TAB_SCROLL_SETTLE_DELAY_MS,
+    );
+  }
 
   useEffect(() => {
-    const pager = pagerRef.current;
-    if (!pager) return;
+    const viewport = viewportRef.current;
+    if (!viewport || activeIndex < 0) return;
 
-    function preventScrollDuringHorizontalSwipe(event: globalThis.TouchEvent) {
-      const swipe = swipeRef.current;
-      const touch = event.touches[0];
-      if (!swipe || !touch || swipe.axis === "vertical") return;
+    const left = activeIndex * pageStep(viewport);
+    const behavior = hasPositionedViewportRef.current ? "smooth" : "auto";
+    hasPositionedViewportRef.current = true;
+    setIndicatorPosition(activeIndex);
 
-      if (swipe.axis === "pending") {
-        swipe.axis = resolveSwipeAxis(
-          touch.clientX - swipe.startX,
-          touch.clientY - swipe.startY,
-        );
-      }
-
-      if (swipe.axis === "horizontal" && event.cancelable) {
-        event.preventDefault();
-      }
-    }
-
-    pager.addEventListener("touchmove", preventScrollDuringHorizontalSwipe, {
-      passive: false,
-    });
-    return () => {
-      pager.removeEventListener("touchmove", preventScrollDuringHorizontalSwipe);
-    };
-  }, []);
-
-  function resetSwipe() {
-    swipeRef.current = null;
-    swipeDestinationRef.current = null;
-    setIsDragging(false);
-    setDragOffset(0);
-    setSwipeDestination(null);
-  }
-
-  function resolveDestination(index: number): SwipeDestination | null {
-    const scrollContainer = getScrollContainer?.();
-    const activePage = pageRefs.current.get(activeTab);
-    const targetPage = pageRefs.current.get(pages[index]?.value);
-    if (!scrollContainer || !activePage || !targetPage) return null;
-
-    const pageTop =
-      activePage.getBoundingClientRect().top -
-      scrollContainer.getBoundingClientRect().top +
-      scrollContainer.scrollTop;
-    const targetBottom = pageTop + targetPage.offsetHeight;
-    const maximumUsefulScrollTop = Math.max(
-      0,
-      targetBottom - scrollContainer.clientHeight,
-    );
-    const scrollTop = Math.min(
-      scrollContainer.scrollTop,
-      maximumUsefulScrollTop,
-    );
-
-    return {
-      index,
-      scrollTop,
-      verticalOffset: scrollContainer.scrollTop - scrollTop,
-      value: pages[index].value,
-    };
-  }
-
-  function previewDestination(index: number) {
-    const destination = resolveDestination(index);
-    swipeDestinationRef.current = destination;
-    setSwipeDestination((current) =>
-      current?.index === destination?.index &&
-      current?.scrollTop === destination?.scrollTop &&
-      current?.verticalOffset === destination?.verticalOffset
-        ? current
-        : destination,
-    );
-  }
-
-  function settleOnTab(
-    tab: VocabularyStatus,
-    destination = resolveDestination(
-      pages.findIndex((page) => page.value === tab),
-    ),
-  ) {
-    const scrollContainer = getScrollContainer?.();
-    if (destination?.value === tab && scrollContainer) {
-      scrollContainer.scrollTop = destination.scrollTop;
-    }
-    resetSwipe();
-    onChange(tab);
-  }
-
-  function handleTouchStart(event: ReactTouchEvent<HTMLDivElement>) {
-    swipeRef.current = null;
-    if (event.touches.length !== 1) return;
-    if (
-      event.target instanceof Element &&
-      event.target.closest("button, input, textarea, select, a, [role='button']")
-    ) {
-      return;
-    }
-
-    const touch = event.touches[0];
-    const width =
-      event.currentTarget.clientWidth || globalThis.innerWidth || 320;
-    swipeRef.current = {
-      axis: "pending",
-      dragStarted: false,
-      startX: touch.clientX,
-      startY: touch.clientY,
-      startedAt: Date.now(),
-      width,
-    };
-    setDragWidth(width);
-  }
-
-  function handleTouchMove(event: ReactTouchEvent<HTMLDivElement>) {
-    const swipe = swipeRef.current;
-    const touch = event.touches[0];
-    if (!swipe || !touch || swipe.axis === "vertical") return;
-
-    const deltaX = touch.clientX - swipe.startX;
-    const deltaY = touch.clientY - swipe.startY;
-    if (swipe.axis === "pending") {
-      swipe.axis = resolveSwipeAxis(deltaX, deltaY);
-    }
-    if (swipe.axis !== "horizontal") return;
-
-    if (!swipe.dragStarted) {
-      swipe.dragStarted = true;
-      const activeElement = document.activeElement;
-      if (
-        activeElement instanceof HTMLElement &&
-        event.currentTarget.contains(activeElement) &&
-        activeElement.matches("input, textarea, [contenteditable='true']")
-      ) {
-        activeElement.blur();
-      }
-      setIsDragging(true);
-    }
-
-    const pullingPastStart = activeIndex === 0 && deltaX > 0;
-    const pullingPastEnd = activeIndex === pages.length - 1 && deltaX < 0;
-    previewDestination(activeIndex + (deltaX < 0 ? 1 : -1));
-    setDragOffset(
-      pullingPastStart || pullingPastEnd
-        ? deltaX * TAB_SWIPE_EDGE_RESISTANCE
-        : deltaX,
-    );
-  }
-
-  function handleTouchEnd(event: ReactTouchEvent<HTMLDivElement>) {
-    const swipe = swipeRef.current;
-    swipeRef.current = null;
-    const touch = event.changedTouches[0];
-    if (!swipe || !touch) {
-      resetSwipe();
-      return;
-    }
-
-    const deltaX = touch.clientX - swipe.startX;
-    const deltaY = touch.clientY - swipe.startY;
-    const horizontalDistance = Math.abs(deltaX);
-    const isHorizontal =
-      swipe.axis === "horizontal" ||
-      (swipe.axis === "pending" &&
-        horizontalDistance >= Math.abs(deltaY) * TAB_SWIPE_AXIS_RATIO);
-    const elapsed = Math.max(1, Date.now() - swipe.startedAt);
-    const settleDistance = Math.min(
-      (swipe.width + TAB_PAGE_GUTTER) * 0.22,
-      TAB_SWIPE_MAX_SETTLE_DISTANCE,
-    );
-    const shouldChangeTab =
-      isHorizontal &&
-      (horizontalDistance >= settleDistance ||
-        (horizontalDistance >= TAB_SWIPE_MIN_FLICK_DISTANCE &&
-          horizontalDistance / elapsed >= TAB_SWIPE_VELOCITY));
-    const targetTab = shouldChangeTab
-      ? pages[activeIndex + (deltaX < 0 ? 1 : -1)]?.value
-      : undefined;
-
-    if (targetTab) {
-      const destination = swipeDestinationRef.current;
-      settleOnTab(
-        targetTab,
-        destination?.value === targetTab
-          ? destination
-          : resolveDestination(
-              pages.findIndex((page) => page.value === targetTab),
-            ),
-      );
+    if (typeof viewport.scrollTo === "function") {
+      viewport.scrollTo({ left, behavior });
     } else {
-      resetSwipe();
+      viewport.scrollLeft = left;
     }
-  }
+  }, [activeIndex]);
+
+  useEffect(
+    () => () => {
+      if (settleTimeoutRef.current) clearTimeout(settleTimeoutRef.current);
+    },
+    [],
+  );
 
   return (
-    <div
-      ref={pagerRef}
-      className={styles.tabPager}
-      onTouchStart={handleTouchStart}
-      onTouchMove={handleTouchMove}
-      onTouchEnd={handleTouchEnd}
-      onTouchCancel={resetSwipe}
-    >
+    <div className={styles.tabPager}>
       <VocabularyTabs
         activeTab={activeTab}
-        onChange={settleOnTab}
+        onChange={onChange}
         tabCount={pages.length}
         indicatorPosition={indicatorPosition}
-        dragging={isDragging}
+        dragging={isScrolling}
       />
-      <div className={styles.tabViewport} data-dragging={isDragging}>
-        {pages.map((page, index) => {
+      <div
+        ref={viewportRef}
+        className={styles.tabViewport}
+        data-scrolling={isScrolling}
+        data-testid="tab-viewport"
+        onScroll={handleScroll}
+      >
+        {pages.map((page) => {
           const isActive = page.value === activeTab;
-          const pageOffset = index - activeIndex;
-          const verticalOffset =
-            swipeDestination?.index === index
-              ? swipeDestination.verticalOffset
-              : 0;
           return (
             <div
-              ref={(node) => {
-                if (node) pageRefs.current.set(page.value, node);
-                else pageRefs.current.delete(page.value);
-              }}
               key={page.value}
               className={`${styles.tabPage} ${
                 isActive ? styles.tabPageActive : ""
               }`}
-              style={{
-                transform: `translate3d(calc(${pageOffset * 100}% + ${pageOffset * TAB_PAGE_GUTTER}px + ${dragOffset}px), ${verticalOffset ? `${verticalOffset}px` : "0"}, 0)`,
-              }}
               aria-hidden={!isActive}
               inert={!isActive}
             >

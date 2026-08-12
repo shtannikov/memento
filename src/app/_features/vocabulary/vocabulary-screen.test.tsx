@@ -40,13 +40,10 @@ describe("VocabularyScreen", () => {
     });
     await user.type(learningSearch, "follow");
 
-    const learningPanel = screen.getByRole("tabpanel", { name: "Learning" });
-    fireEvent.touchStart(learningPanel, {
-      touches: [{ clientX: 250, clientY: 100 }],
-    });
-    fireEvent.touchMove(learningPanel, {
-      touches: [{ clientX: 160, clientY: 104 }],
-    });
+    const viewport = screen.getByTestId("tab-viewport");
+    Object.defineProperty(viewport, "clientWidth", { value: 320 });
+    viewport.scrollLeft = 90;
+    fireEvent.scroll(viewport);
 
     const searches = screen.getAllByRole("searchbox", {
       name: "Search phrases",

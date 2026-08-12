@@ -1,6 +1,6 @@
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
-import { useRef, useState } from "react";
-import { afterEach, describe, expect, it } from "vitest";
+import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { useState } from "react";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { VocabularyStatus } from "../vocabulary.types";
 import {
@@ -8,7 +8,17 @@ import {
   type SwipeableVocabularyTabPage,
 } from "./swipeable-vocabulary-tabs";
 
-afterEach(cleanup);
+const VIEWPORT_WIDTH = 320;
+const PAGE_STEP = VIEWPORT_WIDTH + 24;
+
+beforeEach(() => {
+  vi.useFakeTimers();
+});
+
+afterEach(() => {
+  cleanup();
+  vi.useRealTimers();
+});
 
 function Pager({ statuses }: { statuses: VocabularyStatus[] }) {
   const [activeTab, setActiveTab] = useState(statuses[0]);
@@ -30,193 +40,129 @@ function Pager({ statuses }: { statuses: VocabularyStatus[] }) {
   );
 }
 
-function ScrollablePager({ statuses }: { statuses: VocabularyStatus[] }) {
-  const [activeTab, setActiveTab] = useState(statuses[0]);
-  const scrollContainerRef = useRef<HTMLDivElement>(null);
-  const pages: SwipeableVocabularyTabPage[] = statuses.map((status) => ({
-    value: status,
-    content: <section role="tabpanel" aria-label={status} />,
-  }));
-
-  return (
-    <div ref={scrollContainerRef} data-testid="scroll-container">
-      <SwipeableVocabularyTabs
-        activeTab={activeTab}
-        pages={pages}
-        onChange={setActiveTab}
-        getScrollContainer={() => scrollContainerRef.current}
-      />
-    </div>
-  );
+function getViewport() {
+  const viewport = screen.getByTestId("tab-viewport");
+  Object.defineProperty(viewport, "clientWidth", {
+    configurable: true,
+    value: VIEWPORT_WIDTH,
+  });
+  return viewport;
 }
 
-function swipe(startX: number, endX: number) {
-  const panel = screen.getByRole("tabpanel");
-  fireEvent.touchStart(panel, {
-    touches: [{ clientX: startX, clientY: 100 }],
-  });
-  fireEvent.touchEnd(panel, {
-    changedTouches: [{ clientX: endX, clientY: 105 }],
-  });
+function scrollToPage(index: number) {
+  const viewport = getViewport();
+  viewport.scrollLeft = index * PAGE_STEP;
+  fireEvent.scroll(viewport);
+  act(() => vi.advanceTimersByTime(120));
 }
 
 describe("SwipeableVocabularyTabs", () => {
   it("switches through the ordered pages in both directions", () => {
     render(<Pager statuses={["learning", "practicing", "learned"]} />);
 
-    swipe(250, 100);
+    scrollToPage(1);
     expect(screen.getByRole("tabpanel", { name: "practicing" })).toBeVisible();
 
-    swipe(250, 100);
+    scrollToPage(2);
     expect(screen.getByRole("tabpanel", { name: "learned" })).toBeVisible();
 
-    swipe(100, 250);
+    scrollToPage(1);
     expect(screen.getByRole("tabpanel", { name: "practicing" })).toBeVisible();
   });
 
-  it("moves adjacent pages with the finger and preserves the gutter", () => {
+  it("tracks the tab indicator during native horizontal scrolling", () => {
     render(<Pager statuses={["learning", "practicing", "learned"]} />);
 
-    const learningPanel = screen.getByRole("tabpanel", { name: "learning" });
-    const practicingPanel = screen.getByRole("tabpanel", {
-      name: "practicing",
-      hidden: true,
-    });
-    fireEvent.touchStart(learningPanel, {
-      touches: [{ clientX: 250, clientY: 100 }],
-    });
-    fireEvent.touchMove(learningPanel, {
-      touches: [{ clientX: 160, clientY: 104 }],
-    });
+    const viewport = getViewport();
+    viewport.scrollLeft = PAGE_STEP / 2;
+    fireEvent.scroll(viewport);
 
-    const learningPage = learningPanel.parentElement;
-    const practicingPage = practicingPanel.parentElement;
-    expect(learningPage).toHaveStyle({
-      transform: "translate3d(calc(0% + 0px + -90px), 0, 0)",
+    expect(screen.getByRole("tablist")).toHaveStyle({
+      "--tab-position": "0.5",
     });
-    expect(practicingPage).toHaveStyle({
-      transform: "translate3d(calc(100% + 24px + -90px), 0, 0)",
-    });
-    expect(learningPage?.parentElement).toHaveAttribute(
-      "data-dragging",
-      "true",
-    );
-  });
+    expect(viewport).toHaveAttribute("data-scrolling", "true");
 
-  it("prevents native scrolling only during a horizontal swipe", () => {
-    render(<Pager statuses={["learning", "practicing", "learned"]} />);
-
-    const panel = screen.getByRole("tabpanel", { name: "learning" });
-    fireEvent.touchStart(panel, {
-      touches: [{ clientX: 250, clientY: 100 }],
-    });
-    const horizontalMoveWasNotCancelled = fireEvent.touchMove(panel, {
-      cancelable: true,
-      touches: [{ clientX: 160, clientY: 104 }],
-    });
-    expect(horizontalMoveWasNotCancelled).toBe(false);
-
-    fireEvent.touchCancel(panel);
-    fireEvent.touchStart(panel, {
-      touches: [{ clientX: 250, clientY: 100 }],
-    });
-    const verticalMoveWasNotCancelled = fireEvent.touchMove(panel, {
-      cancelable: true,
-      touches: [{ clientX: 246, clientY: 160 }],
-    });
-    expect(verticalMoveWasNotCancelled).toBe(true);
-  });
-
-  it("previews and settles at the target list's final scroll position", () => {
-    render(
-      <ScrollablePager statuses={["learning", "practicing", "learned"]} />,
-    );
-
-    const scrollContainer = screen.getByTestId("scroll-container");
-    const learningPanel = screen.getByRole("tabpanel", { name: "learning" });
-    const practicingPanel = screen.getByRole("tabpanel", {
-      name: "practicing",
-      hidden: true,
-    });
-    const learningPage = learningPanel.parentElement as HTMLDivElement;
-    const practicingPage = practicingPanel.parentElement as HTMLDivElement;
-    scrollContainer.scrollTop = 900;
-    Object.defineProperty(scrollContainer, "clientHeight", { value: 500 });
-    Object.defineProperty(practicingPage, "offsetHeight", { value: 600 });
-    scrollContainer.getBoundingClientRect = () =>
-      ({ top: 0 }) as DOMRect;
-    learningPage.getBoundingClientRect = () =>
-      ({ top: -800 }) as DOMRect;
-
-    fireEvent.touchStart(learningPanel, {
-      touches: [{ clientX: 250, clientY: 100 }],
-    });
-    fireEvent.touchMove(learningPanel, {
-      touches: [{ clientX: 160, clientY: 104 }],
-    });
-
-    expect(practicingPage).toHaveStyle({
-      transform: "translate3d(calc(100% + 24px + -90px), 700px, 0)",
-    });
-
-    fireEvent.touchEnd(learningPanel, {
-      changedTouches: [{ clientX: 100, clientY: 105 }],
-    });
-
-    expect(scrollContainer.scrollTop).toBe(200);
+    act(() => vi.advanceTimersByTime(120));
     expect(screen.getByRole("tabpanel", { name: "practicing" })).toBeVisible();
+    expect(viewport).toHaveAttribute("data-scrolling", "false");
   });
 
-  it("removes text-input focus once a horizontal swipe starts", () => {
+  it("preserves an independent vertical scroll position for every page", () => {
+    render(<Pager statuses={["learning", "practicing", "learned"]} />);
+
+    const learningPage = screen.getByRole("tabpanel", {
+      name: "learning",
+    }).parentElement as HTMLDivElement;
+    const practicingPage = screen.getByRole("tabpanel", {
+      name: "practicing",
+      hidden: true,
+    }).parentElement as HTMLDivElement;
+    learningPage.scrollTop = 900;
+    practicingPage.scrollTop = 0;
+
+    scrollToPage(1);
+
+    expect(learningPage.scrollTop).toBe(900);
+    expect(practicingPage.scrollTop).toBe(0);
+    expect(screen.getByRole("tabpanel", { name: "practicing" })).toBeVisible();
+
+    practicingPage.scrollTop = 120;
+    scrollToPage(0);
+
+    expect(learningPage.scrollTop).toBe(900);
+    expect(practicingPage.scrollTop).toBe(120);
+  });
+
+  it("removes text-input focus once horizontal scrolling starts", () => {
     render(<Pager statuses={["learning", "practicing", "learned"]} />);
 
     const input = screen.getByRole("textbox", { name: "learning search" });
-    const panel = screen.getByRole("tabpanel", { name: "learning" });
     input.focus();
     expect(input).toHaveFocus();
 
-    fireEvent.touchStart(panel, {
-      touches: [{ clientX: 250, clientY: 100 }],
-    });
-    fireEvent.touchMove(panel, {
-      touches: [{ clientX: 160, clientY: 104 }],
-    });
+    const viewport = getViewport();
+    viewport.scrollLeft = 90;
+    fireEvent.scroll(viewport);
 
     expect(input).not.toHaveFocus();
   });
 
-  it("ignores short, vertical, and interactive-control gestures", () => {
+  it("keeps the current tab when native snapping returns to its page", () => {
     render(<Pager statuses={["learning", "practicing", "learned"]} />);
 
-    const panel = screen.getByRole("tabpanel", { name: "learning" });
-    fireEvent.touchStart(panel, {
-      touches: [{ clientX: 200, clientY: 100 }],
-    });
-    fireEvent.touchEnd(panel, {
-      changedTouches: [{ clientX: 165, clientY: 102 }],
-    });
-    fireEvent.touchStart(panel, {
-      touches: [{ clientX: 200, clientY: 100 }],
-    });
-    fireEvent.touchEnd(panel, {
-      changedTouches: [{ clientX: 120, clientY: 220 }],
-    });
-
-    const input = screen.getByRole("textbox", { name: "learning search" });
-    fireEvent.touchStart(input, {
-      touches: [{ clientX: 200, clientY: 100 }],
-    });
-    fireEvent.touchEnd(input, {
-      changedTouches: [{ clientX: 80, clientY: 100 }],
-    });
+    const viewport = getViewport();
+    viewport.scrollLeft = 100;
+    fireEvent.scroll(viewport);
+    viewport.scrollLeft = 0;
+    fireEvent.scroll(viewport);
+    act(() => vi.advanceTimersByTime(120));
 
     expect(screen.getByRole("tabpanel", { name: "learning" })).toBeVisible();
+  });
+
+  it("scrolls to a tab selected with the tab controls", () => {
+    render(<Pager statuses={["learning", "practicing", "learned"]} />);
+
+    const viewport = getViewport();
+    const scrollTo = vi.fn();
+    viewport.scrollTo = scrollTo;
+
+    fireEvent.mouseDown(screen.getByRole("tab", { name: "Learned" }), {
+      button: 0,
+      ctrlKey: false,
+    });
+
+    expect(scrollTo).toHaveBeenLastCalledWith({
+      behavior: "smooth",
+      left: PAGE_STEP * 2,
+    });
+    expect(screen.getByRole("tabpanel", { name: "learned" })).toBeVisible();
   });
 
   it("supports a two-page flow without a practicing page", () => {
     render(<Pager statuses={["learning", "learned"]} />);
 
-    swipe(220, 100);
+    scrollToPage(1);
 
     expect(screen.getByRole("tabpanel", { name: "learned" })).toBeVisible();
   });

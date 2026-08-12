@@ -1,7 +1,10 @@
 .screen {
+  display: flex;
   height: 100%;
   min-height: 100%;
-  overflow-y: auto;
+  min-width: 0;
+  flex-direction: column;
+  overflow: hidden;
   color: #0f0f23;
   background: #ffffff;
   font-family:
@@ -10,6 +13,7 @@
 }
 
 .header {
+  flex-shrink: 0;
   padding:
     max(
       76px,
@@ -89,9 +93,9 @@
 
 .content {
   display: flex;
-  min-height: calc(100% - 140px);
+  min-height: 0;
+  flex: 1;
   flex-direction: column;
-  touch-action: pan-y;
   padding:
     0 16px
     max(
@@ -167,11 +171,24 @@
 }
 
 .tabViewport {
-  position: relative;
-  overflow: hidden;
+  display: flex;
+  min-width: 0;
+  min-height: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
   overflow-anchor: none;
   flex: 1;
+  gap: 24px;
   background: #ffffff;
+  overscroll-behavior-x: contain;
+  scroll-behavior: smooth;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+.tabViewport::-webkit-scrollbar {
+  display: none;
 }
 
 .tabPager {
@@ -179,27 +196,24 @@
   min-height: 0;
   flex: 1;
   flex-direction: column;
-  touch-action: pan-y;
 }
 
 .tabPage {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
+  min-width: 0;
+  height: 100%;
+  flex: 0 0 100%;
+  overflow-x: hidden;
+  overflow-y: auto;
   background: #ffffff;
   pointer-events: none;
-  transition: transform 280ms cubic-bezier(0.32, 0.72, 0, 1);
-  will-change: transform;
+  overscroll-behavior-x: none;
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
 }
 
 .tabPageActive {
   position: relative;
   pointer-events: auto;
-}
-
-.tabViewport[data-dragging="true"] .tabPage {
-  transition: none;
 }
 
 .tabs button:focus-visible,
