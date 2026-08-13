@@ -212,7 +212,12 @@
   overscroll-behavior-y: contain;
   scroll-snap-align: start;
   scroll-snap-stop: always;
+  scrollbar-width: none;
   -webkit-overflow-scrolling: touch;
+}
+
+.tabPage::-webkit-scrollbar {
+  display: none;
 }
 
 .tabPageActive {
