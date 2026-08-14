@@ -54,6 +54,144 @@
     },
     "linkedin": {
       "show_brand": true
+    },
+    "github": {
+      "render_slides": false,
+      "feature_image": {
+        "filename": "github-social-preview.jpg",
+        "width": 1280,
+        "height": 640,
+        "preview_width": 640,
+        "seed": 811,
+        "background": {
+          "top": "top",
+          "bottom": "bottom",
+          "glows": [
+            {
+              "x": 0.77,
+              "y": 0.16,
+              "radius": 0.62,
+              "color": "glow_primary",
+              "strength": 0.62
+            },
+            {
+              "x": 0.15,
+              "y": 0.78,
+              "radius": 0.54,
+              "color": "glow_secondary",
+              "strength": 0.28
+            }
+          ]
+        },
+        "brand": {
+          "x": 26,
+          "top": 39,
+          "logo_size": 145,
+          "logo_mask": "cutout",
+          "wordmark_x": 172,
+          "wordmark_top": 95,
+          "wordmark_size": 34,
+          "wordmark_weight": "Semibold",
+          "tracking": 5
+        },
+        "copy": {
+          "x": 52,
+          "top": 204,
+          "headline": "Telegram mini apps for",
+          "accent_top": 260,
+          "accent_line": "learning new languages",
+          "size": 43,
+          "accent_size": 44,
+          "weight": "Bold",
+          "accent_weight": "Bold",
+          "support_top": 341,
+          "support": "Build a personal vocabulary\nfor the conversations that matter.",
+          "support_size": 24,
+          "support_spacing": 8
+        },
+        "labels": {
+          "top": 25,
+          "center_x": 928,
+          "separator": "  •  ",
+          "size": 24,
+          "bold": true
+        },
+        "features": [
+          {
+            "label": "Save phrases",
+            "screenshot": "vocabulary.png",
+            "width": 218,
+            "x": 590,
+            "top": 76,
+            "angle": -4,
+            "crop_top": 0,
+            "bezel": 7
+          },
+          {
+            "label": "Play quizzes",
+            "screenshot": "quiz.png",
+            "width": 218,
+            "x": 777,
+            "top": 67,
+            "angle": 0,
+            "crop_top": 0,
+            "bezel": 7
+          },
+          {
+            "label": "Speak & get feedback",
+            "screenshot": "speaking-practice.png",
+            "width": 218,
+            "x": 964,
+            "top": 76,
+            "angle": 4,
+            "crop_top": 0,
+            "bezel": 7
+          }
+        ],
+        "footer": {
+          "x": 230,
+          "right": 1050,
+          "layout": "centered",
+          "center_x": 640,
+          "group_gap": 32,
+          "divider_top": 550,
+          "divider_alpha": 60,
+          "top": 561,
+          "mark_size": 60,
+          "copy_gap": 18,
+          "copy_top": 3,
+          "copy": "One platform. Any language.\nLaunch yours in 30 minutes.",
+          "copy_accent": "30 minutes",
+          "copy_size": 21,
+          "copy_spacing": 3,
+          "copy_bold": false,
+          "chip_top": 568,
+          "chip_height": 46,
+          "chip_gap": 24,
+          "chips": [
+            {
+              "width": 125,
+              "label": "ENGLISH",
+              "flag": "us",
+              "size": 16,
+              "text_top": 13
+            },
+            {
+              "width": 116,
+              "label": "CZECH",
+              "flag": "cz",
+              "size": 16,
+              "text_top": 13
+            },
+            {
+              "width": 170,
+              "label": "+ YOUR LANGUAGE",
+              "size": 15,
+              "text_top": 13
+            }
+          ]
+        }
+      }
     }
   },
   "palette": {
