@@ -2,8 +2,8 @@
 
 The marketing source files live under `marketing/`. The current
 `marketing/story-campaign/` project generates reusable 1080×1920 campaign
-slides for Memento. Copy and layout live in JSON, while `generate.py` owns the
-shared visual system.
+slides and wide social previews for Memento. Copy and layout live in JSON,
+while `generate.py` owns the shared visual system.
 
 ## Generate the English campaign
 
@@ -17,6 +17,17 @@ The full-size slides, lightweight previews, contact sheet, and Telegram-only
 The chat cover is 1280×720 (16:9), with a 640×360 preview for quick inspection;
 its companion description is written to `chat-copy.txt` for direct reuse.
 
+## Generate the GitHub social preview
+
+```sh
+python3 marketing/story-campaign/generate.py marketing/story-campaign/campaigns/en.json --platform github
+```
+
+This writes `github-social-preview.jpg` at GitHub's 1280×640 social-preview
+size and a 640×320 inspection preview to
+`marketing/story-campaign/output/en/github/`. The GitHub platform intentionally
+sets `render_slides` to `false`, so the command only emits the wide artwork.
+
 The platform argument is required so the intended header treatment is always
 explicit:
 
@@ -27,6 +38,9 @@ python3 marketing/story-campaign/generate.py marketing/story-campaign/campaigns/
 # Keeps the Memento logo/wordmark for standalone social posts.
 python3 marketing/story-campaign/generate.py marketing/story-campaign/campaigns/en.json --platform instagram
 python3 marketing/story-campaign/generate.py marketing/story-campaign/campaigns/en.json --platform linkedin
+
+# Generates the standalone 1280×640 repository social preview.
+python3 marketing/story-campaign/generate.py marketing/story-campaign/campaigns/en.json --platform github
 ```
 
 ## Make a change
@@ -40,11 +54,35 @@ python3 marketing/story-campaign/generate.py marketing/story-campaign/campaigns/
 - `bezel` controls the dark phone frame around each screenshot.
 - `palette` controls the shared dark-blue background and accent colors.
 - `platforms` controls platform-specific treatment such as whether the brand
-  header is shown and whether an additional chat image is generated.
+  header is shown, whether story slides are rendered, and whether an additional
+  wide image is generated.
+- The GitHub `feature_image` block controls its copy and geometry: phone
+  screenshots, fan overlap, footer copy, and language chips. The feature labels
+  share one baseline and use the configured `separator`. Colors intentionally
+  come from the campaign's shared top-level `palette`, so the repository preview
+  stays aligned with the other materials.
+- The GitHub footer uses its own centered divider from `x` to `right`, separated
+  from the content by `divider_top`. Its `centered` layout treats platform copy
+  and the compact language group as one unit, independent of the screenshot fan
+  above it. `copy_accent` highlights an important phrase without changing the
+  rest of the footer typography.
+- The GitHub `background` block repositions glows while referencing colors by
+  shared palette key, keeping the cover visually consistent with other campaign
+  materials.
 - The official full-resolution logo lives at
   `marketing/story-campaign/assets/logo.png`. Its campaign presentation is
-  controlled by `brand.logo_mask`; use `circle` for the current lockup or
-  `none` to preserve the square artwork.
+  controlled by `brand.logo_mask`; use `circle` for the story lockup, `cutout`
+  for a transparent-background mark, `feather` to blend the square artwork into
+  a wide background, or `none` to preserve the source image unchanged.
+
+## Verify the generator
+
+```sh
+python3 -m unittest marketing/story-campaign/test_generate.py
+```
+
+The integration test confirms that the GitHub platform emits only the social
+preview and that both generated files have the expected dimensions.
 
 ## Add Czech later
 
