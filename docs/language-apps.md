@@ -73,4 +73,4 @@ migration merely to add a language. A schema migration is appropriate only when
 the shared storage shape or behavior changes for every language.
 
 Do not make the existing prompts into a universal interpolated prompt. Follow
-`.agents/skills/add-memento-language/SKILL.md` for the complete rollout.
+`.agents/skills/add-language/SKILL.md` for the complete rollout.

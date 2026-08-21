@@ -1,9 +1,9 @@
 ---
-name: add-memento-language
+name: add-language
 description: Add another learning language to Memento as a separate Telegram bot and Mini App while sharing the repository, Vercel project, and Supabase projects. Use for requests to add, prototype beyond UI, provision, or release a new Memento language; for changes to app IDs, per-language prompts, graders, starter vocabulary, bot webhooks, language routes, database isolation, or language evals.
 ---
 
-# Add a Memento Language
+# Add Language
 
 Implement each learning language as an independent product entry point inside
 the shared deployment. Preserve English behavior and data throughout rollout.
