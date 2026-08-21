@@ -1,0 +1,4 @@
+interface:
+  display_name: "Add Language"
+  short_description: "Add a separate language bot and Mini App safely"
+  default_prompt: "Use $add-language to add a new learning language to Memento end to end."

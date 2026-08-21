@@ -1,31 +1,30 @@
 # Marketing
 
-The marketing source files live under `marketing/`. The current
-`marketing/story-campaign/` project generates reusable 1080×1920 campaign
+The `marketing/` project generates reusable 1080×1920 campaign
 slides and wide social previews for Memento. Copy and layout live in JSON,
 while `generate.py` owns the shared visual system.
 
 ## Generate the English campaign
 
 ```sh
-python3 -m pip install -r marketing/story-campaign/requirements.txt
-python3 marketing/story-campaign/generate.py marketing/story-campaign/campaigns/en.json --platform telegram
+python3 -m pip install -r marketing/requirements.txt
+python3 marketing/generate.py marketing/campaigns/en.json --platform telegram
 ```
 
 The full-size slides, lightweight previews, contact sheet, and Telegram-only
-`chat-cover.jpg` are written to `marketing/story-campaign/output/en/telegram/`.
+`chat-cover.jpg` are written to `marketing/output/en/telegram/`.
 The chat cover is 1280×720 (16:9), with a 640×360 preview for quick inspection;
 its companion description is written to `chat-copy.txt` for direct reuse.
 
 ## Generate the GitHub social preview
 
 ```sh
-python3 marketing/story-campaign/generate.py marketing/story-campaign/campaigns/en.json --platform github
+python3 marketing/generate.py marketing/campaigns/en.json --platform github
 ```
 
 This writes `github-social-preview.jpg` at GitHub's 1280×640 social-preview
 size and a 640×320 inspection preview to
-`marketing/story-campaign/output/en/github/`. The GitHub platform intentionally
+`marketing/output/en/github/`. The GitHub platform intentionally
 sets `render_slides` to `false`, so the command only emits the wide artwork.
 
 The platform argument is required so the intended header treatment is always
@@ -33,21 +32,21 @@ explicit:
 
 ```sh
 # Omits the Memento logo/wordmark because Telegram already supplies app context.
-python3 marketing/story-campaign/generate.py marketing/story-campaign/campaigns/en.json --platform telegram
+python3 marketing/generate.py marketing/campaigns/en.json --platform telegram
 
 # Keeps the Memento logo/wordmark for standalone social posts.
-python3 marketing/story-campaign/generate.py marketing/story-campaign/campaigns/en.json --platform instagram
-python3 marketing/story-campaign/generate.py marketing/story-campaign/campaigns/en.json --platform linkedin
+python3 marketing/generate.py marketing/campaigns/en.json --platform instagram
+python3 marketing/generate.py marketing/campaigns/en.json --platform linkedin
 
 # Generates the standalone 1280×640 repository social preview.
-python3 marketing/story-campaign/generate.py marketing/story-campaign/campaigns/en.json --platform github
+python3 marketing/generate.py marketing/campaigns/en.json --platform github
 ```
 
 ## Make a change
 
 - Edit wording, screenshot placement, or colors in
-  `marketing/story-campaign/campaigns/en.json`.
-- Replace screenshots in `marketing/story-campaign/assets/` while keeping the
+  `marketing/campaigns/en.json`.
+- Replace screenshots in `marketing/assets/` while keeping the
   same filenames, or update the filenames in the campaign JSON.
 - Set `crop_top` to `0` to preserve the iOS status bar, or raise it when a
   campaign intentionally needs to remove system chrome.
@@ -70,7 +69,7 @@ python3 marketing/story-campaign/generate.py marketing/story-campaign/campaigns/
   shared palette key, keeping the cover visually consistent with other campaign
   materials.
 - The official full-resolution logo lives at
-  `marketing/story-campaign/assets/logo.png`. Its campaign presentation is
+  `marketing/assets/logo.png`. Its campaign presentation is
   controlled by `brand.logo_mask`; use `circle` for the story lockup, `cutout`
   for a transparent-background mark, `feather` to blend the square artwork into
   a wide background, or `none` to preserve the source image unchanged.
@@ -78,7 +77,7 @@ python3 marketing/story-campaign/generate.py marketing/story-campaign/campaigns/
 ## Verify the generator
 
 ```sh
-python3 -m unittest marketing/story-campaign/test_generate.py
+python3 -m unittest marketing/test_generate.py
 ```
 
 The integration test confirms that the GitHub platform emits only the social
@@ -86,8 +85,8 @@ preview and that both generated files have the expected dimensions.
 
 ## Add Czech later
 
-Duplicate `marketing/story-campaign/campaigns/en.json` as
-`marketing/story-campaign/campaigns/cs.json`, set `id` and `locale` to `cs`,
+Duplicate `marketing/campaigns/en.json` as
+`marketing/campaigns/cs.json`, set `id` and `locale` to `cs`,
 translate the copy, and point at Czech screenshots. The same generator will
 write each platform campaign beneath
-`marketing/story-campaign/output/cs/<platform>/` without changing the layouts.
+`marketing/output/cs/<platform>/` without changing the layouts.

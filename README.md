@@ -1,4 +1,4 @@
-![Memento — Telegram mini apps for learning new languages](marketing/story-campaign/output/en/github/github-social-preview.jpg)
+![Memento — Telegram mini apps for learning new languages](marketing/output/en/github/github-social-preview.jpg)
 
 ## About
 
@@ -31,7 +31,7 @@ Each app gets its own language pack. It defines the parts that make the app uniq
 
 Everything else is shared: the Mini App interface, vocabulary progress, quizzes, speaking practice, storage, and deployment. The language registry connects each pack to this shared platform. App IDs keep data separate, while each Telegram bot provides its own entry point.
 
-Adding a language does not require a fork. Follow [Language apps](docs/language-apps.md) for the platform conventions. AI agents should use the [add-memento-language skill](.agents/skills/add-memento-language/SKILL.md) for the full Stage-to-Production rollout.
+To add a language, fork this repository and open a pull request. Follow [docs/language-apps.md](docs/language-apps.md). AI agents should use the [add-language skill](.agents/skills/add-language/SKILL.md) for the full Stage-to-Production rollout.
 
 ## License
 
