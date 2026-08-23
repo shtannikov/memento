@@ -1,6 +1,7 @@
 import { ArrowLeft } from "lucide-react";
 import { Fragment } from "react";
 
+import { AmbientGlow } from "./ambient-glow";
 import styles from "./status-screen.module.css";
 
 type StatusScreenProps = {
@@ -30,6 +31,7 @@ export function StatusScreen({
       role={role}
       aria-live={role === "status" ? "polite" : undefined}
     >
+      <AmbientGlow variation={title} />
       {onBack && (
         <button className={styles.backButton} onClick={onBack}>
           <ArrowLeft aria-hidden="true" />

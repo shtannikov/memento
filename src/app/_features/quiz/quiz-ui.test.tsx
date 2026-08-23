@@ -188,6 +188,7 @@ describe("quiz UI", () => {
     expect(sentence).toHaveAccessibleName("Quiz sentence");
     expect(sentence).toHaveAttribute("readonly");
     expect(sentence).toHaveValue("Select this unfamiliar word.");
+    expect(document.querySelector("[data-ambient-glow]")).toBeInTheDocument();
 
     const selectableSentence = sentence as HTMLTextAreaElement;
     selectableSentence.setSelectionRange(12, 22);
@@ -205,16 +206,13 @@ describe("quiz UI", () => {
     );
 
     expect(quizStyles).toContain(
-      ".screen {\n  display: flex;\n  height: 100%;\n  min-height: 0;",
+      ".screen {\n  position: relative;\n  isolation: isolate;\n  display: flex;\n  height: 100%;\n  min-height: 0;",
     );
     expect(quizStyles).toContain("flex-direction: column;\n  overflow: hidden;");
-    expect(quizStyles).toContain(
-      "background: var(--violet-ambient-glow), var(--surface);",
-    );
     const screenRule = quizStyles.match(/\.screen \{[\s\S]*?\}/)?.[0];
     expect(screenRule).not.toContain("user-select");
     expect(quizStyles).toContain(
-      ".content {\n  display: flex;\n  min-height: 0;\n  flex: 1 1 auto;",
+      ".content {\n  position: relative;\n  z-index: 1;\n  display: flex;\n  min-height: 0;\n  flex: 1 1 auto;",
     );
     expect(quizStyles).toContain("flex-direction: column;\n  overflow-y: auto;");
     expect(quizStyles).toContain(
