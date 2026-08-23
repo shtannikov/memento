@@ -4,7 +4,7 @@
   min-height: 0;
   flex-direction: column;
   overflow: hidden;
-  background: var(--surface);
+  background: var(--violet-ambient-glow), var(--surface);
 }
 
 .header {

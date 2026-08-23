@@ -208,6 +208,9 @@ describe("quiz UI", () => {
       ".screen {\n  display: flex;\n  height: 100%;\n  min-height: 0;",
     );
     expect(quizStyles).toContain("flex-direction: column;\n  overflow: hidden;");
+    expect(quizStyles).toContain(
+      "background: var(--violet-ambient-glow), var(--surface);",
+    );
     const screenRule = quizStyles.match(/\.screen \{[\s\S]*?\}/)?.[0];
     expect(screenRule).not.toContain("user-select");
     expect(quizStyles).toContain(

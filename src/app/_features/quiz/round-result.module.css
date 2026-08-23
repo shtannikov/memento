@@ -7,9 +7,7 @@
   justify-content: flex-start;
   padding: 86px 24px 38px;
   text-align: center;
-  background:
-    radial-gradient(circle at 50% 36%, rgb(124 36 248 / 10%), transparent 14rem),
-    var(--surface);
+  background: var(--violet-ambient-glow), var(--surface);
 }
 
 .resultMark {
