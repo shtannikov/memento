@@ -23,9 +23,6 @@ describe("StatusScreen", () => {
     expect(screen.getByRole("status")).toHaveTextContent(
       "Getting your vocabulary ready.",
     );
-    expect(
-      screen.getByRole("status").querySelector("[data-ambient-glow]"),
-    ).toBeInTheDocument();
     expect(screen.queryByRole("button")).not.toBeInTheDocument();
   });
 

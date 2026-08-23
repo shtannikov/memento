@@ -1,17 +1,19 @@
 .screen {
-  position: relative;
-  isolation: isolate;
   display: flex;
   height: 100%;
   min-height: 0;
   flex-direction: column;
   overflow: hidden;
-  background: var(--surface);
+  background:
+    radial-gradient(
+      ellipse 19rem 15rem at 50% 64%,
+      rgb(124 36 248 / 11%),
+      transparent 100%
+    ),
+    var(--surface);
 }
 
 .header {
-  position: relative;
-  z-index: 1;
   display: grid;
   flex: 0 0 auto;
   grid-template-columns: 40px 1fr auto;
@@ -101,8 +103,6 @@
 }
 
 .content {
-  position: relative;
-  z-index: 1;
   display: flex;
   min-height: 0;
   flex: 1 1 auto;

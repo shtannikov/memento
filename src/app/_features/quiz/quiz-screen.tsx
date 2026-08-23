@@ -1,8 +1,6 @@
 import { useLayoutEffect, useRef } from "react";
 import { Check, Heart, X } from "lucide-react";
 
-import { AmbientGlow } from "@/app/_components/ambient-glow";
-
 import styles from "./quiz-screen.module.css";
 import type { QuizCard, QuizFeedback } from "./quiz.types";
 
@@ -40,7 +38,6 @@ export function QuizScreen({
 
   return (
     <div className={styles.screen}>
-      <AmbientGlow variation={card.id} />
       <header className={styles.header}>
         <button
           className={styles.iconButton}

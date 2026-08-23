@@ -3,7 +3,6 @@ import {
   Trophy,
 } from "lucide-react";
 
-import { AmbientGlow } from "@/app/_components/ambient-glow";
 import { PlayIcon } from "@/app/_components/icons";
 
 import styles from "./round-result.module.css";
@@ -33,7 +32,6 @@ export function RoundResult({
         success ? styles.success : styles.failure
       }`}
     >
-      <AmbientGlow variation={success ? "success" : "failure"} />
       <div className={styles.resultMark}>
         {success ? (
           <Trophy aria-hidden="true" />
