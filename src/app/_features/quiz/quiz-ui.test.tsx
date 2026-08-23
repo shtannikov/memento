@@ -209,7 +209,7 @@ describe("quiz UI", () => {
     );
     expect(quizStyles).toContain("flex-direction: column;\n  overflow: hidden;");
     expect(quizStyles).toContain(
-      "ellipse 19rem 15rem at 50% 64%,\n      rgb(124 36 248 / 11%),",
+      "ellipse 19rem 15rem at 50% 59%,\n      rgb(124 36 248 / 11%),",
     );
     const screenRule = quizStyles.match(/\.screen \{[\s\S]*?\}/)?.[0];
     expect(screenRule).not.toContain("user-select");
