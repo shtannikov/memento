@@ -10,16 +10,19 @@ import { initializeTelegram } from "@/app/_clients/telegram";
 import { isVirtualKeyboardOpen } from "@/app/_clients/viewport";
 import type { AppId } from "@/app/app-config";
 import { StatusScreen } from "@/app/_components/status-screen";
+import type { AddPhrasePlaceholders } from "@/app/_languages/types";
 
 type Destination = "vocabulary" | "quiz";
 
 export function MementoApp({
   appId,
   appName,
+  addPhrasePlaceholders,
   speakingEnabled,
 }: {
   appId: AppId;
   appName: string;
+  addPhrasePlaceholders: AddPhrasePlaceholders;
   speakingEnabled: boolean;
 }) {
   const [destination, setDestination] = useState<Destination>("vocabulary");
@@ -135,6 +138,7 @@ export function MementoApp({
               practicing={vocabulary.practicing}
               learned={vocabulary.learned}
               speakingEnabled={speakingEnabled}
+              addPhrasePlaceholders={addPhrasePlaceholders}
               onAdd={vocabulary.add}
               onRemove={vocabulary.remove}
               onChangeStatus={vocabulary.changeStatus}

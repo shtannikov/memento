@@ -11,6 +11,10 @@ describe("language registry", () => {
       appPath: "/",
       webhookPath: "/api/telegram/webhook",
       botTokenEnv: "TELEGRAM_BOT_TOKEN",
+      addPhrasePlaceholders: {
+        term: "e.g. to be in charge of sth",
+        definition: "e.g. to have responsibility for sth",
+      },
     });
     expect(getLanguage("cz")).toMatchObject({
       appName: "Pomněnka",
@@ -19,6 +23,10 @@ describe("language registry", () => {
       appPath: "/cz",
       webhookPath: "/api/telegram/webhook/cz",
       botTokenEnv: "TELEGRAM_CZ_BOT_TOKEN",
+      addPhrasePlaceholders: {
+        term: "e.g. starat se o někoho",
+        definition: "e.g. to take care of someone",
+      },
     });
   });
 

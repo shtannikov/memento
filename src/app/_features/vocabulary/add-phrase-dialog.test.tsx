@@ -123,6 +123,81 @@ describe("AddPhraseDialog", () => {
     expect(onOpenChange).toHaveBeenLastCalledWith(false);
   });
 
+  it("moves to the definition on Enter and submits from the definition", async () => {
+    const user = userEvent.setup();
+    const onOpenChange = vi.fn();
+    const onAdd = vi.fn();
+    render(
+      <AddPhraseDialog
+        open
+        onOpenChange={onOpenChange}
+        onAdd={onAdd}
+      />,
+    );
+    const term = screen.getByLabelText("Word or phrase");
+    const definition = screen.getByLabelText("Definition");
+
+    expect(term).toHaveAttribute("enterkeyhint", "next");
+    expect(definition).toHaveAttribute("enterkeyhint", "done");
+
+    await user.type(term, "to follow up sth");
+    await user.keyboard("{Enter}");
+    expect(definition).toHaveFocus();
+
+    await user.type(definition, "to continue checking something");
+    await user.keyboard("{Enter}");
+
+    expect(onAdd).toHaveBeenCalledWith({
+      term: "to follow up sth",
+      definition: "to continue checking something",
+    });
+    expect(onOpenChange).toHaveBeenLastCalledWith(false);
+  });
+
+  it("splits a pasted phrase and definition on the first spaced em dash", () => {
+    const onAdd = vi.fn();
+    render(
+      <AddPhraseDialog
+        open
+        onOpenChange={vi.fn()}
+        onAdd={onAdd}
+      />,
+    );
+    const term = screen.getByLabelText("Word or phrase");
+    const definition = screen.getByLabelText("Definition");
+
+    fireEvent.paste(term, {
+      clipboardData: {
+        getData: () => "  to follow up sth — continue checking — over time  ",
+      },
+    });
+
+    expect(term).toHaveValue("to follow up sth");
+    expect(definition).toHaveValue("continue checking — over time");
+    expect(definition).toHaveFocus();
+  });
+
+  it("uses placeholders supplied by the active language", () => {
+    render(
+      <AddPhraseDialog
+        open
+        placeholders={{
+          term: "e.g. starat se o někoho",
+          definition: "e.g. to take care of someone",
+        }}
+        onOpenChange={vi.fn()}
+        onAdd={vi.fn()}
+      />,
+    );
+
+    expect(
+      screen.getByPlaceholderText("e.g. starat se o někoho"),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByPlaceholderText("e.g. to take care of someone"),
+    ).toBeInTheDocument();
+  });
+
   it("limits phrases to 35 characters and definitions to 45", async () => {
     const user = userEvent.setup();
     const onAdd = vi.fn();

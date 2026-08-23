@@ -1,9 +1,12 @@
 import * as Dialog from "@radix-ui/react-dialog";
 import { X } from "lucide-react";
 import {
+  ClipboardEvent,
   FormEvent,
+  KeyboardEvent,
   PointerEvent as ReactPointerEvent,
   useEffect,
+  useRef,
   useState,
 } from "react";
 
@@ -22,20 +25,29 @@ import {
   DEFINITION_MAX_LENGTH,
   TERM_MAX_LENGTH,
 } from "@/app/_features/vocabulary/domain/vocabulary";
+import type { AddPhrasePlaceholders } from "@/app/_languages/types";
+
+const DEFAULT_PLACEHOLDERS: AddPhrasePlaceholders = {
+  term: "e.g. to be in charge of sth",
+  definition: "e.g. to have responsibility for sth",
+};
 
 type AddPhraseDialogProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onAdd: (item: NewVocabularyItem) => void;
+  placeholders?: AddPhrasePlaceholders;
 };
 
 export function AddPhraseDialog({
   open,
   onOpenChange,
   onAdd,
+  placeholders = DEFAULT_PLACEHOLDERS,
 }: AddPhraseDialogProps) {
   const [term, setTerm] = useState("");
   const [definition, setDefinition] = useState("");
+  const definitionRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (!open) return;
@@ -99,6 +111,31 @@ export function AddPhraseDialog({
     onOpenChange(false);
   }
 
+  function moveToDefinition(event: KeyboardEvent<HTMLInputElement>) {
+    if (event.key !== "Enter" || event.nativeEvent.isComposing) return;
+
+    event.preventDefault();
+    definitionRef.current?.focus({ preventScroll: true });
+  }
+
+  function splitPastedPhrase(event: ClipboardEvent<HTMLInputElement>) {
+    const pastedText = event.clipboardData.getData("text");
+    const separatorIndex = pastedText.indexOf(" — ");
+    if (separatorIndex === -1) return;
+
+    event.preventDefault();
+    setTerm(
+      pastedText.slice(0, separatorIndex).trim().slice(0, TERM_MAX_LENGTH),
+    );
+    setDefinition(
+      pastedText
+        .slice(separatorIndex + 3)
+        .trim()
+        .slice(0, DEFINITION_MAX_LENGTH),
+    );
+    definitionRef.current?.focus({ preventScroll: true });
+  }
+
   return (
     <Dialog.Root open={open}>
       <Dialog.Portal>
@@ -134,7 +171,10 @@ export function AddPhraseDialog({
                 onPointerDown={focusWithoutViewportPan}
                 value={term}
                 onChange={(event) => setTerm(event.target.value)}
-                placeholder="e.g. to be in charge of sth"
+                onKeyDown={moveToDefinition}
+                onPaste={splitPastedPhrase}
+                enterKeyHint="next"
+                placeholder={placeholders.term}
                 maxLength={TERM_MAX_LENGTH}
                 required
               />
@@ -154,12 +194,14 @@ export function AddPhraseDialog({
                 </span>
               </div>
               <input
+                ref={definitionRef}
                 id="add-phrase-definition"
                 aria-describedby="add-phrase-definition-count"
                 onPointerDown={focusWithoutViewportPan}
                 value={definition}
                 onChange={(event) => setDefinition(event.target.value)}
-                placeholder="e.g. to have responsibility for sth"
+                enterKeyHint="done"
+                placeholder={placeholders.definition}
                 maxLength={DEFINITION_MAX_LENGTH}
                 required
               />
