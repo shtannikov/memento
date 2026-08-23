@@ -1,4 +1,3 @@
-import { useLayoutEffect, useRef } from "react";
 import { Check, Heart, X } from "lucide-react";
 
 import styles from "./quiz-screen.module.css";
@@ -26,15 +25,6 @@ export function QuizScreen({
   onExit,
 }: QuizScreenProps) {
   const blankStartsSentence = /^[^\p{L}\p{N}]*___/u.test(card.sentence);
-  const sentenceRef = useRef<HTMLTextAreaElement>(null);
-
-  useLayoutEffect(() => {
-    const sentence = sentenceRef.current;
-    if (!sentence) return;
-
-    sentence.style.height = "0";
-    sentence.style.height = `${sentence.scrollHeight}px`;
-  }, [card.sentence]);
 
   return (
     <div className={styles.screen}>
@@ -78,16 +68,7 @@ export function QuizScreen({
         }
       >
         <p className={styles.eyebrow}>Choose the best answer</p>
-        <h1 className={styles.sentenceHeading}>
-          <textarea
-            ref={sentenceRef}
-            className={styles.sentence}
-            value={card.sentence}
-            rows={1}
-            readOnly
-            aria-label="Quiz sentence"
-          />
-        </h1>
+        <h1 className={styles.sentence}>{card.sentence}</h1>
         <div className={styles.options} key={card.id}>
           {card.options.map((option, index) => {
             const isSelected = option === selectedAnswer;
