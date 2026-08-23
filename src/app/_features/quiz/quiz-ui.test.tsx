@@ -101,7 +101,7 @@ describe("quiz UI", () => {
     expect(document.activeElement).toBe(document.body);
   });
 
-  it("shows every option in lowercase without changing its answer value", () => {
+  it("normalizes only the initial letter when the blank starts the sentence", () => {
     const onAnswer = vi.fn();
     render(
       <QuizScreen
@@ -109,8 +109,8 @@ describe("quiz UI", () => {
           id: "card-1",
           vocabularyId: "phrase-1",
           sentence: "___ the meeting before lunch.",
-          answer: "Wrap Up Now",
-          options: ["Wrap Up Now", "Take Into Account"],
+          answer: "wrap Up near New York",
+          options: ["wrap Up near New York", "take NASA into Account"],
         }}
         completed={0}
         total={1}
@@ -122,12 +122,44 @@ describe("quiz UI", () => {
       />,
     );
 
-    const option = screen.getByRole("button", { name: /wrap up now/i });
-    expect(option).toHaveTextContent("wrap up now");
-    expect(option).not.toHaveTextContent("Wrap Up Now");
+    const option = screen.getByRole("button", {
+      name: /wrap up near new york/i,
+    });
+    expect(option).toHaveTextContent("Wrap Up near New York");
+    expect(
+      screen.getByRole("button", { name: /take nasa into account/i }),
+    ).toHaveTextContent("Take NASA into Account");
 
     fireEvent.click(option);
-    expect(onAnswer).toHaveBeenCalledWith("Wrap Up Now");
+    expect(onAnswer).toHaveBeenCalledWith("wrap Up near New York");
+  });
+
+  it("preserves option casing when the blank is inside the sentence", () => {
+    render(
+      <QuizScreen
+        card={{
+          id: "card-2",
+          vocabularyId: "phrase-2",
+          sentence: "I visited ___ last spring.",
+          answer: "New York",
+          options: ["New York", "the NASA museum"],
+        }}
+        completed={0}
+        total={1}
+        lives={3}
+        feedback={null}
+        selectedAnswer={null}
+        onAnswer={vi.fn()}
+        onExit={vi.fn()}
+      />,
+    );
+
+    expect(
+      screen.getByRole("button", { name: "A New York" }),
+    ).toHaveTextContent("New York");
+    expect(
+      screen.getByRole("button", { name: "B the NASA museum" }),
+    ).toHaveTextContent("the NASA museum");
   });
 
   it("fits the quiz to its viewport and only allows selecting the sentence", () => {

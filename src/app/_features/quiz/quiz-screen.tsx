@@ -24,6 +24,8 @@ export function QuizScreen({
   onAnswer,
   onExit,
 }: QuizScreenProps) {
+  const blankStartsSentence = /^[^\p{L}\p{N}]*___/u.test(card.sentence);
+
   return (
     <div className={styles.screen}>
       <header className={styles.header}>
@@ -86,7 +88,13 @@ export function QuizScreen({
                 <span className={styles.optionIndex}>
                   {String.fromCharCode(65 + index)}
                 </span>
-                <span>{option.toLocaleLowerCase()}</span>
+                <span>
+                  {blankStartsSentence
+                    ? option.replace(/\p{L}/u, (letter) =>
+                        letter.toLocaleUpperCase(),
+                      )
+                    : option}
+                </span>
                 {isSelected && feedback === "correct" && (
                   <Check aria-hidden="true" />
                 )}
