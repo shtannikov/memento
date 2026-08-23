@@ -12,7 +12,6 @@ type QuizScreenProps = {
   feedback: QuizFeedback;
   selectedAnswer: string | null;
   onAnswer: (answer: string) => void;
-  onExit: () => void;
 };
 
 export function QuizScreen({
@@ -23,7 +22,6 @@ export function QuizScreen({
   feedback,
   selectedAnswer,
   onAnswer,
-  onExit,
 }: QuizScreenProps) {
   const blankStartsSentence = /^[^\p{L}\p{N}]*___/u.test(card.sentence);
   const sentenceRef = useRef<HTMLTextAreaElement>(null);
@@ -39,13 +37,6 @@ export function QuizScreen({
   return (
     <div className={styles.screen}>
       <header className={styles.header}>
-        <button
-          className={styles.iconButton}
-          onClick={onExit}
-          aria-label="Leave quiz"
-        >
-          <X aria-hidden="true" />
-        </button>
         <div className={styles.progress}>
           <div className={styles.progressCopy}>
             <span>

@@ -1,5 +1,5 @@
-import { render, screen } from "@testing-library/react";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { render, screen, waitFor } from "@testing-library/react";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { QuizRound } from "./quiz-round";
 import { useQuizRound } from "./use-quiz-round";
@@ -36,9 +36,61 @@ function errorRound(errorCode: string | null) {
   };
 }
 
-describe("QuizRound errors", () => {
+describe("QuizRound", () => {
   beforeEach(() => {
     mockedUseQuizRound.mockReset();
+  });
+
+  afterEach(() => {
+    globalThis.Telegram = undefined;
+  });
+
+  it("uses Telegram's native back button to return to vocabulary", async () => {
+    const round = errorRound("DAILY_GENERATION_LIMIT");
+    const onExit = vi.fn();
+    const show = vi.fn();
+    const hide = vi.fn();
+    const offClick = vi.fn();
+    let handleBack: (() => void) | undefined;
+    globalThis.Telegram = {
+      WebApp: {
+        initData: "signed",
+        ready: vi.fn(),
+        expand: vi.fn(),
+        BackButton: {
+          show,
+          hide,
+          onClick: vi.fn((callback) => {
+            handleBack = callback;
+          }),
+          offClick,
+        },
+      },
+    };
+    mockedUseQuizRound.mockReturnValue(round);
+
+    const { unmount } = render(
+      <QuizRound
+        initData="telegram-data"
+        onVocabularyChanged={vi.fn()}
+        onExit={onExit}
+      />,
+    );
+
+    expect(show).toHaveBeenCalledOnce();
+    expect(
+      screen.queryByRole("button", { name: "Vocabulary" }),
+    ).not.toBeInTheDocument();
+
+    handleBack?.();
+    await waitFor(() => {
+      expect(round.abandon).toHaveBeenCalledOnce();
+      expect(onExit).toHaveBeenCalledOnce();
+    });
+
+    unmount();
+    expect(offClick).toHaveBeenCalledWith(handleBack);
+    expect(hide).toHaveBeenCalledOnce();
   });
 
   it("does not offer retry after the daily generation limit", () => {

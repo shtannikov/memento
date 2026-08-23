@@ -16,7 +16,7 @@
 .header {
   display: grid;
   flex: 0 0 auto;
-  grid-template-columns: 40px 1fr auto;
+  grid-template-columns: 1fr auto;
   align-items: center;
   gap: 12px;
   padding:
@@ -27,34 +27,6 @@
       calc(env(safe-area-inset-top, 0px) + 32px)
     )
     16px 14px;
-}
-
-.iconButton {
-  display: inline-grid;
-  width: 40px;
-  height: 40px;
-  place-items: center;
-  color: #666c80;
-  border: 0;
-  border-radius: 999px;
-  background: transparent;
-  cursor: pointer;
-}
-
-.iconButton:hover {
-  background: #f0eff3;
-}
-
-.iconButton:focus-visible {
-  color: #6d28d9;
-  outline: 0;
-  background: #f5f3ff;
-  box-shadow: inset 0 0 0 2px #ddd6fe;
-}
-
-.iconButton svg {
-  width: 20px;
-  height: 20px;
 }
 
 .progress {

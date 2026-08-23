@@ -68,7 +68,6 @@ describe("quiz UI", () => {
         feedback={null}
         selectedAnswer={null}
         onAnswer={vi.fn()}
-        onExit={vi.fn()}
       />,
     );
 
@@ -94,7 +93,6 @@ describe("quiz UI", () => {
         feedback={null}
         selectedAnswer={null}
         onAnswer={vi.fn()}
-        onExit={vi.fn()}
       />,
     );
 
@@ -118,7 +116,6 @@ describe("quiz UI", () => {
         feedback={null}
         selectedAnswer={null}
         onAnswer={onAnswer}
-        onExit={vi.fn()}
       />,
     );
 
@@ -150,7 +147,6 @@ describe("quiz UI", () => {
         feedback={null}
         selectedAnswer={null}
         onAnswer={vi.fn()}
-        onExit={vi.fn()}
       />,
     );
 
@@ -178,7 +174,6 @@ describe("quiz UI", () => {
         feedback={null}
         selectedAnswer={null}
         onAnswer={vi.fn()}
-        onExit={vi.fn()}
       />,
     );
 
@@ -188,6 +183,9 @@ describe("quiz UI", () => {
     expect(sentence).toHaveAccessibleName("Quiz sentence");
     expect(sentence).toHaveAttribute("readonly");
     expect(sentence).toHaveValue("Select this unfamiliar word.");
+    expect(
+      screen.queryByRole("button", { name: "Leave quiz" }),
+    ).not.toBeInTheDocument();
 
     const selectableSentence = sentence as HTMLTextAreaElement;
     selectableSentence.setSelectionRange(12, 22);
@@ -208,6 +206,7 @@ describe("quiz UI", () => {
       ".screen {\n  display: flex;\n  height: 100%;\n  min-height: 0;",
     );
     expect(quizStyles).toContain("flex-direction: column;\n  overflow: hidden;");
+    expect(quizStyles).toContain("grid-template-columns: 1fr auto;");
     expect(quizStyles).toContain(
       "ellipse 19rem 15rem at 50% 59%,\n      rgb(124 36 248 / 11%),",
     );

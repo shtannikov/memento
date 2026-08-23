@@ -1,4 +1,7 @@
+import { useEffect, useRef } from "react";
+
 import { StatusScreen } from "@/app/_components/status-screen";
+import { registerTelegramBackButton } from "@/app/_clients/telegram";
 import { QuizScreen } from "./quiz-screen";
 import { RoundResult } from "./round-result";
 import { useQuizRound } from "./use-quiz-round";
@@ -18,16 +21,25 @@ export function QuizRound({
   onExit,
 }: QuizRoundProps) {
   const round = useQuizRound(initData, appId, onVocabularyChanged);
+  const roundRef = useRef(round);
+  const onExitRef = useRef(onExit);
 
-  function leaveRound() {
-    void round.abandon().finally(onExit);
-  }
+  useEffect(() => {
+    roundRef.current = round;
+    onExitRef.current = onExit;
+  }, [onExit, round]);
+
+  useEffect(
+    () =>
+      registerTelegramBackButton(() => {
+        void roundRef.current.abandon().finally(onExitRef.current);
+      }),
+    [],
+  );
 
   if (round.phase === "preparing" || round.phase === "saving") {
     return (
       <StatusScreen
-        onBack={leaveRound}
-        backLabel="Vocabulary"
         title={
           round.phase === "saving"
             ? "Saving your progress"
@@ -42,8 +54,6 @@ export function QuizRound({
   if (round.phase === "error") {
     return (
       <StatusScreen
-        onBack={leaveRound}
-        backLabel="Vocabulary"
         title="Quiz unavailable"
         animatedEllipsis={false}
         supportingCopy={round.error ?? "Please try again."}
@@ -97,7 +107,6 @@ export function QuizRound({
       feedback={round.feedback}
       selectedAnswer={round.selectedAnswer}
       onAnswer={round.chooseAnswer}
-      onExit={leaveRound}
     />
   );
 }

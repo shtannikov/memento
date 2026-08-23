@@ -1,5 +1,13 @@
+export type TelegramBackButton = {
+  show(): void;
+  hide(): void;
+  onClick(callback: () => void): void;
+  offClick(callback: () => void): void;
+};
+
 export type TelegramWebApp = {
   initData: string;
+  BackButton?: TelegramBackButton;
   ready(): void;
   expand(): void;
   disableVerticalSwipes?(): void;
@@ -75,6 +83,42 @@ export function setTelegramVerticalSwipes(enabled: boolean): void {
     "7.7",
     enabled ? webApp?.enableVerticalSwipes : webApp?.disableVerticalSwipes,
   );
+}
+
+export function registerTelegramBackButton(
+  onBack: () => void,
+): () => void {
+  const webApp = globalThis.Telegram?.WebApp;
+  const backButton = webApp?.BackButton;
+  if (!backButton || !supports(webApp, "6.1")) return () => undefined;
+
+  let registered = false;
+  const cleanup = () => {
+    if (registered) {
+      registered = false;
+      try {
+        backButton.offClick(onBack);
+      } catch {
+        // A stale Telegram bridge should not block navigation cleanup.
+      }
+    }
+    try {
+      backButton.hide();
+    } catch {
+      // The page remains usable if Telegram chrome is unavailable.
+    }
+  };
+
+  try {
+    backButton.onClick(onBack);
+    registered = true;
+    backButton.show();
+  } catch {
+    cleanup();
+    return () => undefined;
+  }
+
+  return cleanup;
 }
 
 function supports(

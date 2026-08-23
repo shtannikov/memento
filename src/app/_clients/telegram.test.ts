@@ -3,6 +3,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   DIALOG_BACKDROP_SOLID,
   initializeTelegram,
+  registerTelegramBackButton,
   setTelegramColor,
   setTelegramVerticalSwipes,
 } from "./telegram";
@@ -151,5 +152,75 @@ describe("initializeTelegram", () => {
 
     expect(() => setTelegramVerticalSwipes(true)).not.toThrow();
     expect(() => setTelegramVerticalSwipes(false)).not.toThrow();
+  });
+
+  it("registers and cleans up the native Telegram back button", () => {
+    const onBack = vi.fn();
+    const onClick = vi.fn();
+    const offClick = vi.fn();
+    const show = vi.fn();
+    const hide = vi.fn();
+    globalThis.Telegram = {
+      WebApp: {
+        initData: "signed",
+        ready: vi.fn(),
+        expand: vi.fn(),
+        BackButton: { onClick, offClick, show, hide },
+      },
+    };
+
+    const cleanup = registerTelegramBackButton(onBack);
+
+    expect(onClick).toHaveBeenCalledWith(onBack);
+    expect(show).toHaveBeenCalledOnce();
+
+    cleanup();
+    expect(offClick).toHaveBeenCalledWith(onBack);
+    expect(hide).toHaveBeenCalledOnce();
+  });
+
+  it("keeps unsupported or failing back-button bridges usable", () => {
+    const unsupportedShow = vi.fn();
+    globalThis.Telegram = {
+      WebApp: {
+        initData: "signed",
+        ready: vi.fn(),
+        expand: vi.fn(),
+        isVersionAtLeast: vi.fn(() => false),
+        BackButton: {
+          onClick: vi.fn(),
+          offClick: vi.fn(),
+          show: unsupportedShow,
+          hide: vi.fn(),
+        },
+      },
+    };
+
+    expect(() => registerTelegramBackButton(vi.fn())()).not.toThrow();
+    expect(unsupportedShow).not.toHaveBeenCalled();
+
+    const offClick = vi.fn(() => {
+      throw new Error("stale bridge");
+    });
+    const hide = vi.fn(() => {
+      throw new Error("stale bridge");
+    });
+    globalThis.Telegram.WebApp = {
+      initData: "signed",
+      ready: vi.fn(),
+      expand: vi.fn(),
+      BackButton: {
+        onClick: vi.fn(),
+        offClick,
+        show: vi.fn(() => {
+          throw new Error("stale bridge");
+        }),
+        hide,
+      },
+    };
+
+    expect(() => registerTelegramBackButton(vi.fn())()).not.toThrow();
+    expect(offClick).toHaveBeenCalledOnce();
+    expect(hide).toHaveBeenCalledOnce();
   });
 });
