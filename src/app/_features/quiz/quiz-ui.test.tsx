@@ -162,6 +162,39 @@ describe("quiz UI", () => {
     ).toHaveTextContent("the NASA museum");
   });
 
+  it("renders the sentence as selectable read-only text", () => {
+    render(
+      <QuizScreen
+        card={{
+          id: "selectable-card",
+          vocabularyId: "selectable-phrase",
+          sentence: "Select this unfamiliar word.",
+          answer: "word",
+          options: ["word"],
+        }}
+        completed={0}
+        total={1}
+        lives={3}
+        feedback={null}
+        selectedAnswer={null}
+        onAnswer={vi.fn()}
+        onExit={vi.fn()}
+      />,
+    );
+
+    const sentence = screen.getByDisplayValue(
+      "Select this unfamiliar word.",
+    );
+    expect(sentence).toHaveAccessibleName("Quiz sentence");
+    expect(sentence).toHaveAttribute("readonly");
+    expect(sentence).toHaveValue("Select this unfamiliar word.");
+
+    const selectableSentence = sentence as HTMLTextAreaElement;
+    selectableSentence.setSelectionRange(12, 22);
+    expect(selectableSentence.selectionStart).toBe(12);
+    expect(selectableSentence.selectionEnd).toBe(22);
+  });
+
   it("fits the quiz to its viewport and keeps sentence selection enabled on iOS", () => {
     const quizStyles = readFileSync(
       join(
@@ -182,8 +215,9 @@ describe("quiz UI", () => {
     );
     expect(quizStyles).toContain("flex-direction: column;\n  overflow-y: auto;");
     expect(quizStyles).toContain(
-      ".sentence {\n  margin: 15px 0 34px;",
+      ".sentence {\n  display: block;\n  width: 100%;",
     );
+    expect(quizStyles).toContain("margin: 15px 0 34px;");
     expect(quizStyles).toContain("-webkit-touch-callout: default;");
     expect(quizStyles).toContain("-webkit-user-select: text;\n  user-select: text;");
     expect(quizStyles).toContain(

@@ -1,3 +1,6 @@
+import { useEffect } from "react";
+
+import { setTelegramVerticalSwipes } from "@/app/_clients/telegram";
 import { StatusScreen } from "@/app/_components/status-screen";
 import { QuizScreen } from "./quiz-screen";
 import { RoundResult } from "./round-result";
@@ -18,6 +21,11 @@ export function QuizRound({
   onExit,
 }: QuizRoundProps) {
   const round = useQuizRound(initData, appId, onVocabularyChanged);
+
+  useEffect(() => {
+    setTelegramVerticalSwipes(false);
+    return () => setTelegramVerticalSwipes(true);
+  }, []);
 
   function leaveRound() {
     void round.abandon().finally(onExit);

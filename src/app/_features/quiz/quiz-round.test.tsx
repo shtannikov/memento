@@ -1,5 +1,5 @@
 import { render, screen } from "@testing-library/react";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { QuizRound } from "./quiz-round";
 import { useQuizRound } from "./use-quiz-round";
@@ -9,6 +9,10 @@ vi.mock("./use-quiz-round", () => ({
 }));
 
 const mockedUseQuizRound = vi.mocked(useQuizRound);
+
+afterEach(() => {
+  globalThis.Telegram = undefined;
+});
 
 function errorRound(errorCode: string | null) {
   return {
@@ -81,5 +85,34 @@ describe("QuizRound errors", () => {
     expect(
       screen.getByRole("button", { name: "Try again" }),
     ).toBeVisible();
+  });
+
+  it("releases text-selection gestures from Telegram while the quiz is open", () => {
+    const disableVerticalSwipes = vi.fn();
+    const enableVerticalSwipes = vi.fn();
+    globalThis.Telegram = {
+      WebApp: {
+        initData: "signed",
+        ready: vi.fn(),
+        expand: vi.fn(),
+        disableVerticalSwipes,
+        enableVerticalSwipes,
+      },
+    };
+    mockedUseQuizRound.mockReturnValue(errorRound("OPENAI_UNAVAILABLE"));
+
+    const { unmount } = render(
+      <QuizRound
+        initData="telegram-data"
+        onVocabularyChanged={vi.fn()}
+        onExit={vi.fn()}
+      />,
+    );
+
+    expect(disableVerticalSwipes).toHaveBeenCalledOnce();
+    expect(enableVerticalSwipes).not.toHaveBeenCalled();
+
+    unmount();
+    expect(enableVerticalSwipes).toHaveBeenCalledOnce();
   });
 });
