@@ -1,4 +1,6 @@
 import { fireEvent, render, screen } from "@testing-library/react";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { describe, expect, it, vi } from "vitest";
 
 import { QuizScreen } from "./quiz-screen";
@@ -97,5 +99,58 @@ describe("quiz UI", () => {
     );
 
     expect(document.activeElement).toBe(document.body);
+  });
+
+  it("shows every option in lowercase without changing its answer value", () => {
+    const onAnswer = vi.fn();
+    render(
+      <QuizScreen
+        card={{
+          id: "card-1",
+          vocabularyId: "phrase-1",
+          sentence: "___ the meeting before lunch.",
+          answer: "Wrap Up Now",
+          options: ["Wrap Up Now", "Take Into Account"],
+        }}
+        completed={0}
+        total={1}
+        lives={3}
+        feedback={null}
+        selectedAnswer={null}
+        onAnswer={onAnswer}
+        onExit={vi.fn()}
+      />,
+    );
+
+    const option = screen.getByRole("button", { name: /wrap up now/i });
+    expect(option).toHaveTextContent("wrap up now");
+    expect(option).not.toHaveTextContent("Wrap Up Now");
+
+    fireEvent.click(option);
+    expect(onAnswer).toHaveBeenCalledWith("Wrap Up Now");
+  });
+
+  it("fits the quiz to its viewport and only allows selecting the sentence", () => {
+    const quizStyles = readFileSync(
+      join(
+        process.cwd(),
+        "src/app/_features/quiz/quiz-screen.module.css",
+      ),
+      "utf8",
+    );
+
+    expect(quizStyles).toContain(
+      ".screen {\n  display: flex;\n  height: 100%;\n  min-height: 0;",
+    );
+    expect(quizStyles).toContain("flex-direction: column;\n  overflow: hidden;");
+    expect(quizStyles).toContain("background: var(--surface);\n  user-select: none;");
+    expect(quizStyles).toContain(
+      ".content {\n  display: flex;\n  min-height: 0;\n  flex: 1 1 auto;",
+    );
+    expect(quizStyles).toContain("flex-direction: column;\n  overflow-y: auto;");
+    expect(quizStyles).toContain(
+      ".sentence {\n  margin: 15px 0 34px;",
+    );
+    expect(quizStyles).toContain("-webkit-user-select: text;\n  user-select: text;");
   });
 });

@@ -66,7 +66,7 @@ export function QuizScreen({
         }
       >
         <p className={styles.eyebrow}>Choose the best answer</p>
-        <h1>{card.sentence}</h1>
+        <h1 className={styles.sentence}>{card.sentence}</h1>
         <div className={styles.options} key={card.id}>
           {card.options.map((option, index) => {
             const isSelected = option === selectedAnswer;
@@ -86,7 +86,7 @@ export function QuizScreen({
                 <span className={styles.optionIndex}>
                   {String.fromCharCode(65 + index)}
                 </span>
-                <span>{option}</span>
+                <span>{option.toLocaleLowerCase()}</span>
                 {isSelected && feedback === "correct" && (
                   <Check aria-hidden="true" />
                 )}
