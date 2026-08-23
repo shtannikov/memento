@@ -1,3 +1,4 @@
+import { useLayoutEffect, useRef } from "react";
 import { Check, Heart, X } from "lucide-react";
 
 import styles from "./quiz-screen.module.css";
@@ -11,7 +12,6 @@ type QuizScreenProps = {
   feedback: QuizFeedback;
   selectedAnswer: string | null;
   onAnswer: (answer: string) => void;
-  onExit: () => void;
 };
 
 export function QuizScreen({
@@ -22,18 +22,21 @@ export function QuizScreen({
   feedback,
   selectedAnswer,
   onAnswer,
-  onExit,
 }: QuizScreenProps) {
+  const blankStartsSentence = /^[^\p{L}\p{N}]*___/u.test(card.sentence);
+  const sentenceRef = useRef<HTMLTextAreaElement>(null);
+
+  useLayoutEffect(() => {
+    const sentence = sentenceRef.current;
+    if (!sentence) return;
+
+    sentence.style.height = "0";
+    sentence.style.height = `${sentence.scrollHeight}px`;
+  }, [card.sentence]);
+
   return (
     <div className={styles.screen}>
       <header className={styles.header}>
-        <button
-          className={styles.iconButton}
-          onClick={onExit}
-          aria-label="Leave quiz"
-        >
-          <X aria-hidden="true" />
-        </button>
         <div className={styles.progress}>
           <div className={styles.progressCopy}>
             <span>
@@ -66,7 +69,16 @@ export function QuizScreen({
         }
       >
         <p className={styles.eyebrow}>Choose the best answer</p>
-        <h1>{card.sentence}</h1>
+        <h1 className={styles.sentenceHeading}>
+          <textarea
+            ref={sentenceRef}
+            className={styles.sentence}
+            value={card.sentence}
+            rows={1}
+            readOnly
+            aria-label="Quiz sentence"
+          />
+        </h1>
         <div className={styles.options} key={card.id}>
           {card.options.map((option, index) => {
             const isSelected = option === selectedAnswer;
@@ -86,7 +98,13 @@ export function QuizScreen({
                 <span className={styles.optionIndex}>
                   {String.fromCharCode(65 + index)}
                 </span>
-                <span>{option}</span>
+                <span>
+                  {blankStartsSentence
+                    ? option.replace(/\p{L}/u, (letter) =>
+                        letter.toLocaleUpperCase(),
+                      )
+                    : option}
+                </span>
                 {isSelected && feedback === "correct" && (
                   <Check aria-hidden="true" />
                 )}
