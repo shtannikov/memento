@@ -215,11 +215,15 @@ describe("quiz UI", () => {
     );
     expect(quizStyles).toContain("flex-direction: column;\n  overflow-y: auto;");
     expect(quizStyles).toContain(
-      ".sentence {\n  display: block;\n  width: 100%;",
+      ".sentence {\n  all: unset;\n  display: block;\n  width: 100%;",
     );
     expect(quizStyles).toContain("margin: 15px 0 34px;");
+    expect(quizStyles).toContain("-webkit-tap-highlight-color: transparent;");
     expect(quizStyles).toContain("-webkit-touch-callout: default;");
     expect(quizStyles).toContain("-webkit-user-select: text;\n  user-select: text;");
+    expect(quizStyles).toContain(
+      ".sentence:focus,\n.sentence:focus-visible {\n  outline: none;\n  box-shadow: none;",
+    );
     expect(quizStyles).toContain(
       ".header,\n.eyebrow,\n.options,\n.feedbackLabel {\n  -webkit-user-select: none;\n  user-select: none;",
     );
