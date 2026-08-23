@@ -208,7 +208,10 @@ describe("quiz UI", () => {
     expect(quizStyles).toContain("flex-direction: column;\n  overflow: hidden;");
     expect(quizStyles).toContain("grid-template-columns: 1fr auto;");
     expect(quizStyles).toContain(
-      "max(\n      64px,\n      calc(var(--tg-content-safe-area-inset-top, 0px) + 32px),",
+      "max(\n      64px,\n      calc(var(--tg-content-safe-area-inset-top, 0px) + 56px),",
+    );
+    expect(quizStyles).toContain(
+      "calc(var(--tg-safe-area-inset-top, 0px) + 56px),\n      calc(env(safe-area-inset-top, 0px) + 56px)",
     );
     expect(quizStyles).toContain(
       "ellipse 19rem 15rem at 50% 59%,\n      rgb(124 36 248 / 11%),",

@@ -22,9 +22,9 @@
   padding:
     max(
       64px,
-      calc(var(--tg-content-safe-area-inset-top, 0px) + 32px),
-      calc(var(--tg-safe-area-inset-top, 0px) + 32px),
-      calc(env(safe-area-inset-top, 0px) + 32px)
+      calc(var(--tg-content-safe-area-inset-top, 0px) + 56px),
+      calc(var(--tg-safe-area-inset-top, 0px) + 56px),
+      calc(env(safe-area-inset-top, 0px) + 56px)
     )
     16px 14px;
 }
