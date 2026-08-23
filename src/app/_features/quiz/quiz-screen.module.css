@@ -5,7 +5,6 @@
   flex-direction: column;
   overflow: hidden;
   background: var(--surface);
-  user-select: none;
 }
 
 .header {
@@ -129,8 +128,17 @@
   line-height: 1.35;
   letter-spacing: -0.035em;
   cursor: text;
+  -webkit-touch-callout: default;
   -webkit-user-select: text;
   user-select: text;
+}
+
+.header,
+.eyebrow,
+.options,
+.feedbackLabel {
+  -webkit-user-select: none;
+  user-select: none;
 }
 
 .options {

@@ -162,7 +162,7 @@ describe("quiz UI", () => {
     ).toHaveTextContent("the NASA museum");
   });
 
-  it("fits the quiz to its viewport and only allows selecting the sentence", () => {
+  it("fits the quiz to its viewport and keeps sentence selection enabled on iOS", () => {
     const quizStyles = readFileSync(
       join(
         process.cwd(),
@@ -175,7 +175,8 @@ describe("quiz UI", () => {
       ".screen {\n  display: flex;\n  height: 100%;\n  min-height: 0;",
     );
     expect(quizStyles).toContain("flex-direction: column;\n  overflow: hidden;");
-    expect(quizStyles).toContain("background: var(--surface);\n  user-select: none;");
+    const screenRule = quizStyles.match(/\.screen \{[\s\S]*?\}/)?.[0];
+    expect(screenRule).not.toContain("user-select");
     expect(quizStyles).toContain(
       ".content {\n  display: flex;\n  min-height: 0;\n  flex: 1 1 auto;",
     );
@@ -183,6 +184,10 @@ describe("quiz UI", () => {
     expect(quizStyles).toContain(
       ".sentence {\n  margin: 15px 0 34px;",
     );
+    expect(quizStyles).toContain("-webkit-touch-callout: default;");
     expect(quizStyles).toContain("-webkit-user-select: text;\n  user-select: text;");
+    expect(quizStyles).toContain(
+      ".header,\n.eyebrow,\n.options,\n.feedbackLabel {\n  -webkit-user-select: none;\n  user-select: none;",
+    );
   });
 });
