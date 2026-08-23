@@ -25,6 +25,10 @@ export const CZECH_LANGUAGE = {
   webhookPath: "/api/telegram/webhook/cz",
   botTokenEnv: "TELEGRAM_CZ_BOT_TOKEN",
   webhookSecretEnv: "TELEGRAM_CZ_WEBHOOK_SECRET",
+  addPhrasePlaceholders: {
+    term: "e.g. starat se o někoho",
+    definition: "e.g. to take care of someone",
+  },
   starterVocabulary,
   quizSystemPrompt:
     "You create unambiguous Czech vocabulary exercises and follow the output schema exactly.",

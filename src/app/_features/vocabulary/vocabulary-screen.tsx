@@ -24,12 +24,14 @@ import type {
   VocabularyItem,
   VocabularyStatus,
 } from "./vocabulary.types";
+import type { AddPhrasePlaceholders } from "@/app/_languages/types";
 
 type VocabularyScreenProps = {
   learning: VocabularyItem[];
   practicing: VocabularyItem[];
   learned: VocabularyItem[];
   speakingEnabled: boolean;
+  addPhrasePlaceholders?: AddPhrasePlaceholders;
   onAdd: (item: NewVocabularyItem) => void;
   onRemove: (
     item: VocabularyItem,
@@ -49,6 +51,7 @@ export function VocabularyScreen({
   practicing,
   learned,
   speakingEnabled,
+  addPhrasePlaceholders,
   onAdd,
   onRemove,
   onChangeStatus,
@@ -270,6 +273,7 @@ export function VocabularyScreen({
 
       <AddPhraseDialog
         open={addOpen}
+        placeholders={addPhrasePlaceholders}
         onOpenChange={setAddOpen}
         onAdd={(item) => {
           onAdd(item);

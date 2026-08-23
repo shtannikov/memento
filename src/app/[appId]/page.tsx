@@ -38,6 +38,7 @@ export default async function LanguagePage({
     <MementoApp
       appId={language.id}
       appName={language.appName}
+      addPhrasePlaceholders={language.addPhrasePlaceholders}
       speakingEnabled={Boolean(language.speaking)}
     />
   );

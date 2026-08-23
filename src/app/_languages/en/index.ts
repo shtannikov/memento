@@ -32,6 +32,10 @@ export const ENGLISH_LANGUAGE = {
   webhookPath: "/api/telegram/webhook",
   botTokenEnv: "TELEGRAM_BOT_TOKEN",
   webhookSecretEnv: "TELEGRAM_WEBHOOK_SECRET",
+  addPhrasePlaceholders: {
+    term: "e.g. to be in charge of sth",
+    definition: "e.g. to have responsibility for sth",
+  },
   starterVocabulary,
   speaking: ENGLISH_SPEAKING,
   quizSystemPrompt:

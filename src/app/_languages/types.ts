@@ -17,6 +17,11 @@ export type SpeakingLanguageDefinition = {
   answerEvaluationPrompt: string;
 };
 
+export type AddPhrasePlaceholders = {
+  term: string;
+  definition: string;
+};
+
 export type LanguageDefinition<Id extends string = string> = {
   id: Id;
   appName: string;
@@ -28,6 +33,7 @@ export type LanguageDefinition<Id extends string = string> = {
   webhookPath: string;
   botTokenEnv: string;
   webhookSecretEnv: string;
+  addPhrasePlaceholders: AddPhrasePlaceholders;
   starterVocabulary: readonly { term: string; definition: string }[];
   quizSystemPrompt: string;
   graderPrompt: string;
