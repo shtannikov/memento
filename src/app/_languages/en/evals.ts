@@ -162,7 +162,7 @@ export const SPEAKING_EVAL_CASES: SpeakingEvalCase[] = [
       "Chooses a distinct underlying public-service interaction instead of reskinning recent goals, while using negative practice phrases only when natural.",
     appId: "en",
     input: {
-      targetDomain: "public services and civic life",
+      targetDomain: "public services and appointments",
       targetGrammarFocus: "past narration with tense contrast",
       recentTasks: [
         {
@@ -278,6 +278,32 @@ export const SPEAKING_EVAL_CASES: SpeakingEvalCase[] = [
         },
       ],
       requiredPhrases: ["a splinter", "a dead-end job"],
+    },
+  },
+  {
+    kind: "topic",
+    id: "speaking-topic-tracks-space-and-time",
+    description:
+      "Keeps locations, movements, chronology, and narrator knowledge coherent in a past-narration scene.",
+    appId: "en",
+    input: {
+      targetDomain: "housing and neighbourhood",
+      targetGrammarFocus: "past narration with tense contrast",
+      recentTasks: [],
+      requiredPhrases: ["under the name", "to pick up sth", "in any case"],
+    },
+  },
+  {
+    kind: "topic",
+    id: "speaking-topic-conditionals-stay-constructive",
+    description:
+      "Frames realistic consequences and contingency plans as helpful actions rather than vague threats or retaliation.",
+    appId: "en",
+    input: {
+      targetDomain: "entertainment and culture",
+      targetGrammarFocus: "first conditional for realistic consequences",
+      recentTasks: [],
+      requiredPhrases: ["under the name", "to pick up sth", "in any case"],
     },
   },
   {

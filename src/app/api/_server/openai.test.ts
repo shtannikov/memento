@@ -455,6 +455,12 @@ describe("quiz generation contract", () => {
       "form a realistic causal chain",
     );
     expect(ENGLISH_LANGUAGE.speaking?.topicSystemPrompt).toContain(
+      "mentally play the scene from start to finish",
+    );
+    expect(ENGLISH_LANGUAGE.speaking?.topicSystemPrompt).toContain(
+      "Anchor relative places and objects",
+    );
+    expect(ENGLISH_LANGUAGE.speaking?.topicSystemPrompt).toContain(
       "Choose a natural combination for the target domain and grammar that is least similar",
     );
     expect(ENGLISH_LANGUAGE.speaking?.topicSystemPrompt).toContain(
@@ -490,6 +496,27 @@ describe("quiz generation contract", () => {
     expect(ENGLISH_LANGUAGE.speaking?.topicSystemPrompt).toContain(
       "Vary the visible shape of the prompt",
     );
+    expect(ENGLISH_LANGUAGE.speaking?.topicSystemPrompt).toContain(
+      "frame outcomes as benefits, trade-offs, or constructive next steps",
+    );
+    expect(ENGLISH_LANGUAGE.speaking?.topicSystemPrompt).toContain(
+      "Establish every mission-relevant fact the learner is asked to report",
+    );
+    expect(ENGLISH_LANGUAGE.speaking?.topicSystemPrompt).toContain(
+      "any requested past fact is absent from the setup",
+    );
+    expect(ENGLISH_LANGUAGE.speaking?.topicGraderPrompt).toContain(
+      "could sound threatening, punitive, or retaliatory",
+    );
+    expect(ENGLISH_LANGUAGE.speaking?.topicGraderPrompt).toContain(
+      "Locations, movements, temporal references, and causes",
+    );
+    expect(ENGLISH_LANGUAGE.speaking?.topicGraderPrompt).toContain(
+      "groundedSequence",
+    );
+    expect(ENGLISH_LANGUAGE.speaking?.topicGraderPrompt).toContain(
+      "Do not fail for omitted incidental details",
+    );
   });
 
   it("grades forced combinations of unrelated practice phrases as incoherent", async () => {
@@ -497,6 +524,7 @@ describe("quiz generation contract", () => {
       status: "completed",
       output_parsed: {
         coherentScenario: false,
+        groundedSequence: true,
         oneClearMission: true,
         missionRelevantDetails: false,
         requiredPhrasesNotForced: false,
@@ -541,6 +569,7 @@ describe("quiz generation contract", () => {
       status: "completed",
       output_parsed: {
         coherentScenario: true,
+        groundedSequence: true,
         oneClearMission: true,
         missionRelevantDetails: true,
         requiredPhrasesNotForced: true,
@@ -585,6 +614,7 @@ describe("quiz generation contract", () => {
       status: "completed",
       output_parsed: {
         coherentScenario: true,
+        groundedSequence: true,
         oneClearMission: true,
         missionRelevantDetails: false,
         requiredPhrasesNotForced: true,
@@ -630,6 +660,7 @@ describe("quiz generation contract", () => {
       status: "completed",
       output_parsed: {
         coherentScenario: true,
+        groundedSequence: true,
         oneClearMission: true,
         missionRelevantDetails: true,
         requiredPhrasesNotForced: true,
@@ -664,11 +695,53 @@ describe("quiz generation contract", () => {
     });
   });
 
+  it("rejects an ungrounded timeline independently", async () => {
+    const parse = vi.fn().mockResolvedValue({
+      status: "completed",
+      output_parsed: {
+        coherentScenario: true,
+        groundedSequence: false,
+        oneClearMission: true,
+        missionRelevantDetails: true,
+        requiredPhrasesNotForced: true,
+        naturalAndConcrete: true,
+        fluentAndComplete: true,
+        clearRolesAndContext: true,
+        distinctUnderlyingPattern: true,
+        variedPromptStructure: true,
+        reason:
+          "The learner is asked to report an earlier event and outcome that the setup never establishes.",
+      },
+    });
+    const openai = { responses: { parse } } as unknown as OpenAI;
+    const input = {
+      targetDomain: "housing and neighbourhood",
+      targetGrammarFocus: "past narration with tense contrast",
+      recentTasks: [],
+      requiredPhrases: ["under the name", "to pick up sth", "in any case"],
+    };
+    const topic = {
+      title: "The Scene",
+      speakingPrompt:
+        "You arrived home and found water dripping through your ceiling. Tell a neighbour what had happened before you arrived and how the leak had been fixed.",
+      domain: input.targetDomain,
+      grammarFocus: input.targetGrammarFocus,
+    };
+
+    await expect(
+      gradeSpeakingTopic(input, topic, 42, "en", openai),
+    ).resolves.toMatchObject({
+      groundedSequence: false,
+      passed: false,
+    });
+  });
+
   it("rejects an unexplained inability that makes the scene ambiguous", async () => {
     const parse = vi.fn().mockResolvedValue({
       status: "completed",
       output_parsed: {
         coherentScenario: true,
+        groundedSequence: true,
         oneClearMission: true,
         missionRelevantDetails: true,
         requiredPhrasesNotForced: true,
@@ -709,6 +782,7 @@ describe("quiz generation contract", () => {
       status: "completed",
       output_parsed: {
         coherentScenario: true,
+        groundedSequence: true,
         oneClearMission: true,
         missionRelevantDetails: true,
         requiredPhrasesNotForced: true,
