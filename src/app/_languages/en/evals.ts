@@ -282,6 +282,32 @@ export const SPEAKING_EVAL_CASES: SpeakingEvalCase[] = [
   },
   {
     kind: "topic",
+    id: "speaking-topic-tracks-space-time-and-referents",
+    description:
+      "Keeps locations, movements, chronology, narrator knowledge, and references coherent in a past-narration scene.",
+    appId: "en",
+    input: {
+      targetDomain: "housing and neighbourhood",
+      targetGrammarFocus: "past narration with tense contrast",
+      recentTasks: [],
+      requiredPhrases: ["under the name", "to pick up sth", "in any case"],
+    },
+  },
+  {
+    kind: "topic",
+    id: "speaking-topic-conditionals-stay-constructive",
+    description:
+      "Frames realistic consequences and contingency plans as helpful actions rather than vague threats or retaliation.",
+    appId: "en",
+    input: {
+      targetDomain: "entertainment and culture",
+      targetGrammarFocus: "first conditional for realistic consequences",
+      recentTasks: [],
+      requiredPhrases: ["under the name", "to pick up sth", "in any case"],
+    },
+  },
+  {
+    kind: "topic",
     id: "speaking-topic-keeps-wording-fluent-under-limit",
     description:
       "Keeps collocations, coordinated phrases, and sentence endings idiomatic instead of compressing them to fit the prompt limit.",
