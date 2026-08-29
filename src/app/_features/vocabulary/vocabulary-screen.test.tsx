@@ -884,7 +884,7 @@ describe("VocabularyScreen", () => {
     expect(
       screen.getByText(/Use a phrase correctly/),
     ).toHaveTextContent(
-      "Use a phrase correctly in three speaking tasks, or tap Done when it no longer needs speaking practice. Send /speaking in the chat to get your speaking task.",
+      "Use a phrase correctly in three speaking tasks to move it to Learned. Send /speaking in the chat to get your speaking task.",
     );
     expect(
       screen.queryByText("2/3 correct uses"),
