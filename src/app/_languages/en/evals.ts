@@ -255,22 +255,7 @@ export const SPEAKING_EVAL_CASES: SpeakingEvalCase[] = [
     input: {
       targetDomain: "restaurants and food",
       targetGrammarFocus: "polite requests and indirect questions",
-      recentTasks: [
-        {
-          title: "Fix the Office Breakfast",
-          speakingPrompt:
-            "Your office breakfast has arrived: six vegetarian meals contain meat, and the coffee is missing. Call the restaurant manager and request a solution.",
-          domain: "restaurants and food",
-          grammarFocus: "polite requests and indirect questions",
-        },
-        {
-          title: "Order a Safe Dinner",
-          speakingPrompt:
-            "You're ordering dinner for a guest with a serious nut allergy. Ask the server about ingredients and request a safe change.",
-          domain: "restaurants and food",
-          grammarFocus: "polite requests and indirect questions",
-        },
-      ],
+      recentTasks: [],
       requiredPhrases: ["used to +inf", "to be used to sth", "to take off"],
     },
   },
