@@ -473,7 +473,10 @@ describe("quiz generation contract", () => {
       "missing an obligation",
     );
     expect(ENGLISH_LANGUAGE.speaking?.topicSystemPrompt).toContain(
-      "under 280 characters",
+      "under 300 characters",
+    );
+    expect(ENGLISH_LANGUAGE.speaking?.topicSystemPrompt).toContain(
+      "Every sentence must remain idiomatic and complete",
     );
     expect(ENGLISH_LANGUAGE.speaking?.topicSystemPrompt).toContain(
       "natural, connected prose",
@@ -495,6 +498,7 @@ describe("quiz generation contract", () => {
         missionRelevantDetails: false,
         requiredPhrasesNotForced: false,
         naturalAndConcrete: true,
+        fluentAndComplete: true,
         clearRolesAndContext: true,
         distinctUnderlyingPattern: true,
         variedPromptStructure: true,
@@ -538,6 +542,7 @@ describe("quiz generation contract", () => {
         missionRelevantDetails: true,
         requiredPhrasesNotForced: true,
         naturalAndConcrete: true,
+        fluentAndComplete: true,
         clearRolesAndContext: true,
         distinctUnderlyingPattern: false,
         variedPromptStructure: true,
@@ -581,6 +586,7 @@ describe("quiz generation contract", () => {
         missionRelevantDetails: false,
         requiredPhrasesNotForced: true,
         naturalAndConcrete: true,
+        fluentAndComplete: true,
         clearRolesAndContext: true,
         distinctUnderlyingPattern: true,
         variedPromptStructure: false,
@@ -625,6 +631,7 @@ describe("quiz generation contract", () => {
         missionRelevantDetails: true,
         requiredPhrasesNotForced: true,
         naturalAndConcrete: true,
+        fluentAndComplete: true,
         clearRolesAndContext: false,
         distinctUnderlyingPattern: true,
         variedPromptStructure: true,
@@ -650,6 +657,45 @@ describe("quiz generation contract", () => {
       gradeSpeakingTopic(input, topic, 42, "en", openai),
     ).resolves.toMatchObject({
       clearRolesAndContext: false,
+      passed: false,
+    });
+  });
+
+  it("rejects wording compressed into an unnatural sentence ending", async () => {
+    const parse = vi.fn().mockResolvedValue({
+      status: "completed",
+      output_parsed: {
+        coherentScenario: true,
+        oneClearMission: true,
+        missionRelevantDetails: true,
+        requiredPhrasesNotForced: true,
+        naturalAndConcrete: true,
+        fluentAndComplete: false,
+        clearRolesAndContext: true,
+        distinctUnderlyingPattern: true,
+        variedPromptStructure: true,
+        reason: "The final coordination drops the noun needed after travel.",
+      },
+    });
+    const openai = { responses: { parse } } as unknown as OpenAI;
+    const input = {
+      targetDomain: "technology and online life",
+      targetGrammarFocus: "comparisons and language of preference",
+      recentTasks: [],
+      requiredPhrases: [],
+    };
+    const topic = {
+      title: "Choose a Mobile Plan",
+      speakingPrompt:
+        "Convince your partner which plan suits your budget and travel.",
+      domain: input.targetDomain,
+      grammarFocus: input.targetGrammarFocus,
+    };
+
+    await expect(
+      gradeSpeakingTopic(input, topic, 42, "en", openai),
+    ).resolves.toMatchObject({
+      fluentAndComplete: false,
       passed: false,
     });
   });

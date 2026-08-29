@@ -281,6 +281,19 @@ export const SPEAKING_EVAL_CASES: SpeakingEvalCase[] = [
     },
   },
   {
+    kind: "topic",
+    id: "speaking-topic-keeps-wording-fluent-under-limit",
+    description:
+      "Keeps collocations, coordinated phrases, and sentence endings idiomatic instead of compressing them to fit the prompt limit.",
+    appId: "en",
+    input: {
+      targetDomain: "technology and online life",
+      targetGrammarFocus: "comparisons and language of preference",
+      recentTasks: [],
+      requiredPhrases: ["used to +inf", "to be used to sth", "to take off"],
+    },
+  },
+  {
     kind: "answer",
     id: "speaking-answer-required-phrase-statuses",
     description:

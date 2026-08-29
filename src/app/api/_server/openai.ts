@@ -56,7 +56,7 @@ const QuizGradeSchema = z.object({
 
 const SpeakingTopicSchema = z.object({
   title: z.string().trim().min(1).max(70),
-  speakingPrompt: z.string().trim().min(1).max(280),
+  speakingPrompt: z.string().trim().min(1).max(300),
 });
 
 const SpeakingTopicGradeSchema = z.object({
@@ -65,6 +65,7 @@ const SpeakingTopicGradeSchema = z.object({
   missionRelevantDetails: z.boolean(),
   requiredPhrasesNotForced: z.boolean(),
   naturalAndConcrete: z.boolean(),
+  fluentAndComplete: z.boolean(),
   clearRolesAndContext: z.boolean(),
   distinctUnderlyingPattern: z.boolean(),
   variedPromptStructure: z.boolean(),
@@ -337,6 +338,7 @@ export async function gradeSpeakingTopic(
       grade.missionRelevantDetails &&
       grade.requiredPhrasesNotForced &&
       grade.naturalAndConcrete &&
+      grade.fluentAndComplete &&
       grade.clearRolesAndContext &&
       grade.distinctUnderlyingPattern &&
       grade.variedPromptStructure,

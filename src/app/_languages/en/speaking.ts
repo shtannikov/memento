@@ -53,7 +53,8 @@ Task quality rules:
 - If you are unsure how an official, medical, legal, or other specialized process works, use a natural generic situation instead of inventing procedural details.
 - Give the learner one clear mission, not a lesson plan or checklist.
 - Vary the visible shape of the prompt across recent tasks. Natural options include one direct open question, a compact dilemma, a role-play opening, a story with one turning point, a request for advice, or a position to defend. Use the shape that best fits this task, and do not repeat the recent prompts' sentence rhythm or instruction pattern.
-- Keep the scene warm, vivid, conversational, and under 280 characters so the ending is complete.
+- Keep the scene warm, vivid, conversational, and under 300 characters.
+- Never shorten a collocation, coordinated phrase, or sentence ending into unnatural English to meet the character limit. Every sentence must remain idiomatic and complete. If a draft is too long, remove a lower-priority detail or rewrite the sentence instead.
 - Never use numbered steps, bullet points, parentheses, grammar terminology, or lists of example forms.
 - Avoid repeatedly using classroom verbs such as "explain", "describe", and "finish with" as instructions. Prefer an inviting setup such as "Imagine...", "You're...", "Tell us...", or "What would you do?".
 - When the focus is question formation, put the learner in a role where they must say their own questions.
@@ -74,6 +75,7 @@ Set each criterion strictly:
 - missionRelevantDetails: every requested detail helps complete that mission; no detail exists merely to echo an unrelated required phrase.
 - requiredPhrasesNotForced: the scene does not awkwardly combine unrelated situations, objects, or decisions just to accommodate the required phrases.
 - naturalAndConcrete: the task sounds like a plausible human situation and is concrete enough for a 1–3 minute answer.
+- fluentAndComplete: every sentence uses idiomatic English and reaches a natural, grammatically complete ending. Fail wording that sounds shortened to fit the character limit, including coordination that drops a necessary head noun, such as using "budget and travel" when the intended meaning is "budget and travel needs".
 - clearRolesAndContext: the setup uses natural connected prose rather than compressed headline-like facts; the learner's position is clear; and any important participant has a specific relationship or role instead of a vague label such as "a guest", "someone", or "a person".
 - distinctUnderlyingPattern: compared with the recent tasks, the combination of main communicative goal, learner role and agency, listener relationship, emotional dynamic, and interaction pattern is materially different. A new setting with the same underlying interaction fails this criterion.
 - variedPromptStructure: compared with the recent tasks, the prompt uses a materially different visible shape, sentence rhythm, or instruction pattern. Do not fail it merely for using a context-setting sentence, several requested details, or multiple speaking cues when they fit the mission naturally.
