@@ -508,6 +508,9 @@ describe("quiz generation contract", () => {
     expect(ENGLISH_LANGUAGE.speaking?.topicGraderPrompt).toContain(
       "groundedSequenceAndReferences",
     );
+    expect(ENGLISH_LANGUAGE.speaking?.topicGraderPrompt).toContain(
+      "Do not fail for omitted incidental details",
+    );
   });
 
   it("grades forced combinations of unrelated practice phrases as incoherent", async () => {
