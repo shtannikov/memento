@@ -44,7 +44,7 @@ export function LearningTab({
         emptyText="Add a phrase to start your list."
         speakingEnabled={speakingEnabled}
         disabled={disabled}
-        onLearn={(item) =>
+        onDone={(item) =>
           onChangeStatus(item, speakingEnabled ? "practicing" : "learned")
         }
         onDelete={onDelete}

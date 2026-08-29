@@ -19,4 +19,13 @@ describe("formatInlineCorrection", () => {
       "A &amp;<s>value</s> <b>safe</b> B",
     );
   });
+
+  it("keeps a word inserted before the first original word separated", () => {
+    expect(formatInlineCorrection("Long", "A long")).toBe(
+      "<b>A</b> long",
+    );
+    expect(formatInlineCorrection("Leg hurts", "Your leg hurts")).toBe(
+      "<b>Your</b> leg hurts",
+    );
+  });
 });

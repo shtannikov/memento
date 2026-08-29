@@ -473,7 +473,22 @@ describe("quiz generation contract", () => {
       "missing an obligation",
     );
     expect(ENGLISH_LANGUAGE.speaking?.topicSystemPrompt).toContain(
-      "under 240 characters",
+      "under 300 characters",
+    );
+    expect(ENGLISH_LANGUAGE.speaking?.topicSystemPrompt).toContain(
+      "Every sentence must remain idiomatic and complete",
+    );
+    expect(ENGLISH_LANGUAGE.speaking?.topicSystemPrompt).toContain(
+      "natural, connected prose",
+    );
+    expect(ENGLISH_LANGUAGE.speaking?.topicSystemPrompt).toContain(
+      "identify their relationship or role naturally",
+    );
+    expect(ENGLISH_LANGUAGE.speaking?.topicSystemPrompt).toContain(
+      "speaks little English and cannot follow the English menu",
+    );
+    expect(ENGLISH_LANGUAGE.speaking?.topicSystemPrompt).toContain(
+      "Vary the visible shape of the prompt",
     );
   });
 
@@ -486,7 +501,10 @@ describe("quiz generation contract", () => {
         missionRelevantDetails: false,
         requiredPhrasesNotForced: false,
         naturalAndConcrete: true,
+        fluentAndComplete: true,
+        clearRolesAndContext: true,
         distinctUnderlyingPattern: true,
+        variedPromptStructure: true,
         reason: "The job offer is unrelated to the neighbourhood repair mission.",
       },
     });
@@ -527,7 +545,10 @@ describe("quiz generation contract", () => {
         missionRelevantDetails: true,
         requiredPhrasesNotForced: true,
         naturalAndConcrete: true,
+        fluentAndComplete: true,
+        clearRolesAndContext: true,
         distinctUnderlyingPattern: false,
+        variedPromptStructure: true,
         reason: "The learner still compares two options and recommends one.",
       },
     });
@@ -555,6 +576,169 @@ describe("quiz generation contract", () => {
     ).resolves.toMatchObject({
       coherentScenario: true,
       distinctUnderlyingPattern: false,
+      passed: false,
+    });
+  });
+
+  it("rejects a prompt that repeats the visible structure of recent tasks", async () => {
+    const parse = vi.fn().mockResolvedValue({
+      status: "completed",
+      output_parsed: {
+        coherentScenario: true,
+        oneClearMission: true,
+        missionRelevantDetails: false,
+        requiredPhrasesNotForced: true,
+        naturalAndConcrete: true,
+        fluentAndComplete: true,
+        clearRolesAndContext: true,
+        distinctUnderlyingPattern: true,
+        variedPromptStructure: false,
+        reason: "The prompt repeats the recent tasks' sentence rhythm and instruction pattern.",
+      },
+    });
+    const openai = { responses: { parse } } as unknown as OpenAI;
+    const input = {
+      targetDomain: "work and career",
+      targetGrammarFocus: "present perfect for experiences and change",
+      recentTasks: [{
+        title: "A Recent Interview",
+        speakingPrompt:
+          "You are interviewing for a promotion. Say how your work changed, what you handled, and when you felt ready.",
+        domain: "work and career",
+        grammarFocus: "present perfect for experiences and change",
+      }],
+      requiredPhrases: ["take into account"],
+    };
+    const topic = {
+      title: "A New Role",
+      speakingPrompt:
+        "You are interviewing for a new role. Say how your work changed, what you handled, and when you felt ready.",
+      domain: input.targetDomain,
+      grammarFocus: input.targetGrammarFocus,
+    };
+
+    await expect(
+      gradeSpeakingTopic(input, topic, 42, "en", openai),
+    ).resolves.toMatchObject({
+      variedPromptStructure: false,
+      passed: false,
+    });
+  });
+
+  it("rejects compressed context with an unclear participant relationship", async () => {
+    const parse = vi.fn().mockResolvedValue({
+      status: "completed",
+      output_parsed: {
+        coherentScenario: true,
+        oneClearMission: true,
+        missionRelevantDetails: true,
+        requiredPhrasesNotForced: true,
+        naturalAndConcrete: true,
+        fluentAndComplete: true,
+        clearRolesAndContext: false,
+        distinctUnderlyingPattern: true,
+        variedPromptStructure: true,
+        reason: "The vague guest leaves the learner's relationship and role unclear.",
+      },
+    });
+    const openai = { responses: { parse } } as unknown as OpenAI;
+    const input = {
+      targetDomain: "restaurants and food",
+      targetGrammarFocus: "polite requests and indirect questions",
+      recentTasks: [],
+      requiredPhrases: [],
+    };
+    const topic = {
+      title: "Check the Dinner",
+      speakingPrompt:
+        "You're ordering dinner for a guest with a serious nut allergy. Ask the server about the food.",
+      domain: input.targetDomain,
+      grammarFocus: input.targetGrammarFocus,
+    };
+
+    await expect(
+      gradeSpeakingTopic(input, topic, 42, "en", openai),
+    ).resolves.toMatchObject({
+      clearRolesAndContext: false,
+      passed: false,
+    });
+  });
+
+  it("rejects an unexplained inability that makes the scene ambiguous", async () => {
+    const parse = vi.fn().mockResolvedValue({
+      status: "completed",
+      output_parsed: {
+        coherentScenario: true,
+        oneClearMission: true,
+        missionRelevantDetails: true,
+        requiredPhrasesNotForced: true,
+        naturalAndConcrete: false,
+        fluentAndComplete: true,
+        clearRolesAndContext: false,
+        distinctUnderlyingPattern: true,
+        variedPromptStructure: true,
+        reason: "The prompt says the colleague cannot read easily without explaining that the English menu is the obstacle.",
+      },
+    });
+    const openai = { responses: { parse } } as unknown as OpenAI;
+    const input = {
+      targetDomain: "restaurants and food",
+      targetGrammarFocus: "polite requests and indirect questions",
+      recentTasks: [],
+      requiredPhrases: ["used to +inf", "to be used to sth", "to take off"],
+    };
+    const topic = {
+      title: "Help Choose a Safe Dish",
+      speakingPrompt:
+        "You're at a busy restaurant with your colleague, who has a serious nut allergy and can't read the menu easily. Ask about two dishes and decide what they should order.",
+      domain: input.targetDomain,
+      grammarFocus: input.targetGrammarFocus,
+    };
+
+    await expect(
+      gradeSpeakingTopic(input, topic, 42, "en", openai),
+    ).resolves.toMatchObject({
+      naturalAndConcrete: false,
+      clearRolesAndContext: false,
+      passed: false,
+    });
+  });
+
+  it("rejects wording compressed into an unnatural sentence ending", async () => {
+    const parse = vi.fn().mockResolvedValue({
+      status: "completed",
+      output_parsed: {
+        coherentScenario: true,
+        oneClearMission: true,
+        missionRelevantDetails: true,
+        requiredPhrasesNotForced: true,
+        naturalAndConcrete: true,
+        fluentAndComplete: false,
+        clearRolesAndContext: true,
+        distinctUnderlyingPattern: true,
+        variedPromptStructure: true,
+        reason: "The final coordination drops the noun needed after travel.",
+      },
+    });
+    const openai = { responses: { parse } } as unknown as OpenAI;
+    const input = {
+      targetDomain: "technology and online life",
+      targetGrammarFocus: "comparisons and language of preference",
+      recentTasks: [],
+      requiredPhrases: [],
+    };
+    const topic = {
+      title: "Choose a Mobile Plan",
+      speakingPrompt:
+        "Convince your partner which plan suits your budget and travel.",
+      domain: input.targetDomain,
+      grammarFocus: input.targetGrammarFocus,
+    };
+
+    await expect(
+      gradeSpeakingTopic(input, topic, 42, "en", openai),
+    ).resolves.toMatchObject({
+      fluentAndComplete: false,
       passed: false,
     });
   });

@@ -166,6 +166,13 @@ export const SPEAKING_EVAL_CASES: SpeakingEvalCase[] = [
       targetGrammarFocus: "past narration with tense contrast",
       recentTasks: [
         {
+          title: "A New Role at Work",
+          speakingPrompt:
+            "You are in a friendly interview. Say how your responsibilities changed, what you handled, and when you felt ready to move.",
+          domain: "work and career",
+          grammarFocus: "present perfect for experiences and change",
+        },
+        {
           title: "A Second Chance at Your Course",
           speakingPrompt:
             "You missed an important application deadline. Explain what went wrong, apologize to your mentor, and ask whether you can apply again.",
@@ -206,6 +213,54 @@ export const SPEAKING_EVAL_CASES: SpeakingEvalCase[] = [
   },
   {
     kind: "topic",
+    id: "speaking-topic-varies-prompt-structure",
+    description:
+      "Varies the visible prompt shape instead of repeating the structure of recent tasks.",
+    appId: "en",
+    input: {
+      targetDomain: "preferences and personal choices",
+      targetGrammarFocus: "comparisons and language of preference",
+      recentTasks: [
+        {
+          title: "A New Job",
+          speakingPrompt:
+            "You are talking to a manager. Say how your role changed, what you learned, and when you became ready.",
+          domain: "work and career",
+          grammarFocus: "present perfect for experiences and change",
+        },
+        {
+          title: "A Torn Jacket",
+          speakingPrompt:
+            "A customer returns a jacket. Explain what happened, what they were doing, and what you will do next.",
+          domain: "shopping and consumer situations",
+          grammarFocus: "past narration with tense contrast",
+        },
+        {
+          title: "A Noisy Neighbour",
+          speakingPrompt:
+            "Call the landlord. Report what the neighbour said, what they promised, and when you will follow up.",
+          domain: "housing and neighbourhood",
+          grammarFocus: "reported speech for retelling conversations",
+        },
+      ],
+      requiredPhrases: ["for a change", "to wrap up sth"],
+    },
+  },
+  {
+    kind: "topic",
+    id: "speaking-topic-grounds-roles-and-context",
+    description:
+      "Uses natural connected context, makes participant relationships clear, and explains unusual difficulties such as being unable to follow an English menu.",
+    appId: "en",
+    input: {
+      targetDomain: "restaurants and food",
+      targetGrammarFocus: "polite requests and indirect questions",
+      recentTasks: [],
+      requiredPhrases: ["used to +inf", "to be used to sth", "to take off"],
+    },
+  },
+  {
+    kind: "topic",
     id: "speaking-topic-unrelated-phrases-stay-coherent",
     description:
       "Keeps one natural mission when the separate practice phrases do not belong to a shared scenario.",
@@ -223,6 +278,19 @@ export const SPEAKING_EVAL_CASES: SpeakingEvalCase[] = [
         },
       ],
       requiredPhrases: ["a splinter", "a dead-end job"],
+    },
+  },
+  {
+    kind: "topic",
+    id: "speaking-topic-keeps-wording-fluent-under-limit",
+    description:
+      "Keeps collocations, coordinated phrases, and sentence endings idiomatic instead of compressing them to fit the prompt limit.",
+    appId: "en",
+    input: {
+      targetDomain: "technology and online life",
+      targetGrammarFocus: "comparisons and language of preference",
+      recentTasks: [],
+      requiredPhrases: ["used to +inf", "to be used to sth", "to take off"],
     },
   },
   {

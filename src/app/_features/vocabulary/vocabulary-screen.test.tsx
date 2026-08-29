@@ -361,7 +361,7 @@ describe("VocabularyScreen", () => {
     );
 
     await user.click(
-      screen.getByRole("button", { name: "Mark zapamatovat si as learned" }),
+      screen.getByRole("button", { name: "Mark 'zapamatovat si' as learned" }),
     );
 
     expect(screen.getByRole("status")).toHaveTextContent("Moved to Learned");
@@ -854,7 +854,7 @@ describe("VocabularyScreen", () => {
     );
   });
 
-  it("shows speaking mastery guidance without a direct completion action", async () => {
+  it("shows speaking mastery guidance with a direct completion action", async () => {
     const user = userEvent.setup();
     const onChangeStatus = vi.fn();
     const practicing: VocabularyItem[] = [
@@ -889,9 +889,12 @@ describe("VocabularyScreen", () => {
     expect(
       screen.queryByText("2/3 correct uses"),
     ).not.toBeInTheDocument();
-    expect(
-      screen.queryByRole("button", { name: /mark .* learned/i }),
-    ).not.toBeInTheDocument();
+    await user.click(
+      screen.getByRole("button", {
+        name: "Mark 'make up my mind' as learned",
+      }),
+    );
+    expect(onChangeStatus).toHaveBeenCalledWith(practicing[0], "learned");
     const command = screen.getByRole("button", {
       name: "Copy /speaking command",
     });
@@ -905,7 +908,7 @@ describe("VocabularyScreen", () => {
         name: "Move make up my mind back to learning",
       }),
     );
-    expect(onChangeStatus).toHaveBeenCalledWith(practicing[0], "learning");
+    expect(onChangeStatus).toHaveBeenLastCalledWith(practicing[0], "learning");
   });
 
   it("highlights the first three practicing phrases as the next speaking task", async () => {
@@ -997,7 +1000,7 @@ describe("VocabularyScreen", () => {
     ).toBeInTheDocument();
     expect(screen.queryByText(/correct answers/)).not.toBeInTheDocument();
     await user.click(
-      screen.getByRole("button", { name: "Mark zapamatovat si as learned" }),
+      screen.getByRole("button", { name: "Mark 'zapamatovat si' as learned" }),
     );
     expect(onChangeStatus).toHaveBeenCalledWith(learning[0], "learned");
   });

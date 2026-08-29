@@ -7,6 +7,7 @@ const mocks = vi.hoisted(() => ({
   ensureUserAndSeed: vi.fn(),
   loadVocabulary: vi.fn(),
   rpc: vi.fn(),
+  from: vi.fn(),
 }));
 
 vi.mock("@/app/api/_server/api", async (importOriginal) => ({
@@ -14,7 +15,7 @@ vi.mock("@/app/api/_server/api", async (importOriginal) => ({
   authenticateRequest: mocks.authenticateRequest,
 }));
 vi.mock("@/app/api/_server/supabase", () => ({
-  getMementoDb: () => ({ rpc: mocks.rpc }),
+  getMementoDb: () => ({ rpc: mocks.rpc, from: mocks.from }),
 }));
 vi.mock("@/app/_features/vocabulary/server/vocabulary", () => ({
   ensureUserAndSeed: mocks.ensureUserAndSeed,
@@ -40,6 +41,15 @@ beforeEach(() => {
   });
   mocks.ensureUserAndSeed.mockResolvedValue(undefined);
   mocks.rpc.mockResolvedValue({ data: true, error: null });
+  mocks.from.mockImplementation(() => {
+    const query = {
+      update: vi.fn().mockReturnThis(),
+      eq: vi.fn().mockReturnThis(),
+      select: vi.fn().mockReturnThis(),
+      maybeSingle: vi.fn().mockResolvedValue({ data: { id: 7 }, error: null }),
+    };
+    return query;
+  });
   mocks.loadVocabulary.mockResolvedValue({
     learning: [],
     practicing: [],
@@ -75,6 +85,16 @@ describe("vocabulary status route", () => {
     });
 
     expect(response.status).toBe(409);
+    expect(mocks.rpc).not.toHaveBeenCalled();
+  });
+
+  it("moves a Practicing phrase directly to Learned", async () => {
+    const response = await PATCH(request("learn"), {
+      params: Promise.resolve({ id: "7" }),
+    });
+
+    expect(response.status).toBe(200);
+    expect(mocks.from).toHaveBeenCalledWith("vocabulary_items");
     expect(mocks.rpc).not.toHaveBeenCalled();
   });
 });

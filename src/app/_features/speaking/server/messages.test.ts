@@ -23,6 +23,7 @@ describe("speaking messages", () => {
     expect(message).toContain("Your new speaking task");
     expect(message).toContain("The scene");
     expect(message).not.toContain(task.topic);
+    expect(message).not.toContain("Your language twist");
     expect(message).toContain("<i>take into account</i>");
     expect(message).toContain(
       "🚀 <b>Ready to answer the task?\nSend a 1–3 min voice message!</b>",

@@ -9,11 +9,13 @@ import type { VocabularyItem } from "./vocabulary.types";
 export function SortableVocabularyCard({
   item,
   disabled,
+  onDone,
   onRestore,
   onDelete,
 }: {
   item: VocabularyItem;
   disabled: boolean;
+  onDone: () => void;
   onRestore: () => void;
   onDelete: () => void;
 }) {
@@ -39,7 +41,7 @@ export function SortableVocabularyCard({
       <VocabularyCard
         item={item}
         speakingEnabled
-        onLearn={() => undefined}
+        onDone={onDone}
         onRestore={onRestore}
         onDelete={onDelete}
         disabled={disabled}

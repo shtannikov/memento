@@ -56,7 +56,7 @@ const QuizGradeSchema = z.object({
 
 const SpeakingTopicSchema = z.object({
   title: z.string().trim().min(1).max(70),
-  speakingPrompt: z.string().trim().min(1).max(280),
+  speakingPrompt: z.string().trim().min(1).max(300),
 });
 
 const SpeakingTopicGradeSchema = z.object({
@@ -65,7 +65,10 @@ const SpeakingTopicGradeSchema = z.object({
   missionRelevantDetails: z.boolean(),
   requiredPhrasesNotForced: z.boolean(),
   naturalAndConcrete: z.boolean(),
+  fluentAndComplete: z.boolean(),
+  clearRolesAndContext: z.boolean(),
   distinctUnderlyingPattern: z.boolean(),
+  variedPromptStructure: z.boolean(),
   reason: z.string().trim().min(1).max(500),
 });
 
@@ -271,7 +274,12 @@ export async function generateSpeakingTopic(
       { role: "system", content: speaking.topicSystemPrompt },
       { role: "user", content: JSON.stringify(input) },
     ],
-    text: { format: zodTextFormat(SpeakingTopicSchema, "memento_speaking_topic") },
+    text: {
+      format: zodTextFormat(
+        SpeakingTopicSchema,
+        "memento_speaking_topic",
+      ),
+    },
   });
   if (response.status !== "completed" || !response.output_parsed) {
     throw new Error("Speaking topic generation failed");
@@ -330,7 +338,10 @@ export async function gradeSpeakingTopic(
       grade.missionRelevantDetails &&
       grade.requiredPhrasesNotForced &&
       grade.naturalAndConcrete &&
-      grade.distinctUnderlyingPattern,
+      grade.fluentAndComplete &&
+      grade.clearRolesAndContext &&
+      grade.distinctUnderlyingPattern &&
+      grade.variedPromptStructure,
   };
 }
 

@@ -44,7 +44,7 @@ describe("LearningTab", () => {
         screen.getByRole("button", {
           name: speakingEnabled
             ? "Move follow up to practicing"
-            : "Mark follow up as learned",
+            : "Mark 'follow up' as learned",
         }),
       );
       expect(onChangeStatus).toHaveBeenCalledWith(item, destination);

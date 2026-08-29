@@ -31,6 +31,13 @@ export function formatInlineCorrection(
       followsDeletion ? " " : undefined,
       followsDeletion,
     );
+    if (
+      part.kind === "insert" &&
+      parts[index + 1]?.kind === "equal" &&
+      parts[index + 1]?.tokens[0]?.leading === ""
+    ) {
+      html += " ";
+    }
   }
 
   return html;
@@ -70,7 +77,10 @@ function diffWords(original: WordToken[], corrected: WordToken[]): DiffPart[] {
   let j = 0;
   while (i < original.length && j < corrected.length) {
     if (sameWord(original[i], corrected[j])) {
-      append("equal", original[i]);
+      append("equal", {
+        leading: original[i].leading,
+        text: corrected[j].text,
+      });
       i += 1;
       j += 1;
     } else if (lengths[i + 1][j] >= lengths[i][j + 1]) {

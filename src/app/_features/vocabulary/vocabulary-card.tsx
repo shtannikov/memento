@@ -30,7 +30,7 @@ function IconButton({
 
 export function VocabularyCard({
   item,
-  onLearn,
+  onDone,
   onRestore,
   onDelete,
   speakingEnabled,
@@ -38,7 +38,7 @@ export function VocabularyCard({
   disabled = false,
 }: {
   item: VocabularyItem;
-  onLearn: () => void;
+  onDone: () => void;
   onRestore: () => void;
   onDelete: () => void;
   speakingEnabled: boolean;
@@ -60,6 +60,16 @@ export function VocabularyCard({
         <p title={item.definition}>{item.definition}</p>
       </div>
       <div className={styles.wordActions}>
+        {isPracticing && (
+          <IconButton
+            label={`Mark '${item.term}' as learned`}
+            tone="success"
+            onClick={onDone}
+            disabled={disabled}
+          >
+            <CheckIcon />
+          </IconButton>
+        )}
         {isLearned || isPracticing ? (
           <IconButton
             label={`Move ${item.term} back to ${isPracticing || !speakingEnabled ? "learning" : "practicing"}`}
@@ -74,10 +84,10 @@ export function VocabularyCard({
             label={
               speakingEnabled
                 ? `Move ${item.term} to practicing`
-                : `Mark ${item.term} as learned`
+                : `Mark '${item.term}' as learned`
             }
             tone="success"
-            onClick={onLearn}
+            onClick={onDone}
             disabled={disabled}
           >
             <CheckIcon />
