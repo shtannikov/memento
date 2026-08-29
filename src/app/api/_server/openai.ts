@@ -68,6 +68,7 @@ const SpeakingTopicGradeSchema = z.object({
   naturalAndConcrete: z.boolean(),
   fluentAndComplete: z.boolean(),
   clearRolesAndContext: z.boolean(),
+  justifiedLearnerRole: z.boolean(),
   distinctUnderlyingPattern: z.boolean(),
   variedPromptStructure: z.boolean(),
   reason: z.string().trim().min(1).max(500),
@@ -342,6 +343,7 @@ export async function gradeSpeakingTopic(
       grade.naturalAndConcrete &&
       grade.fluentAndComplete &&
       grade.clearRolesAndContext &&
+      grade.justifiedLearnerRole &&
       grade.distinctUnderlyingPattern &&
       grade.variedPromptStructure,
   };
