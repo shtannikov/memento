@@ -60,6 +60,16 @@ export function VocabularyCard({
         <p title={item.definition}>{item.definition}</p>
       </div>
       <div className={styles.wordActions}>
+        {isPracticing && (
+          <IconButton
+            label={`Mark ${item.term} as learned`}
+            tone="success"
+            onClick={onLearn}
+            disabled={disabled}
+          >
+            <CheckIcon />
+          </IconButton>
+        )}
         {isLearned || isPracticing ? (
           <IconButton
             label={`Move ${item.term} back to ${isPracticing || !speakingEnabled ? "learning" : "practicing"}`}

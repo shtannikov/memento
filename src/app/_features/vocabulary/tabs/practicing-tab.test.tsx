@@ -15,7 +15,7 @@ const item: VocabularyItem = {
 };
 
 describe("PracticingTab", () => {
-  it("shows speaking guidance and restores a filtered phrase to Learning", async () => {
+  it("can move a filtered phrase to Learned or back to Learning", async () => {
     const user = userEvent.setup();
     const onChangeStatus = vi.fn();
     render(
@@ -32,6 +32,12 @@ describe("PracticingTab", () => {
     );
 
     expect(screen.getByText("/speaking")).toBeInTheDocument();
+    await user.click(
+      screen.getByRole("button", {
+        name: "Mark take into account as learned",
+      }),
+    );
+    expect(onChangeStatus).toHaveBeenCalledWith(item, "learned");
     await user.click(
       screen.getByRole("button", {
         name: "Move take into account back to learning",

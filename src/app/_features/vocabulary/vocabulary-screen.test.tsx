@@ -854,7 +854,7 @@ describe("VocabularyScreen", () => {
     );
   });
 
-  it("shows speaking mastery guidance without a direct completion action", async () => {
+  it("shows speaking mastery guidance with a direct completion action", async () => {
     const user = userEvent.setup();
     const onChangeStatus = vi.fn();
     const practicing: VocabularyItem[] = [
@@ -884,14 +884,17 @@ describe("VocabularyScreen", () => {
     expect(
       screen.getByText(/Use a phrase correctly/),
     ).toHaveTextContent(
-      "Use a phrase correctly in three speaking tasks to move it to Learned. Send /speaking in the chat to get your speaking task.",
+      "Use a phrase correctly in three speaking tasks, or tap Done when it no longer needs speaking practice. Send /speaking in the chat to get your speaking task.",
     );
     expect(
       screen.queryByText("2/3 correct uses"),
     ).not.toBeInTheDocument();
-    expect(
-      screen.queryByRole("button", { name: /mark .* learned/i }),
-    ).not.toBeInTheDocument();
+    await user.click(
+      screen.getByRole("button", {
+        name: "Mark make up my mind as learned",
+      }),
+    );
+    expect(onChangeStatus).toHaveBeenCalledWith(practicing[0], "learned");
     const command = screen.getByRole("button", {
       name: "Copy /speaking command",
     });
@@ -905,7 +908,7 @@ describe("VocabularyScreen", () => {
         name: "Move make up my mind back to learning",
       }),
     );
-    expect(onChangeStatus).toHaveBeenCalledWith(practicing[0], "learning");
+    expect(onChangeStatus).toHaveBeenLastCalledWith(practicing[0], "learning");
   });
 
   it("highlights the first three practicing phrases as the next speaking task", async () => {

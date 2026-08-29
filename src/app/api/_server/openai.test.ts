@@ -475,6 +475,12 @@ describe("quiz generation contract", () => {
     expect(ENGLISH_LANGUAGE.speaking?.topicSystemPrompt).toContain(
       "under 240 characters",
     );
+    expect(ENGLISH_LANGUAGE.speaking?.topicSystemPrompt).toContain(
+      "Avoid chains of three wh-prompts",
+    );
+    expect(ENGLISH_LANGUAGE.speaking?.topicSystemPrompt).toContain(
+      "Vary the visible shape of the prompt",
+    );
   });
 
   it("grades forced combinations of unrelated practice phrases as incoherent", async () => {
@@ -487,6 +493,7 @@ describe("quiz generation contract", () => {
         requiredPhrasesNotForced: false,
         naturalAndConcrete: true,
         distinctUnderlyingPattern: true,
+        variedPromptStructure: true,
         reason: "The job offer is unrelated to the neighbourhood repair mission.",
       },
     });
@@ -528,6 +535,7 @@ describe("quiz generation contract", () => {
         requiredPhrasesNotForced: true,
         naturalAndConcrete: true,
         distinctUnderlyingPattern: false,
+        variedPromptStructure: true,
         reason: "The learner still compares two options and recommends one.",
       },
     });
@@ -555,6 +563,43 @@ describe("quiz generation contract", () => {
     ).resolves.toMatchObject({
       coherentScenario: true,
       distinctUnderlyingPattern: false,
+      passed: false,
+    });
+  });
+
+  it("rejects the repeated context-plus-three-cues prompt formula", async () => {
+    const parse = vi.fn().mockResolvedValue({
+      status: "completed",
+      output_parsed: {
+        coherentScenario: true,
+        oneClearMission: true,
+        missionRelevantDetails: false,
+        requiredPhrasesNotForced: true,
+        naturalAndConcrete: true,
+        distinctUnderlyingPattern: true,
+        variedPromptStructure: false,
+        reason: "The second sentence is another three-part questionnaire.",
+      },
+    });
+    const openai = { responses: { parse } } as unknown as OpenAI;
+    const input = {
+      targetDomain: "work and career",
+      targetGrammarFocus: "present perfect for experiences and change",
+      recentTasks: [],
+      requiredPhrases: ["take into account"],
+    };
+    const topic = {
+      title: "A New Role",
+      speakingPrompt:
+        "You are interviewing for a new role. Say how your work changed, what you handled, and when you felt ready.",
+      domain: input.targetDomain,
+      grammarFocus: input.targetGrammarFocus,
+    };
+
+    await expect(
+      gradeSpeakingTopic(input, topic, 42, "en", openai),
+    ).resolves.toMatchObject({
+      variedPromptStructure: false,
       passed: false,
     });
   });

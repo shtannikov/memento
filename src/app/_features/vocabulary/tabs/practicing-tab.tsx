@@ -42,9 +42,9 @@ export function PracticingTab({
       onSearchChange={onSearchChange}
       hint={
         <ChatCommandHint>
-          Use a phrase correctly in three speaking tasks to move it to Learned.
-          Send <ChatCommand>/speaking</ChatCommand> in the chat to get your
-          speaking task.
+          Use a phrase correctly in three speaking tasks, or tap Done when it
+          no longer needs speaking practice. Send <ChatCommand>/speaking</ChatCommand>
+          {" "}in the chat to get your speaking task.
         </ChatCommandHint>
       }
     >
@@ -53,6 +53,7 @@ export function PracticingTab({
           items={items}
           reordering={reordering || disabled}
           onReorder={onReorder}
+          onLearn={(item) => onChangeStatus(item, "learned")}
           onRestore={(item) => onChangeStatus(item, "learning")}
           onDelete={onDelete}
         />
@@ -64,6 +65,7 @@ export function PracticingTab({
           emptyText="Keep practicing in quizzes, or tap Done on a Learning phrase when it feels ready."
           speakingEnabled
           disabled={disabled}
+          onLearn={(item) => onChangeStatus(item, "learned")}
           onRestore={(item) => onChangeStatus(item, "learning")}
           onDelete={onDelete}
         />

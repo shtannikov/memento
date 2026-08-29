@@ -66,11 +66,30 @@ export async function PATCH(request: Request, context: RouteContext) {
       });
     }
     if (action === "learn") {
-      throw new AppError(
-        "INVALID_STATUS_CHANGE",
-        "Phrases become Learned after speaking practice.",
-        409,
-      );
+      const { data, error } = await getMementoDb()
+        .from("vocabulary_items")
+        .update({
+          status: "learned",
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", id)
+        .eq("user_id", user.id)
+        .eq("app_id", appId)
+        .eq("status", "practicing")
+        .eq("is_removed", false)
+        .select("id")
+        .maybeSingle();
+      if (error) throw error;
+      if (!data) {
+        throw new AppError(
+          "INVALID_STATUS_CHANGE",
+          "That phrase cannot be moved from its current stage.",
+          409,
+        );
+      }
+      return NextResponse.json({
+        vocabulary: await loadVocabulary(user.id, appId),
+      });
     }
     const { data, error } = await getMementoDb().rpc(
       action === "practice"
