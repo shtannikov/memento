@@ -39,7 +39,7 @@ function SearchablePage() {
         emptyText="Add a phrase to start your list."
         speakingEnabled
         disabled={false}
-        onLearn={vi.fn()}
+        onDone={vi.fn()}
         onDelete={vi.fn()}
       />
     </VocabularyTabPage>

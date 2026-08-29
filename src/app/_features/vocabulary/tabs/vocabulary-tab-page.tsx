@@ -89,7 +89,7 @@ export function VocabularyItemList({
   emptyText,
   speakingEnabled,
   disabled,
-  onLearn,
+  onDone,
   onRestore,
   onDelete,
 }: {
@@ -99,7 +99,7 @@ export function VocabularyItemList({
   emptyText: string;
   speakingEnabled: boolean;
   disabled: boolean;
-  onLearn?: VocabularyItemHandler;
+  onDone?: VocabularyItemHandler;
   onRestore?: VocabularyItemHandler;
   onDelete: VocabularyItemHandler;
 }) {
@@ -120,7 +120,7 @@ export function VocabularyItemList({
           item={item}
           speakingEnabled={speakingEnabled}
           disabled={disabled}
-          onLearn={() => onLearn?.(item)}
+          onDone={() => onDone?.(item)}
           onRestore={() => onRestore?.(item)}
           onDelete={() => onDelete(item)}
         />

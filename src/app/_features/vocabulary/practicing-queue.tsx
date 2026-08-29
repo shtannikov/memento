@@ -45,14 +45,14 @@ export function PracticingQueue({
   items,
   reordering,
   onReorder,
-  onLearn,
+  onDone,
   onRestore,
   onDelete,
 }: {
   items: VocabularyItem[];
   reordering: boolean;
   onReorder: (items: VocabularyItem[]) => void;
-  onLearn: (item: VocabularyItem) => void;
+  onDone: (item: VocabularyItem) => void;
   onRestore: (item: VocabularyItem) => void;
   onDelete: (item: VocabularyItem) => void;
 }) {
@@ -107,7 +107,7 @@ export function PracticingQueue({
                 key={item.id}
                 item={item}
                 disabled={reordering}
-                onLearn={() => onLearn(item)}
+                onDone={() => onDone(item)}
                 onRestore={() => onRestore(item)}
                 onDelete={() => onDelete(item)}
               />
@@ -119,7 +119,7 @@ export function PracticingQueue({
             key={item.id}
             item={item}
             disabled={reordering}
-            onLearn={() => onLearn(item)}
+            onDone={() => onDone(item)}
             onRestore={() => onRestore(item)}
             onDelete={() => onDelete(item)}
           />

@@ -53,7 +53,7 @@ export function PracticingTab({
           items={items}
           reordering={reordering || disabled}
           onReorder={onReorder}
-          onLearn={(item) => onChangeStatus(item, "learned")}
+          onDone={(item) => onChangeStatus(item, "learned")}
           onRestore={(item) => onChangeStatus(item, "learning")}
           onDelete={onDelete}
         />
@@ -65,7 +65,7 @@ export function PracticingTab({
           emptyText="Keep practicing in quizzes, or tap Done on a Learning phrase when it feels ready."
           speakingEnabled
           disabled={disabled}
-          onLearn={(item) => onChangeStatus(item, "learned")}
+          onDone={(item) => onChangeStatus(item, "learned")}
           onRestore={(item) => onChangeStatus(item, "learning")}
           onDelete={onDelete}
         />

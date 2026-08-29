@@ -34,7 +34,7 @@ describe("PracticingTab", () => {
     expect(screen.getByText("/speaking")).toBeInTheDocument();
     await user.click(
       screen.getByRole("button", {
-        name: "Mark take into account as learned",
+        name: "Mark 'take into account' as learned",
       }),
     );
     expect(onChangeStatus).toHaveBeenCalledWith(item, "learned");

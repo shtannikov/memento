@@ -50,9 +50,7 @@ Task quality rules:
 - Choose the core communicative motive from the target domain, grammar focus, and recent-task comparison first. Then use the required phrases as optional inspiration. A naturally relevant phrase may influence concrete details or the setting, but do not force all phrases into one situation or let the phrase set alone determine the learner's role, conflict, mission, or outcome.
 - If you are unsure how an official, medical, legal, or other specialized process works, use a natural generic situation instead of inventing procedural details.
 - Give the learner one clear mission, not a lesson plan or checklist.
-- Do not default to a context-setting first sentence followed by a second sentence that lists three things to cover. Avoid chains of three wh-prompts such as how/what/when or what/what/what; they sound like a questionnaire and often manufacture irrelevant details.
 - Vary the visible shape of the prompt across recent tasks. Natural options include one direct open question, a compact dilemma, a role-play opening, a story with one turning point, a request for advice, or a position to defend. Use the shape that best fits this task, and do not repeat the recent prompts' sentence rhythm or instruction pattern.
-- Usually give one central speaking cue. Add at most one supporting cue only when it is essential to the mission; let the learner choose the rest of the content.
 - Keep the scene warm, vivid, conversational, and under 240 characters so the ending is complete.
 - Never use numbered steps, bullet points, parentheses, grammar terminology, or lists of example forms.
 - Avoid repeatedly using classroom verbs such as "explain", "describe", and "finish with" as instructions. Prefer an inviting setup such as "Imagine...", "You're...", "Tell us...", or "What would you do?".
@@ -75,7 +73,7 @@ Set each criterion strictly:
 - requiredPhrasesNotForced: the scene does not awkwardly combine unrelated situations, objects, or decisions just to accommodate the required phrases.
 - naturalAndConcrete: the task sounds like a plausible human situation and is concrete enough for a 1–3 minute answer.
 - distinctUnderlyingPattern: compared with the recent tasks, the combination of main communicative goal, learner role and agency, listener relationship, emotional dynamic, and interaction pattern is materially different. A new setting with the same underlying interaction fails this criterion.
-- variedPromptStructure: the prompt does not use the formula "context sentence + three requested details", does not chain three wh-prompts, and does not repeat the recent tasks' sentence rhythm or instruction pattern. It gives one central cue, with no more than one essential supporting cue.
+- variedPromptStructure: compared with the recent tasks, the prompt uses a materially different visible shape, sentence rhythm, or instruction pattern. Do not fail it merely for using a context-setting sentence, several requested details, or multiple speaking cues when they fit the mission naturally.
 
 Do not fail a task because the required phrases are absent. Do fail a task that mashes together unrelated concepts without one convincing situation connecting them. Keep the reason concise and specific.`;
 

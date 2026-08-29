@@ -215,7 +215,7 @@ export const SPEAKING_EVAL_CASES: SpeakingEvalCase[] = [
     kind: "topic",
     id: "speaking-topic-varies-prompt-structure",
     description:
-      "Avoids repeating the context-sentence plus three-question checklist formula found throughout recent tasks.",
+      "Varies the visible prompt shape instead of repeating the structure of recent tasks.",
     appId: "en",
     input: {
       targetDomain: "preferences and personal choices",

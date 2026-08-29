@@ -11,7 +11,6 @@ import {
   generateQuizCards,
   gradeQuizCards,
   gradeSpeakingTopic,
-  isSpeakingPromptFormulaic,
   normalizeQuizSentence,
   transcribeVoice,
   validateGeneratedCards,
@@ -477,81 +476,8 @@ describe("quiz generation contract", () => {
       "under 240 characters",
     );
     expect(ENGLISH_LANGUAGE.speaking?.topicSystemPrompt).toContain(
-      "Avoid chains of three wh-prompts",
-    );
-    expect(ENGLISH_LANGUAGE.speaking?.topicSystemPrompt).toContain(
       "Vary the visible shape of the prompt",
     );
-  });
-
-  it("regenerates a speaking topic that repeats the three-cue formula", async () => {
-    const parse = vi.fn()
-      .mockResolvedValueOnce({
-        status: "completed",
-        output_parsed: {
-          title: "A Fine on Your Street",
-          speakingPrompt:
-            "You are at city hall. Tell the officer what happened, what came before, and how it ended.",
-        },
-      })
-      .mockResolvedValueOnce({
-        status: "completed",
-        output_parsed: {
-          title: "Appeal a Parking Fine",
-          speakingPrompt:
-            "The payment machine was broken. Persuade the officer to review your fine.",
-        },
-      });
-    const openai = { responses: { parse } } as unknown as OpenAI;
-    const input = {
-      targetDomain: "public services and appointments",
-      targetGrammarFocus: "past narration with tense contrast",
-      recentTasks: [],
-      requiredPhrases: ["a fine"],
-    };
-
-    await expect(generateSpeakingTopic(input, 42, "en", openai)).resolves
-      .toMatchObject({
-        title: "Appeal a Parking Fine",
-        speakingPrompt:
-          "The payment machine was broken. Persuade the officer to review your fine.",
-      });
-    expect(parse).toHaveBeenCalledTimes(2);
-    expect(JSON.stringify(parse.mock.calls[1][0].input)).toContain(
-      "rejectedDraft",
-    );
-    expect(JSON.stringify(parse.mock.calls[1][0].input)).toContain(
-      "one central speaking cue",
-    );
-  });
-
-  it("fails after three formulaic speaking drafts", async () => {
-    const parse = vi.fn().mockResolvedValue({
-      status: "completed",
-      output_parsed: {
-        title: "A Repeated Formula",
-        speakingPrompt:
-          "You are at an interview. Say what changed, what you learned, and when you felt ready.",
-      },
-    });
-    const openai = { responses: { parse } } as unknown as OpenAI;
-
-    await expect(generateSpeakingTopic({
-      targetDomain: "work and career",
-      targetGrammarFocus: "present perfect for experiences and change",
-      recentTasks: [],
-      requiredPhrases: [],
-    }, 42, "en", openai)).rejects.toThrow("Speaking topic generation failed");
-    expect(parse).toHaveBeenCalledTimes(3);
-  });
-
-  it("detects checklist phrasing without rejecting one central cue", () => {
-    expect(isSpeakingPromptFormulaic(
-      "Brief your colleague on the purchase, the earlier damage, and the outcome.",
-    )).toBe(true);
-    expect(isSpeakingPromptFormulaic(
-      "Which weekend plan would suit your group better, and why?",
-    )).toBe(false);
   });
 
   it("grades forced combinations of unrelated practice phrases as incoherent", async () => {
@@ -638,7 +564,7 @@ describe("quiz generation contract", () => {
     });
   });
 
-  it("rejects the repeated context-plus-three-cues prompt formula", async () => {
+  it("rejects a prompt that repeats the visible structure of recent tasks", async () => {
     const parse = vi.fn().mockResolvedValue({
       status: "completed",
       output_parsed: {
@@ -649,14 +575,20 @@ describe("quiz generation contract", () => {
         naturalAndConcrete: true,
         distinctUnderlyingPattern: true,
         variedPromptStructure: false,
-        reason: "The second sentence is another three-part questionnaire.",
+        reason: "The prompt repeats the recent tasks' sentence rhythm and instruction pattern.",
       },
     });
     const openai = { responses: { parse } } as unknown as OpenAI;
     const input = {
       targetDomain: "work and career",
       targetGrammarFocus: "present perfect for experiences and change",
-      recentTasks: [],
+      recentTasks: [{
+        title: "A Recent Interview",
+        speakingPrompt:
+          "You are interviewing for a promotion. Say how your work changed, what you handled, and when you felt ready.",
+        domain: "work and career",
+        grammarFocus: "present perfect for experiences and change",
+      }],
       requiredPhrases: ["take into account"],
     };
     const topic = {

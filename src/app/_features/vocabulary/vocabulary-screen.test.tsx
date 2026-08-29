@@ -361,7 +361,7 @@ describe("VocabularyScreen", () => {
     );
 
     await user.click(
-      screen.getByRole("button", { name: "Mark zapamatovat si as learned" }),
+      screen.getByRole("button", { name: "Mark 'zapamatovat si' as learned" }),
     );
 
     expect(screen.getByRole("status")).toHaveTextContent("Moved to Learned");
@@ -891,7 +891,7 @@ describe("VocabularyScreen", () => {
     ).not.toBeInTheDocument();
     await user.click(
       screen.getByRole("button", {
-        name: "Mark make up my mind as learned",
+        name: "Mark 'make up my mind' as learned",
       }),
     );
     expect(onChangeStatus).toHaveBeenCalledWith(practicing[0], "learned");
@@ -1000,7 +1000,7 @@ describe("VocabularyScreen", () => {
     ).toBeInTheDocument();
     expect(screen.queryByText(/correct answers/)).not.toBeInTheDocument();
     await user.click(
-      screen.getByRole("button", { name: "Mark zapamatovat si as learned" }),
+      screen.getByRole("button", { name: "Mark 'zapamatovat si' as learned" }),
     );
     expect(onChangeStatus).toHaveBeenCalledWith(learning[0], "learned");
   });
