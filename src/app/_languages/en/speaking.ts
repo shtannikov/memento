@@ -45,13 +45,15 @@ Task quality rules:
 - Write in English and make the task answerable as a 1–3 minute voice response.
 - Create a concrete situation, decision, role-play, story, or opinion task rather than a broad essay title.
 - Make the scenario coherent as a whole, not just a collection of individually plausible details. Silently check that the setting, the learner's mission, the information they are asked to provide, and the intended outcome form a realistic causal chain.
+- Write the opening setup as natural, connected prose rather than a compressed headline or incident summary. Give enough context to understand what was expected, what changed or went wrong, and why the learner needs to act.
+- Make the learner's position concrete. When another person matters, identify their relationship or role naturally, such as a friend, partner, colleague, customer, neighbour, or waiter, and make clear whether the learner is with them, calling them, or speaking on their behalf. Avoid vague labels such as "a guest", "someone", or "a person" when the relationship shapes the scene.
 - Every detail the learner is asked to discuss must be relevant to completing the mission.
 - Ask for concrete, situation-specific information. Broad phrases such as "your needs", "your situation", or "your circumstances" are fine when the context gives them a clear referent; do not use them as substitutes for the exact mission-relevant change, problem, preference, or practical detail.
 - Choose the core communicative motive from the target domain, grammar focus, and recent-task comparison first. Then use the required phrases as optional inspiration. A naturally relevant phrase may influence concrete details or the setting, but do not force all phrases into one situation or let the phrase set alone determine the learner's role, conflict, mission, or outcome.
 - If you are unsure how an official, medical, legal, or other specialized process works, use a natural generic situation instead of inventing procedural details.
 - Give the learner one clear mission, not a lesson plan or checklist.
 - Vary the visible shape of the prompt across recent tasks. Natural options include one direct open question, a compact dilemma, a role-play opening, a story with one turning point, a request for advice, or a position to defend. Use the shape that best fits this task, and do not repeat the recent prompts' sentence rhythm or instruction pattern.
-- Keep the scene warm, vivid, conversational, and under 240 characters so the ending is complete.
+- Keep the scene warm, vivid, conversational, and under 280 characters so the ending is complete.
 - Never use numbered steps, bullet points, parentheses, grammar terminology, or lists of example forms.
 - Avoid repeatedly using classroom verbs such as "explain", "describe", and "finish with" as instructions. Prefer an inviting setup such as "Imagine...", "You're...", "Tell us...", or "What would you do?".
 - When the focus is question formation, put the learner in a role where they must say their own questions.
@@ -72,6 +74,7 @@ Set each criterion strictly:
 - missionRelevantDetails: every requested detail helps complete that mission; no detail exists merely to echo an unrelated required phrase.
 - requiredPhrasesNotForced: the scene does not awkwardly combine unrelated situations, objects, or decisions just to accommodate the required phrases.
 - naturalAndConcrete: the task sounds like a plausible human situation and is concrete enough for a 1–3 minute answer.
+- clearRolesAndContext: the setup uses natural connected prose rather than compressed headline-like facts; the learner's position is clear; and any important participant has a specific relationship or role instead of a vague label such as "a guest", "someone", or "a person".
 - distinctUnderlyingPattern: compared with the recent tasks, the combination of main communicative goal, learner role and agency, listener relationship, emotional dynamic, and interaction pattern is materially different. A new setting with the same underlying interaction fails this criterion.
 - variedPromptStructure: compared with the recent tasks, the prompt uses a materially different visible shape, sentence rhythm, or instruction pattern. Do not fail it merely for using a context-setting sentence, several requested details, or multiple speaking cues when they fit the mission naturally.
 

@@ -248,6 +248,34 @@ export const SPEAKING_EVAL_CASES: SpeakingEvalCase[] = [
   },
   {
     kind: "topic",
+    id: "speaking-topic-grounds-roles-and-context",
+    description:
+      "Uses natural connected context and makes the learner's relationship to other participants clear.",
+    appId: "en",
+    input: {
+      targetDomain: "restaurants and food",
+      targetGrammarFocus: "polite requests and indirect questions",
+      recentTasks: [
+        {
+          title: "Fix the Office Breakfast",
+          speakingPrompt:
+            "Your office breakfast has arrived: six vegetarian meals contain meat, and the coffee is missing. Call the restaurant manager and request a solution.",
+          domain: "restaurants and food",
+          grammarFocus: "polite requests and indirect questions",
+        },
+        {
+          title: "Order a Safe Dinner",
+          speakingPrompt:
+            "You're ordering dinner for a guest with a serious nut allergy. Ask the server about ingredients and request a safe change.",
+          domain: "restaurants and food",
+          grammarFocus: "polite requests and indirect questions",
+        },
+      ],
+      requiredPhrases: ["used to +inf", "to be used to sth", "to take off"],
+    },
+  },
+  {
+    kind: "topic",
     id: "speaking-topic-unrelated-phrases-stay-coherent",
     description:
       "Keeps one natural mission when the separate practice phrases do not belong to a shared scenario.",

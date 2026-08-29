@@ -17,9 +17,6 @@ export function buildSpeakingTaskMessage(task: SpeakingTask): string {
     "🎬 <b>The scene</b>",
     escapeHtml(task.prompt),
     "",
-    "🪄 <b>Your language twist</b>",
-    escapeHtml(formatGrammarTwist(task.grammarFocus)),
-    "",
     "💬 <b>Try these phrases</b>",
     phrases,
     "",
@@ -68,24 +65,6 @@ export function buildSpeakingFeedbackMessage(
     "🏁 That’s all for this task.\nReady for more? Send /speaking",
   );
   return lines.join("\n");
-}
-
-export function formatGrammarTwist(grammarFocus: string): string {
-  const twists: Record<string, string> = {
-    "past narration with tense contrast": "Bring the story to life by moving between past events.",
-    "future plans and predictions": "Look ahead: mix your plans with what you think will happen.",
-    "first conditional for realistic consequences": "Follow the domino effect: if this happens, what comes next?",
-    "second conditional for hypothetical situations": "Let reality take a break — imagine what you would do.",
-    "third conditional and wish for past regrets": "Rewrite the past: what could have gone differently?",
-    "question formation in an interactive role-play": "Lead the conversation with your own questions.",
-    "modals for advice, obligation, and possibility": "Balance friendly advice, real must-dos, and possible options.",
-    "comparisons and language of preference": "Compare the options and make your personal choice clear.",
-    "present perfect for experiences and change": "Connect your past experience with who you are now.",
-    "reported speech for retelling conversations": "Bring someone else’s words into your version of the story.",
-    "relative clauses for detailed descriptions": "Add details that make people, places, and things easy to picture.",
-    "polite requests and indirect questions": "Keep it smooth and polite while asking for what you need.",
-  };
-  return twists[grammarFocus] ?? "Stretch your English and try a few different sentence patterns.";
 }
 
 function cleanGrammarExample(value: string): string {

@@ -473,7 +473,13 @@ describe("quiz generation contract", () => {
       "missing an obligation",
     );
     expect(ENGLISH_LANGUAGE.speaking?.topicSystemPrompt).toContain(
-      "under 240 characters",
+      "under 280 characters",
+    );
+    expect(ENGLISH_LANGUAGE.speaking?.topicSystemPrompt).toContain(
+      "natural, connected prose",
+    );
+    expect(ENGLISH_LANGUAGE.speaking?.topicSystemPrompt).toContain(
+      "identify their relationship or role naturally",
     );
     expect(ENGLISH_LANGUAGE.speaking?.topicSystemPrompt).toContain(
       "Vary the visible shape of the prompt",
@@ -489,6 +495,7 @@ describe("quiz generation contract", () => {
         missionRelevantDetails: false,
         requiredPhrasesNotForced: false,
         naturalAndConcrete: true,
+        clearRolesAndContext: true,
         distinctUnderlyingPattern: true,
         variedPromptStructure: true,
         reason: "The job offer is unrelated to the neighbourhood repair mission.",
@@ -531,6 +538,7 @@ describe("quiz generation contract", () => {
         missionRelevantDetails: true,
         requiredPhrasesNotForced: true,
         naturalAndConcrete: true,
+        clearRolesAndContext: true,
         distinctUnderlyingPattern: false,
         variedPromptStructure: true,
         reason: "The learner still compares two options and recommends one.",
@@ -573,6 +581,7 @@ describe("quiz generation contract", () => {
         missionRelevantDetails: false,
         requiredPhrasesNotForced: true,
         naturalAndConcrete: true,
+        clearRolesAndContext: true,
         distinctUnderlyingPattern: true,
         variedPromptStructure: false,
         reason: "The prompt repeats the recent tasks' sentence rhythm and instruction pattern.",
@@ -603,6 +612,44 @@ describe("quiz generation contract", () => {
       gradeSpeakingTopic(input, topic, 42, "en", openai),
     ).resolves.toMatchObject({
       variedPromptStructure: false,
+      passed: false,
+    });
+  });
+
+  it("rejects compressed context with an unclear participant relationship", async () => {
+    const parse = vi.fn().mockResolvedValue({
+      status: "completed",
+      output_parsed: {
+        coherentScenario: true,
+        oneClearMission: true,
+        missionRelevantDetails: true,
+        requiredPhrasesNotForced: true,
+        naturalAndConcrete: true,
+        clearRolesAndContext: false,
+        distinctUnderlyingPattern: true,
+        variedPromptStructure: true,
+        reason: "The vague guest leaves the learner's relationship and role unclear.",
+      },
+    });
+    const openai = { responses: { parse } } as unknown as OpenAI;
+    const input = {
+      targetDomain: "restaurants and food",
+      targetGrammarFocus: "polite requests and indirect questions",
+      recentTasks: [],
+      requiredPhrases: [],
+    };
+    const topic = {
+      title: "Check the Dinner",
+      speakingPrompt:
+        "You're ordering dinner for a guest with a serious nut allergy. Ask the server about the food.",
+      domain: input.targetDomain,
+      grammarFocus: input.targetGrammarFocus,
+    };
+
+    await expect(
+      gradeSpeakingTopic(input, topic, 42, "en", openai),
+    ).resolves.toMatchObject({
+      clearRolesAndContext: false,
       passed: false,
     });
   });
