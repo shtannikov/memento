@@ -508,6 +508,9 @@ describe("quiz generation contract", () => {
     expect(ENGLISH_LANGUAGE.speaking?.topicSystemPrompt).toContain(
       "Use one consistent role label for the same participant",
     );
+    expect(ENGLISH_LANGUAGE.speaking?.topicSystemPrompt).toContain(
+      "do not use singular they or their",
+    );
     expect(ENGLISH_LANGUAGE.speaking?.topicGraderPrompt).toContain(
       "could sound threatening, punitive, or retaliatory",
     );
