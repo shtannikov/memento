@@ -61,7 +61,7 @@ const SpeakingTopicSchema = z.object({
 
 const SpeakingTopicGradeSchema = z.object({
   coherentScenario: z.boolean(),
-  groundedSequenceAndReferences: z.boolean(),
+  groundedSequence: z.boolean(),
   oneClearMission: z.boolean(),
   missionRelevantDetails: z.boolean(),
   requiredPhrasesNotForced: z.boolean(),
@@ -335,7 +335,7 @@ export async function gradeSpeakingTopic(
     ...grade,
     passed:
       grade.coherentScenario &&
-      grade.groundedSequenceAndReferences &&
+      grade.groundedSequence &&
       grade.oneClearMission &&
       grade.missionRelevantDetails &&
       grade.requiredPhrasesNotForced &&

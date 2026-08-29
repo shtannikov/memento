@@ -505,12 +505,6 @@ describe("quiz generation contract", () => {
     expect(ENGLISH_LANGUAGE.speaking?.topicSystemPrompt).toContain(
       "any requested past fact is absent from the setup",
     );
-    expect(ENGLISH_LANGUAGE.speaking?.topicSystemPrompt).toContain(
-      "Use one consistent role label for the same participant",
-    );
-    expect(ENGLISH_LANGUAGE.speaking?.topicSystemPrompt).toContain(
-      "do not use singular they or their",
-    );
     expect(ENGLISH_LANGUAGE.speaking?.topicGraderPrompt).toContain(
       "could sound threatening, punitive, or retaliatory",
     );
@@ -518,7 +512,7 @@ describe("quiz generation contract", () => {
       "Locations, movements, temporal references, and causes",
     );
     expect(ENGLISH_LANGUAGE.speaking?.topicGraderPrompt).toContain(
-      "groundedSequenceAndReferences",
+      "groundedSequence",
     );
     expect(ENGLISH_LANGUAGE.speaking?.topicGraderPrompt).toContain(
       "Do not fail for omitted incidental details",
@@ -530,7 +524,7 @@ describe("quiz generation contract", () => {
       status: "completed",
       output_parsed: {
         coherentScenario: false,
-        groundedSequenceAndReferences: true,
+        groundedSequence: true,
         oneClearMission: true,
         missionRelevantDetails: false,
         requiredPhrasesNotForced: false,
@@ -575,7 +569,7 @@ describe("quiz generation contract", () => {
       status: "completed",
       output_parsed: {
         coherentScenario: true,
-        groundedSequenceAndReferences: true,
+        groundedSequence: true,
         oneClearMission: true,
         missionRelevantDetails: true,
         requiredPhrasesNotForced: true,
@@ -620,7 +614,7 @@ describe("quiz generation contract", () => {
       status: "completed",
       output_parsed: {
         coherentScenario: true,
-        groundedSequenceAndReferences: true,
+        groundedSequence: true,
         oneClearMission: true,
         missionRelevantDetails: false,
         requiredPhrasesNotForced: true,
@@ -666,7 +660,7 @@ describe("quiz generation contract", () => {
       status: "completed",
       output_parsed: {
         coherentScenario: true,
-        groundedSequenceAndReferences: true,
+        groundedSequence: true,
         oneClearMission: true,
         missionRelevantDetails: true,
         requiredPhrasesNotForced: true,
@@ -701,12 +695,12 @@ describe("quiz generation contract", () => {
     });
   });
 
-  it("rejects an ungrounded timeline and participant references independently", async () => {
+  it("rejects an ungrounded timeline independently", async () => {
     const parse = vi.fn().mockResolvedValue({
       status: "completed",
       output_parsed: {
         coherentScenario: true,
-        groundedSequenceAndReferences: false,
+        groundedSequence: false,
         oneClearMission: true,
         missionRelevantDetails: true,
         requiredPhrasesNotForced: true,
@@ -716,7 +710,7 @@ describe("quiz generation contract", () => {
         distinctUnderlyingPattern: true,
         variedPromptStructure: true,
         reason:
-          "The learner's location, the earlier event, and who solved the leak together are not established.",
+          "The learner is asked to report an earlier event and outcome that the setup never establishes.",
       },
     });
     const openai = { responses: { parse } } as unknown as OpenAI;
@@ -729,7 +723,7 @@ describe("quiz generation contract", () => {
     const topic = {
       title: "The Scene",
       speakingPrompt:
-        "You were helping your upstairs neighbour move in when water dripped through your ceiling. Tell another neighbour what had happened before you arrived and how you solved it together.",
+        "You arrived home and found water dripping through your ceiling. Tell a neighbour what had happened before you arrived and how the leak had been fixed.",
       domain: input.targetDomain,
       grammarFocus: input.targetGrammarFocus,
     };
@@ -737,7 +731,7 @@ describe("quiz generation contract", () => {
     await expect(
       gradeSpeakingTopic(input, topic, 42, "en", openai),
     ).resolves.toMatchObject({
-      groundedSequenceAndReferences: false,
+      groundedSequence: false,
       passed: false,
     });
   });
@@ -747,7 +741,7 @@ describe("quiz generation contract", () => {
       status: "completed",
       output_parsed: {
         coherentScenario: true,
-        groundedSequenceAndReferences: true,
+        groundedSequence: true,
         oneClearMission: true,
         missionRelevantDetails: true,
         requiredPhrasesNotForced: true,
@@ -788,7 +782,7 @@ describe("quiz generation contract", () => {
       status: "completed",
       output_parsed: {
         coherentScenario: true,
-        groundedSequenceAndReferences: true,
+        groundedSequence: true,
         oneClearMission: true,
         missionRelevantDetails: true,
         requiredPhrasesNotForced: true,

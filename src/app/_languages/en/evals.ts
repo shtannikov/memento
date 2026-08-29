@@ -162,7 +162,7 @@ export const SPEAKING_EVAL_CASES: SpeakingEvalCase[] = [
       "Chooses a distinct underlying public-service interaction instead of reskinning recent goals, while using negative practice phrases only when natural.",
     appId: "en",
     input: {
-      targetDomain: "public services and civic life",
+      targetDomain: "public services and appointments",
       targetGrammarFocus: "past narration with tense contrast",
       recentTasks: [
         {
@@ -282,9 +282,9 @@ export const SPEAKING_EVAL_CASES: SpeakingEvalCase[] = [
   },
   {
     kind: "topic",
-    id: "speaking-topic-tracks-space-time-and-referents",
+    id: "speaking-topic-tracks-space-and-time",
     description:
-      "Keeps locations, movements, chronology, narrator knowledge, and references coherent in a past-narration scene.",
+      "Keeps locations, movements, chronology, and narrator knowledge coherent in a past-narration scene.",
     appId: "en",
     input: {
       targetDomain: "housing and neighbourhood",
