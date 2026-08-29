@@ -499,6 +499,9 @@ describe("quiz generation contract", () => {
     expect(ENGLISH_LANGUAGE.speaking?.topicSystemPrompt).toContain(
       "frame outcomes as benefits, trade-offs, or constructive next steps",
     );
+    expect(ENGLISH_LANGUAGE.speaking?.topicSystemPrompt).toContain(
+      "Establish every mission-relevant fact the learner is asked to report",
+    );
     expect(ENGLISH_LANGUAGE.speaking?.topicGraderPrompt).toContain(
       "could sound threatening, punitive, or retaliatory",
     );
