@@ -479,7 +479,7 @@ describe("quiz generation contract", () => {
       "missing an obligation",
     );
     expect(ENGLISH_LANGUAGE.speaking?.topicSystemPrompt).toContain(
-      "under 300 characters",
+      "Target 220–270 characters and never exceed 280",
     );
     expect(ENGLISH_LANGUAGE.speaking?.topicSystemPrompt).toContain(
       "Every sentence must remain idiomatic and complete",
@@ -489,6 +489,9 @@ describe("quiz generation contract", () => {
     );
     expect(ENGLISH_LANGUAGE.speaking?.topicSystemPrompt).toContain(
       "identify their relationship or role naturally",
+    );
+    expect(ENGLISH_LANGUAGE.speaking?.topicSystemPrompt).toContain(
+      "Do not make the learner speak, choose, order, collect, or decide on behalf of another capable adult",
     );
     expect(ENGLISH_LANGUAGE.speaking?.topicSystemPrompt).toContain(
       "speaks little English and cannot follow the English menu",
@@ -515,6 +518,9 @@ describe("quiz generation contract", () => {
       "groundedSequence",
     );
     expect(ENGLISH_LANGUAGE.speaking?.topicGraderPrompt).toContain(
+      "justifiedLearnerRole",
+    );
+    expect(ENGLISH_LANGUAGE.speaking?.topicGraderPrompt).toContain(
       "Do not fail for omitted incidental details",
     );
   });
@@ -531,6 +537,7 @@ describe("quiz generation contract", () => {
         naturalAndConcrete: true,
         fluentAndComplete: true,
         clearRolesAndContext: true,
+        justifiedLearnerRole: true,
         distinctUnderlyingPattern: true,
         variedPromptStructure: true,
         reason: "The job offer is unrelated to the neighbourhood repair mission.",
@@ -576,6 +583,7 @@ describe("quiz generation contract", () => {
         naturalAndConcrete: true,
         fluentAndComplete: true,
         clearRolesAndContext: true,
+        justifiedLearnerRole: true,
         distinctUnderlyingPattern: false,
         variedPromptStructure: true,
         reason: "The learner still compares two options and recommends one.",
@@ -621,6 +629,7 @@ describe("quiz generation contract", () => {
         naturalAndConcrete: true,
         fluentAndComplete: true,
         clearRolesAndContext: true,
+        justifiedLearnerRole: true,
         distinctUnderlyingPattern: true,
         variedPromptStructure: false,
         reason: "The prompt repeats the recent tasks' sentence rhythm and instruction pattern.",
@@ -667,6 +676,7 @@ describe("quiz generation contract", () => {
         naturalAndConcrete: true,
         fluentAndComplete: true,
         clearRolesAndContext: false,
+        justifiedLearnerRole: true,
         distinctUnderlyingPattern: true,
         variedPromptStructure: true,
         reason: "The vague guest leaves the learner's relationship and role unclear.",
@@ -695,6 +705,49 @@ describe("quiz generation contract", () => {
     });
   });
 
+  it("rejects making the learner act for another capable adult without a reason", async () => {
+    const parse = vi.fn().mockResolvedValue({
+      status: "completed",
+      output_parsed: {
+        coherentScenario: true,
+        groundedSequence: true,
+        oneClearMission: true,
+        missionRelevantDetails: true,
+        requiredPhrasesNotForced: true,
+        naturalAndConcrete: true,
+        fluentAndComplete: true,
+        clearRolesAndContext: true,
+        justifiedLearnerRole: false,
+        distinctUnderlyingPattern: true,
+        variedPromptStructure: true,
+        reason:
+          "Maya is present and able to speak, so the learner has no stated reason to choose a cream for her.",
+      },
+    });
+    const openai = { responses: { parse } } as unknown as OpenAI;
+    const input = {
+      targetDomain: "health and wellbeing",
+      targetGrammarFocus: "polite requests and indirect questions",
+      recentTasks: [],
+      requiredPhrases: ["under the name", "to pick up sth"],
+    };
+    const topic = {
+      title: "A Cream for Maya",
+      speakingPrompt:
+        "You're at a pharmacy with your colleague Maya, who has sensitive skin and a rash. Ask for a suitable cream and say which one you'd pick up.",
+      domain: input.targetDomain,
+      grammarFocus: input.targetGrammarFocus,
+    };
+
+    await expect(
+      gradeSpeakingTopic(input, topic, 42, "en", openai),
+    ).resolves.toMatchObject({
+      clearRolesAndContext: true,
+      justifiedLearnerRole: false,
+      passed: false,
+    });
+  });
+
   it("rejects an ungrounded timeline independently", async () => {
     const parse = vi.fn().mockResolvedValue({
       status: "completed",
@@ -707,6 +760,7 @@ describe("quiz generation contract", () => {
         naturalAndConcrete: true,
         fluentAndComplete: true,
         clearRolesAndContext: true,
+        justifiedLearnerRole: true,
         distinctUnderlyingPattern: true,
         variedPromptStructure: true,
         reason:
@@ -748,6 +802,7 @@ describe("quiz generation contract", () => {
         naturalAndConcrete: false,
         fluentAndComplete: true,
         clearRolesAndContext: false,
+        justifiedLearnerRole: true,
         distinctUnderlyingPattern: true,
         variedPromptStructure: true,
         reason: "The prompt says the colleague cannot read easily without explaining that the English menu is the obstacle.",
@@ -789,6 +844,7 @@ describe("quiz generation contract", () => {
         naturalAndConcrete: true,
         fluentAndComplete: false,
         clearRolesAndContext: true,
+        justifiedLearnerRole: true,
         distinctUnderlyingPattern: true,
         variedPromptStructure: true,
         reason: "The final coordination drops the noun needed after travel.",

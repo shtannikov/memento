@@ -261,6 +261,19 @@ export const SPEAKING_EVAL_CASES: SpeakingEvalCase[] = [
   },
   {
     kind: "topic",
+    id: "speaking-topic-justifies-learner-proxy-role",
+    description:
+      "Gives the learner their own stake or a concrete reason to speak for another capable adult instead of arbitrarily making them choose or request something on that person's behalf.",
+    appId: "en",
+    input: {
+      targetDomain: "health and wellbeing",
+      targetGrammarFocus: "polite requests and indirect questions",
+      recentTasks: [],
+      requiredPhrases: ["under the name", "to pick up sth", "to get an idea across"],
+    },
+  },
+  {
+    kind: "topic",
     id: "speaking-topic-unrelated-phrases-stay-coherent",
     description:
       "Keeps one natural mission when the separate practice phrases do not belong to a shared scenario.",
