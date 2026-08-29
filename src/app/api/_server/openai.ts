@@ -260,29 +260,70 @@ export async function generateSpeakingTopic(
 ): Promise<GeneratedTopic> {
   const speaking = getLanguage(appId).speaking;
   if (!speaking) throw new AppError("SPEAKING_UNAVAILABLE", "Speaking practice is unavailable.", 409);
-  const response = await openai.responses.parse({
-    model: process.env.OPENAI_CHAT_MODEL ?? "gpt-5.6-luna",
-    reasoning: { effort: "medium" },
-    store: false,
-    max_output_tokens: 1200,
-    safety_identifier: createHash("sha256")
-      .update(`memento-speaking-topic:${appId}:${userId}`)
-      .digest("hex"),
-    input: [
-      { role: "system", content: speaking.topicSystemPrompt },
-      { role: "user", content: JSON.stringify(input) },
-    ],
-    text: { format: zodTextFormat(SpeakingTopicSchema, "memento_speaking_topic") },
-  });
-  if (response.status !== "completed" || !response.output_parsed) {
-    throw new Error("Speaking topic generation failed");
+  let rejectedDraft: string | undefined;
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    const response = await openai.responses.parse({
+      model: process.env.OPENAI_CHAT_MODEL ?? "gpt-5.6-luna",
+      reasoning: { effort: "medium" },
+      store: false,
+      max_output_tokens: 1200,
+      safety_identifier: createHash("sha256")
+        .update(`memento-speaking-topic:${appId}:${userId}`)
+        .digest("hex"),
+      input: [
+        { role: "system", content: speaking.topicSystemPrompt },
+        {
+          role: "user",
+          content: JSON.stringify({
+            ...input,
+            ...(rejectedDraft
+              ? {
+                  rejectedDraft,
+                  retryInstruction:
+                    "Replace the rejected questionnaire structure with one central speaking cue.",
+                }
+              : {}),
+          }),
+        },
+      ],
+      text: {
+        format: zodTextFormat(
+          SpeakingTopicSchema,
+          "memento_speaking_topic",
+        ),
+      },
+    });
+    if (response.status !== "completed" || !response.output_parsed) {
+      throw new Error("Speaking topic generation failed");
+    }
+    if (isSpeakingPromptFormulaic(response.output_parsed.speakingPrompt)) {
+      rejectedDraft = response.output_parsed.speakingPrompt;
+      continue;
+    }
+    return {
+      title: response.output_parsed.title,
+      speakingPrompt: response.output_parsed.speakingPrompt,
+      domain: input.targetDomain,
+      grammarFocus: input.targetGrammarFocus,
+    };
   }
-  return {
-    title: response.output_parsed.title,
-    speakingPrompt: response.output_parsed.speakingPrompt,
-    domain: input.targetDomain,
-    grammarFocus: input.targetGrammarFocus,
-  };
+  throw new Error("Speaking topic generation failed");
+}
+
+export function isSpeakingPromptFormulaic(prompt: string): boolean {
+  const whCues = prompt.match(/\b(?:what|when|where|which|who|why|how)\b/gi)
+    ?.length ?? 0;
+  if (whCues >= 3) return true;
+
+  return prompt
+    .split(/[.!?]+/)
+    .some(
+      (sentence) =>
+        /\b(?:ask|brief|cover|describe|discuss|explain|report|say|share|tell)\b/i
+          .test(sentence) &&
+        (sentence.match(/,/g)?.length ?? 0) >= 2 &&
+        /\band\b/i.test(sentence),
+    );
 }
 
 export async function gradeSpeakingTopic(
