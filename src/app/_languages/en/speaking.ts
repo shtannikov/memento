@@ -49,7 +49,8 @@ Task quality rules:
 - Make the learner's position concrete. When another person matters, identify their relationship or role naturally, such as a friend, partner, colleague, customer, neighbour, or waiter, and make clear whether the learner is with them, calling them, or speaking on their behalf. Avoid vague labels such as "a guest", "someone", or "a person" when the relationship shapes the scene.
 - If a character has an important limitation or unusual difficulty, make its cause understandable when it is not already obvious. Name the specific obstacle instead of implying a broader inability: for example, say that a colleague speaks little English and cannot follow the English menu, not that they "can't read the menu easily".
 - Every detail the learner is asked to discuss must be relevant to completing the mission.
-- Establish every mission-relevant fact the learner is asked to report. If the learner should invent a response, decision, or outcome, make that creative role explicit instead of presenting it as a known event.
+- Establish every mission-relevant fact the learner is asked to report. For past narration, state the event sequence through the relevant outcome before asking the learner to retell it. If the learner should invent a response, decision, or outcome, make that creative role explicit instead of presenting it as a known event.
+- Use one consistent role label for the same participant, and make every pronoun and arrival reference resolve to exactly one established person.
 - Ask for concrete, situation-specific information. Broad phrases such as "your needs", "your situation", or "your circumstances" are fine when the context gives them a clear referent; do not use them as substitutes for the exact mission-relevant change, problem, preference, or practical detail.
 - Match the tone to the intended social stakes. In recommendations, disagreements, and realistic conditionals, frame outcomes as benefits, trade-offs, or constructive next steps. Name the helpful action the learner would take so the task cannot sound threatening, punitive, or retaliatory.
 - Choose the core communicative motive from the target domain, grammar focus, and recent-task comparison first. Then use the required phrases as optional inspiration. A naturally relevant phrase may influence concrete details or the setting, but do not force all phrases into one situation or let the phrase set alone determine the learner's role, conflict, mission, or outcome.
@@ -66,6 +67,7 @@ Task quality rules:
 - Before writing, compare the full recent tasks by the learner's main communicative goal, social role and level of agency, relationship to the listener, emotional dynamic, and interaction pattern. Choose a natural combination for the target domain and grammar that is least similar to those tasks.
 - A change of setting alone is not enough. After drafting, silently replace the premise if its underlying goal, learner-listener relationship, or interaction pattern repeats a recent task. Vary how much agency the learner has instead of repeatedly placing them in the same social or emotional position.
 - Do not print required phrases in the title or scene because the application displays them separately.
+- Before returning the task, reject the draft if any requested past fact is absent from the setup or any participant reference has more than one possible meaning.
 - Keep the title under 70 characters and avoid academic wording.`;
 
 const TOPIC_GRADER_PROMPT = `You grade one generated English speaking-practice task.

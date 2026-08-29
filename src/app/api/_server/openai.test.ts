@@ -502,6 +502,12 @@ describe("quiz generation contract", () => {
     expect(ENGLISH_LANGUAGE.speaking?.topicSystemPrompt).toContain(
       "Establish every mission-relevant fact the learner is asked to report",
     );
+    expect(ENGLISH_LANGUAGE.speaking?.topicSystemPrompt).toContain(
+      "any requested past fact is absent from the setup",
+    );
+    expect(ENGLISH_LANGUAGE.speaking?.topicSystemPrompt).toContain(
+      "Use one consistent role label for the same participant",
+    );
     expect(ENGLISH_LANGUAGE.speaking?.topicGraderPrompt).toContain(
       "could sound threatening, punitive, or retaliatory",
     );
