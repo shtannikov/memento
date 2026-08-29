@@ -250,7 +250,7 @@ export const SPEAKING_EVAL_CASES: SpeakingEvalCase[] = [
     kind: "topic",
     id: "speaking-topic-grounds-roles-and-context",
     description:
-      "Uses natural connected context and makes the learner's relationship to other participants clear.",
+      "Uses natural connected context, makes participant relationships clear, and explains unusual difficulties such as being unable to follow an English menu.",
     appId: "en",
     input: {
       targetDomain: "restaurants and food",

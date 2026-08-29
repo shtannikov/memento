@@ -485,6 +485,9 @@ describe("quiz generation contract", () => {
       "identify their relationship or role naturally",
     );
     expect(ENGLISH_LANGUAGE.speaking?.topicSystemPrompt).toContain(
+      "speaks little English and cannot follow the English menu",
+    );
+    expect(ENGLISH_LANGUAGE.speaking?.topicSystemPrompt).toContain(
       "Vary the visible shape of the prompt",
     );
   });
@@ -656,6 +659,46 @@ describe("quiz generation contract", () => {
     await expect(
       gradeSpeakingTopic(input, topic, 42, "en", openai),
     ).resolves.toMatchObject({
+      clearRolesAndContext: false,
+      passed: false,
+    });
+  });
+
+  it("rejects an unexplained inability that makes the scene ambiguous", async () => {
+    const parse = vi.fn().mockResolvedValue({
+      status: "completed",
+      output_parsed: {
+        coherentScenario: true,
+        oneClearMission: true,
+        missionRelevantDetails: true,
+        requiredPhrasesNotForced: true,
+        naturalAndConcrete: false,
+        fluentAndComplete: true,
+        clearRolesAndContext: false,
+        distinctUnderlyingPattern: true,
+        variedPromptStructure: true,
+        reason: "The prompt says the colleague cannot read easily without explaining that the English menu is the obstacle.",
+      },
+    });
+    const openai = { responses: { parse } } as unknown as OpenAI;
+    const input = {
+      targetDomain: "restaurants and food",
+      targetGrammarFocus: "polite requests and indirect questions",
+      recentTasks: [],
+      requiredPhrases: ["used to +inf", "to be used to sth", "to take off"],
+    };
+    const topic = {
+      title: "Help Choose a Safe Dish",
+      speakingPrompt:
+        "You're at a busy restaurant with your colleague, who has a serious nut allergy and can't read the menu easily. Ask about two dishes and decide what they should order.",
+      domain: input.targetDomain,
+      grammarFocus: input.targetGrammarFocus,
+    };
+
+    await expect(
+      gradeSpeakingTopic(input, topic, 42, "en", openai),
+    ).resolves.toMatchObject({
+      naturalAndConcrete: false,
       clearRolesAndContext: false,
       passed: false,
     });
