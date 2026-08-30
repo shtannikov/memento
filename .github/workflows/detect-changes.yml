@@ -1,0 +1,43 @@
+name: Detect Changes
+
+on:
+  workflow_call:
+    inputs:
+      base-sha:
+        required: true
+        type: string
+      head-sha:
+        required: true
+        type: string
+    outputs:
+      evals-required:
+        value: ${{ jobs.detect.outputs.evals-required }}
+      migrations-required:
+        value: ${{ jobs.detect.outputs.migrations-required }}
+
+jobs:
+  detect:
+    runs-on: ubuntu-latest
+    outputs:
+      evals-required: ${{ steps.changes.outputs.evals-required }}
+      migrations-required: ${{ steps.changes.outputs.migrations-required }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - id: changes
+        env:
+          BASE_SHA: ${{ inputs.base-sha }}
+          HEAD_SHA: ${{ inputs.head-sha }}
+        run: |
+          changed="$(git diff --name-only "$BASE_SHA" "$HEAD_SHA")"
+          if echo "$changed" | grep -qE '^(src/app/api/_server/openai\.ts|src/app/_languages/|tooling/evals/)'; then
+            echo "evals-required=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "evals-required=false" >> "$GITHUB_OUTPUT"
+          fi
+          if echo "$changed" | grep -qE '^supabase/'; then
+            echo "migrations-required=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "migrations-required=false" >> "$GITHUB_OUTPUT"
+          fi

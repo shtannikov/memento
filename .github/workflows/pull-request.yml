@@ -11,30 +11,10 @@ concurrency:
 
 jobs:
   changes:
-    runs-on: ubuntu-latest
-    outputs:
-      evals-required: ${{ steps.changes.outputs.evals-required }}
-      migrations-required: ${{ steps.changes.outputs.migrations-required }}
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      - id: changes
-        env:
-          BASE_SHA: ${{ github.event.pull_request.base.sha }}
-          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
-        run: |
-          changed="$(git diff --name-only "$BASE_SHA" "$HEAD_SHA")"
-          if echo "$changed" | grep -qE '^(src/app/api/_server/openai\.ts|src/app/_languages/|tooling/evals/)'; then
-            echo "evals-required=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "evals-required=false" >> "$GITHUB_OUTPUT"
-          fi
-          if echo "$changed" | grep -qE '^supabase/'; then
-            echo "migrations-required=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "migrations-required=false" >> "$GITHUB_OUTPUT"
-          fi
+    uses: ./.github/workflows/detect-changes.yml
+    with:
+      base-sha: ${{ github.event.pull_request.base.sha }}
+      head-sha: ${{ github.event.pull_request.head.sha }}
 
   quality:
     runs-on: ubuntu-latest
