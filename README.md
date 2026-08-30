@@ -1,4 +1,4 @@
-![Memento — Telegram mini apps for learning new languages](marketing/output/en/github/github-social-preview.jpg)
+![Memento — Telegram mini apps for learning new languages](marketing/images/output/en/github/github-social-preview.jpg)
 
 ## About
 
