@@ -9,7 +9,28 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  changes:
+    uses: ./.github/workflows/detect-changes.yml
+    with:
+      base-sha: ${{ github.event.before }}
+      head-sha: ${{ github.sha }}
+
   validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm run ci
+
+  evals:
+    needs: [changes, validate]
+    if: needs.changes.outputs.evals-required == 'true'
     runs-on: ubuntu-latest
     environment: Production
     steps:
@@ -21,14 +42,17 @@ jobs:
           node-version: 24
           cache: npm
       - run: npm ci
-      - run: npm run ci
       - run: npm run eval
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           OPENAI_CHAT_MODEL: ${{ vars.OPENAI_CHAT_MODEL }}
 
   migrate:
-    needs: validate
+    needs: [validate, evals]
+    if: |
+      always() &&
+      needs.validate.result == 'success' &&
+      (needs.evals.result == 'success' || needs.evals.result == 'skipped')
     runs-on: ubuntu-latest
     environment: Production
     steps:
