@@ -18,6 +18,7 @@ assumptions:
 - standards locale used only for linguistic operations;
 - target-language name and Mini App route;
 - Stage and Production bot ownership;
+- optional public-site hostname, bot usernames, landing cover, and Trial route;
 - fluent QA owner before public enablement.
 
 Keep the product ID distinct from the locale when necessary. Czech is `cz` in
@@ -112,6 +113,10 @@ where app_id = '<app-id>';
 - Add the definition once to `src/app/_languages/registry.ts`. The shared dynamic
   Mini App page and webhook route must discover it from that registry; do not
   add language-specific Next.js route files.
+- When the language has a public domain, declare its `site` block in the same
+  manifest. The shared landing and proxy must derive the hostname, bot link,
+  cover, metadata, Preview selector, and optional Trial rewrite from that block;
+  do not add product-specific routing branches.
 - Thread the app ID through client requests, Telegram auth, vocabulary, rounds,
   history, completion/failure, and daily quota queries.
 - Make Telegram `/import` and `/reset` target the current bot's app directly.

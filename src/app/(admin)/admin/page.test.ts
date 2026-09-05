@@ -9,7 +9,7 @@ const { requestHeaders } = vi.hoisted(() => ({
 vi.mock("next/headers", () => ({ headers: async () => requestHeaders }));
 
 describe("admin metadata", () => {
-  beforeEach(() => requestHeaders.delete("x-memento-site"));
+  beforeEach(() => requestHeaders.delete("x-memento-site-app"));
 
   it("does not reveal the admin surface on other domains", async () => {
     await expect(generateMetadata()).resolves.toMatchObject({
@@ -18,7 +18,7 @@ describe("admin metadata", () => {
   });
 
   it("does not reveal the admin surface on the Pomnenka domain", async () => {
-    requestHeaders.set("x-memento-site", "pomnenka");
+    requestHeaders.set("x-memento-site-app", "cz");
 
     await expect(generateMetadata()).resolves.toMatchObject({
       title: "Pomněnka",

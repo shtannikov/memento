@@ -9,7 +9,7 @@ const { requestHeaders } = vi.hoisted(() => ({
 vi.mock("next/headers", () => ({ headers: async () => requestHeaders }));
 
 describe("root metadata", () => {
-  beforeEach(() => requestHeaders.delete("x-memento-site"));
+  beforeEach(() => requestHeaders.delete("x-memento-site-app"));
 
   it("uses Memento by default", async () => {
     await expect(generateMetadata()).resolves.toMatchObject({
@@ -18,10 +18,12 @@ describe("root metadata", () => {
   });
 
   it("uses Pomnenka throughout its production domain", async () => {
-    requestHeaders.set("x-memento-site", "pomnenka");
+    requestHeaders.set("x-memento-site-app", "cz");
 
     await expect(generateMetadata()).resolves.toMatchObject({
       title: "Pomněnka",
+      description:
+        "Add Czech words and phrases, practice them with quick quizzes, and track your progress.",
     });
   });
 });

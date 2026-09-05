@@ -1,23 +1,15 @@
 import { headers } from "next/headers";
 
-import { PomnenkaLanding } from "@/app/_components/pomnenka-landing";
-import { pomnenkaTelegramUrl } from "@/app/_features/trial-quiz/server/trial-telegram";
-import {
-  POMNENKA_SITE,
-  POMNENKA_SITE_HEADER,
-  pomnenkaPublicPath,
-} from "@/app/site-routing";
+import { LanguageSiteLanding } from "@/app/_components/language-site-landing";
+import { getSiteLanguageFromHeader, SITE_APP_HEADER } from "@/app/site-routing";
 
 export async function PublicNotFound() {
   const requestHeaders = await headers();
-  if (requestHeaders.get(POMNENKA_SITE_HEADER) === POMNENKA_SITE) {
-    return (
-      <PomnenkaLanding
-        homeUrl={pomnenkaPublicPath("/")}
-        telegramUrl={pomnenkaTelegramUrl()}
-        trialUrl={pomnenkaPublicPath("/trial")}
-      />
-    );
+  const siteLanguage = getSiteLanguageFromHeader(
+    requestHeaders.get(SITE_APP_HEADER),
+  );
+  if (siteLanguage) {
+    return <LanguageSiteLanding language={siteLanguage} />;
   }
 
   return (

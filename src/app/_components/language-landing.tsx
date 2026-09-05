@@ -1,25 +1,38 @@
 import Image from "next/image";
 import Link from "next/link";
 
-import styles from "./pomnenka-landing.module.css";
+import type { SiteLanguage } from "@/app/_languages/registry";
+import styles from "./language-landing.module.css";
 
-type PomnenkaLandingProps = {
+type LanguageLandingProps = {
   homeUrl?: string;
+  language: SiteLanguage;
   telegramUrl: string;
   trialUrl?: string;
 };
 
-export function PomnenkaLanding({
+export function LanguageLanding({
   homeUrl = "/",
+  language,
   telegramUrl,
-  trialUrl = "/trial",
-}: PomnenkaLandingProps) {
+  trialUrl,
+}: LanguageLandingProps) {
   return (
     <main className={styles.page}>
       <nav className={styles.nav} aria-label="Main navigation">
-        <Link className={styles.brand} href={homeUrl} aria-label="Pomněnka home">
-          <Image className={styles.logo} src="/icon.svg" alt="" width={44} height={44} />
-          <span>Pomněnka</span>
+        <Link
+          className={styles.brand}
+          href={homeUrl}
+          aria-label={`${language.appName} home`}
+        >
+          <Image
+            className={styles.logo}
+            src="/icon.svg"
+            alt=""
+            width={44}
+            height={44}
+          />
+          <span>{language.appName}</span>
         </Link>
         <a className={styles.navCta} href={telegramUrl}>
           Open in Telegram
@@ -28,26 +41,28 @@ export function PomnenkaLanding({
 
       <section className={styles.hero}>
         <div className={styles.copy}>
-          <h1>Meet Pomněnka.</h1>
+          <h1>Meet {language.appName}.</h1>
           <p>
-            Add Czech words and phrases, practice them with quick quizzes, and
-            track your progress 🚀
+            Add {language.targetLanguage} words and phrases, practice them with
+            quick quizzes, and track your progress 🚀
           </p>
           <div className={styles.actions}>
             <a className={styles.primaryCta} href={telegramUrl}>
               Open in Telegram
             </a>
-            <Link className={styles.secondaryCta} href={trialUrl}>
-              Try a quiz
-            </Link>
+            {trialUrl && (
+              <Link className={styles.secondaryCta} href={trialUrl}>
+                Try a quiz
+              </Link>
+            )}
           </div>
         </div>
 
         <div className={styles.visual}>
           <Image
             className={styles.cover}
-            src="/pomnenka/chat-cover.jpg"
-            alt="Pomněnka vocabulary list and Czech quiz"
+            src={language.site.coverImage}
+            alt={`${language.appName} vocabulary list and ${language.targetLanguage} quiz`}
             width={1280}
             height={720}
             priority
@@ -57,7 +72,7 @@ export function PomnenkaLanding({
       </section>
 
       <section className={styles.closing}>
-        <p>Start practising with Pomněnka.</p>
+        <p>Start practising with {language.appName}.</p>
         <a className={styles.primaryCta} href={telegramUrl}>
           Open in Telegram
         </a>

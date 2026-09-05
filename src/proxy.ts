@@ -2,28 +2,30 @@ import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
 import {
-  isPomnenkaSiteRequest,
-  POMNENKA_SITE,
-  POMNENKA_SITE_HEADER,
+  getSiteLanguageForRequest,
+  SITE_APP_HEADER,
 } from "@/app/site-routing";
 
 export function proxy(request: NextRequest) {
-  if (
-    !isPomnenkaSiteRequest(
-      request.nextUrl.hostname,
-      request.nextUrl.searchParams.get("site"),
-    )
-  ) {
+  const language = getSiteLanguageForRequest(
+    request.nextUrl.hostname,
+    request.nextUrl.searchParams.get("site"),
+  );
+  if (!language) {
     return NextResponse.next();
   }
 
   const requestHeaders = new Headers(request.headers);
-  requestHeaders.set(POMNENKA_SITE_HEADER, POMNENKA_SITE);
+  requestHeaders.set(SITE_APP_HEADER, language.id);
 
-  if (request.nextUrl.pathname === "/trial") {
-    return NextResponse.rewrite(new URL("/cz/trial", request.url), {
-      request: { headers: requestHeaders },
-    });
+  if (
+    language.site.trial &&
+    request.nextUrl.pathname === language.site.trial.publicPath
+  ) {
+    return NextResponse.rewrite(
+      new URL(language.site.trial.routePath, request.url),
+      { request: { headers: requestHeaders } },
+    );
   }
 
   return NextResponse.next({ request: { headers: requestHeaders } });

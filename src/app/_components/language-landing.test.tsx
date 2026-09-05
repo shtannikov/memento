@@ -1,12 +1,17 @@
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 
-import { PomnenkaLanding } from "./pomnenka-landing";
+import { CZECH_LANGUAGE } from "@/app/_languages/cz";
+import { LanguageLanding } from "./language-landing";
 
-describe("PomnenkaLanding", () => {
+describe("LanguageLanding", () => {
   it("explains the product and offers both public entry points", () => {
     render(
-      <PomnenkaLanding telegramUrl="https://t.me/pomnenkastagebot" />,
+      <LanguageLanding
+        language={CZECH_LANGUAGE}
+        telegramUrl="https://t.me/pomnenkastagebot"
+        trialUrl="/trial"
+      />,
     );
 
     expect(

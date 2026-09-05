@@ -17,10 +17,21 @@ Vercel environment that should expose the Czech app:
 
 - `TELEGRAM_CZ_BOT_TOKEN`
 - `TELEGRAM_CZ_WEBHOOK_SECRET`
+- `TELEGRAM_CZ_BOT_USERNAME` for Preview public links
 
 Preview variables must contain the Czech Stage bot credentials. Production
 variables must contain the Czech Production bot credentials. Never reuse a bot
 token or webhook secret across Stage and Production.
+
+Languages with a public website also declare an optional `site` block in their
+language manifest. It is the single source of truth for the custom hostname,
+Production bot username, Preview bot-username variable, landing cover, and
+optional public Trial rewrite. The shared proxy, metadata, landing, unknown-page
+fallback, and Telegram links discover that block through the language registry;
+do not add hostname- or product-specific branches elsewhere.
+
+On a Vercel Preview, inspect a configured public site with `?site=<app-id>`.
+The selector is ignored in Production, where the hostname selects the language.
 
 ## Register and provision a language
 
@@ -62,10 +73,11 @@ BotFather's `/setmenubutton`.
 
 Create `src/app/_languages/<app-id>/index.ts` with the product name, language
 manifest, bot env names, routes, starter vocabulary, generation prompt, and
-grader. Put its live cases beside it in `src/app/_languages/<app-id>/evals.ts`, then
-add the language manifest once to `src/app/_languages/registry.ts`. The eval loader
-discovers its cases by convention; the dynamic Mini App page and webhook
-consume the language registry automatically.
+grader. If the language has a public domain, include its `site` block and web
+cover as well. Put its live cases beside it in
+`src/app/_languages/<app-id>/evals.ts`, then add the language manifest once to
+`src/app/_languages/registry.ts`. The eval loader, dynamic Mini App page,
+webhook, and public-site routing consume the language registry automatically.
 
 Register the new ID in the Stage catalog before deploying its application code,
 and in Production immediately before the Production release. Do not create a

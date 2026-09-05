@@ -8,15 +8,15 @@ const { requestHeaders } = vi.hoisted(() => ({
 }));
 
 vi.mock("next/headers", () => ({ headers: async () => requestHeaders }));
-vi.mock("@/app/_features/trial-quiz/server/trial-telegram", () => ({
-  pomnenkaTelegramUrl: () => "https://t.me/pomnenkastagebot",
+vi.mock("@/app/_server/language-site", () => ({
+  languageTelegramUrl: () => "https://t.me/pomnenkastagebot",
 }));
 
 describe("PublicNotFound", () => {
-  beforeEach(() => requestHeaders.delete("x-memento-site"));
+  beforeEach(() => requestHeaders.delete("x-memento-site-app"));
 
   it("shows the Pomnenka landing for unknown Pomnenka paths", async () => {
-    requestHeaders.set("x-memento-site", "pomnenka");
+    requestHeaders.set("x-memento-site-app", "cz");
     render(await PublicNotFound());
 
     expect(

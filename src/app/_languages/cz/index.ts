@@ -25,6 +25,17 @@ export const CZECH_LANGUAGE = {
   webhookPath: "/api/telegram/webhook/cz",
   botTokenEnv: "TELEGRAM_CZ_BOT_TOKEN",
   webhookSecretEnv: "TELEGRAM_CZ_WEBHOOK_SECRET",
+  site: {
+    hostname: "pomnenka.me",
+    productionBotUsername: "pomnenkaxbot",
+    previewBotUsernameEnv: "TELEGRAM_CZ_BOT_USERNAME",
+    coverImage: "/languages/cz/chat-cover.jpg",
+    trial: {
+      publicPath: "/trial",
+      routePath: "/cz/trial",
+      startPayload: "tiktok_trial",
+    },
+  },
   addPhrasePlaceholders: {
     term: "e.g. starat se o někoho",
     definition: "e.g. to take care of someone",
