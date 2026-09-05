@@ -55,5 +55,58 @@ class GithubFeatureImageTest(unittest.TestCase):
                 self.assertEqual(preview.size, (640, 320))
 
 
+class CzechCampaignTest(unittest.TestCase):
+    def test_czech_campaign_uses_localized_brand_copy_and_screenshots(self) -> None:
+        config = generate.load_config(ROOT / "campaigns" / "cz.json")
+
+        self.assertEqual(config["id"], "cz")
+        self.assertEqual(config["locale"], "cz")
+        self.assertEqual(config["brand"]["name"], "Pomněnka")
+        self.assertIn("Czech", config["slides"][0]["copy"]["headline"])
+        self.assertIn("Czech", config["slides"][-1]["copy"]["support"])
+
+        screenshots = {
+            slide["screenshot"]
+            for slide in config["slides"]
+            if "screenshot" in slide
+        }
+        screenshots.update(
+            item["screenshot"]
+            for slide in config["slides"]
+            for item in slide.get("fan", [])
+        )
+        self.assertEqual(screenshots, {"cz-vocabulary.jpg", "cz-quiz.jpg"})
+        for screenshot in screenshots:
+            self.assertTrue((ROOT / "assets" / screenshot).is_file())
+
+    def test_czech_campaign_renders_with_supplied_screenshots(self) -> None:
+        config = generate.load_config(ROOT / "campaigns" / "cz.json")
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            output = Path(temporary_directory)
+            paths = generate.render_campaign(config, output, "telegram")
+
+            self.assertEqual(len(paths), 6)
+            self.assertTrue((output / "contact-sheet.jpg").is_file())
+            self.assertTrue((output / "chat-cover.jpg").is_file())
+            self.assertEqual((output / "chat-copy.txt").read_text(encoding="utf-8").splitlines()[0], "Save it. Learn it. Use it.")
+
+
+class PhoneFrameTest(unittest.TestCase):
+    def test_rotated_phone_frame_supersamples_edges(self) -> None:
+        screenshot = ROOT / "assets" / "cz-quiz.jpg"
+        rotated = generate.rotated_phone_frame(
+            screenshot,
+            width=410,
+            crop_top=0,
+            angle=3,
+            radius=38,
+            bezel=10,
+        )
+
+        self.assertGreater(rotated.width, 410)
+        self.assertEqual(rotated.mode, "RGBA")
+        self.assertEqual(rotated.getchannel("A").getextrema(), (0, 255))
+
+
 if __name__ == "__main__":
     unittest.main()
