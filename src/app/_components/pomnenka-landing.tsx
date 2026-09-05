@@ -1,8 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
 
-import chatCover from "../../../marketing/images/output/cz/telegram/chat-cover.jpg";
-import logo from "../../../marketing/images/assets/logo.png";
 import styles from "./pomnenka-landing.module.css";
 
 type PomnenkaLandingProps = {
@@ -20,7 +18,7 @@ export function PomnenkaLanding({
     <main className={styles.page}>
       <nav className={styles.nav} aria-label="Main navigation">
         <Link className={styles.brand} href={homeUrl} aria-label="Pomněnka home">
-          <Image className={styles.logo} src={logo} alt="" width={44} height={44} />
+          <Image className={styles.logo} src="/icon.svg" alt="" width={44} height={44} />
           <span>Pomněnka</span>
         </Link>
         <a className={styles.navCta} href={telegramUrl}>
@@ -48,7 +46,7 @@ export function PomnenkaLanding({
         <div className={styles.visual}>
           <Image
             className={styles.cover}
-            src={chatCover}
+            src="/pomnenka/chat-cover.jpg"
             alt="Pomněnka vocabulary list and Czech quiz"
             width={1280}
             height={720}
