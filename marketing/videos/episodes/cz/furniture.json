@@ -1,0 +1,10 @@
+{
+  "id": "furniture", "languageId": "cz", "topic": "Nábytek",
+  "items": [
+    {"term": "pohovka", "slug": "pohovka", "visualPrompt": "a comfortable three-seat sofa", "accent": "#E76F51", "pale": "#FFF1EC"},
+    {"term": "křeslo", "slug": "kreslo", "visualPrompt": "a comfortable upholstered armchair", "accent": "#3A86FF", "pale": "#ECF4FF"},
+    {"term": "zrcadlo", "slug": "zrcadlo", "visualPrompt": "a freestanding full-length mirror", "accent": "#8E5EB7", "pale": "#F6EEFF"},
+    {"term": "koberec", "slug": "koberec", "visualPrompt": "a rolled-out rectangular area rug", "accent": "#E09F3E", "pale": "#FFF7E8"},
+    {"term": "zásuvka", "slug": "zasuvka", "visualPrompt": "a single open wooden furniture drawer", "accent": "#2A9D8F", "pale": "#EAFBF7"}
+  ]
+}

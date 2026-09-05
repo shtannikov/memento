@@ -1,0 +1,10 @@
+{
+  "id": "medicine", "languageId": "cz", "topic": "Medicína",
+  "items": [
+    {"term": "teploměr", "slug": "teplomer", "visualPrompt": "a digital medical thermometer", "accent": "#E63946", "pale": "#FFF0F1"},
+    {"term": "obvaz", "slug": "obvaz", "visualPrompt": "a rolled medical bandage", "accent": "#2A9D8F", "pale": "#E9FBF8"},
+    {"term": "injekce", "slug": "injekce", "visualPrompt": "a medical syringe with its safety cap on", "accent": "#3A86FF", "pale": "#ECF4FF"},
+    {"term": "náplast", "slug": "naplast", "visualPrompt": "a single adhesive bandage", "accent": "#F77F00", "pale": "#FFF5E8"},
+    {"term": "stetoskop", "slug": "stetoskop", "visualPrompt": "a medical stethoscope", "accent": "#8338EC", "pale": "#F5EDFF"}
+  ]
+}

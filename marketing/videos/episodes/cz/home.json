@@ -1,0 +1,10 @@
+{
+  "id": "home", "languageId": "cz", "topic": "Domov",
+  "items": [
+    {"term": "stůl", "slug": "stul", "visualPrompt": "a simple dining table", "accent": "#EF476F", "pale": "#FFF0F3"},
+    {"term": "židle", "slug": "zidle", "visualPrompt": "a dining chair", "accent": "#118AB2", "pale": "#E7F8FF"},
+    {"term": "postel", "slug": "postel", "visualPrompt": "a neatly made bed", "accent": "#7B2CBF", "pale": "#F5EAFF"},
+    {"term": "lampa", "slug": "lampa", "visualPrompt": "a freestanding table lamp", "accent": "#F59E0B", "pale": "#FFF8E6"},
+    {"term": "skříň", "slug": "skrin", "visualPrompt": "a freestanding wardrobe", "accent": "#0F9D74", "pale": "#E9FFF7"}
+  ]
+}

@@ -1,0 +1,8 @@
+{
+  "id": "cz",
+  "targetLanguage": "Czech",
+  "locale": "cs-CZ",
+  "seriesLabel": "ČESKÝ KVÍZ",
+  "questionText": "Jak se to jmenuje?",
+  "tts": {"voice": "Zuzana", "questionRate": 190, "answerRate": 175}
+}
