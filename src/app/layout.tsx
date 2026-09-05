@@ -3,6 +3,7 @@ import { headers } from "next/headers";
 import Script from "next/script";
 import { ENGLISH_LANGUAGE } from "@/app/_languages/en";
 import {
+  POMNENKA_SITE,
   POMNENKA_SITE_HEADER,
   titleForSite,
 } from "@/app/site-routing";
@@ -10,14 +11,14 @@ import "./globals.css";
 
 export async function generateMetadata(): Promise<Metadata> {
   const requestHeaders = await headers();
+  const site = requestHeaders.get(POMNENKA_SITE_HEADER);
 
   return {
-    title: titleForSite(
-      ENGLISH_LANGUAGE.appName,
-      requestHeaders.get(POMNENKA_SITE_HEADER),
-    ),
+    title: titleForSite(ENGLISH_LANGUAGE.appName, site),
     description:
-      "Turn passive vocabulary into words you recognize with confidence.",
+      site === POMNENKA_SITE
+        ? "Add Czech words and phrases, practice them with quick quizzes, and track your progress."
+        : "Turn passive vocabulary into words you recognize with confidence.",
   };
 }
 

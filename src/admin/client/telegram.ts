@@ -8,11 +8,14 @@ export type AdminTelegramWebApp = {
   setHeaderColor?(color: string): void;
 };
 
-export function initializeAdminTelegram(): string {
+export function initializeAdminTelegram(): string | null {
   const telegramGlobal = globalThis as unknown as {
     Telegram?: { WebApp?: AdminTelegramWebApp };
   };
   const webApp = telegramGlobal.Telegram?.WebApp;
+  const initData = webApp?.initData?.trim() ?? "";
+  if (!initData) return null;
+
   webApp?.setBackgroundColor?.("#f4f4f5");
   webApp?.setHeaderColor?.("#f4f4f5");
   webApp?.ready();
@@ -24,7 +27,5 @@ export function initializeAdminTelegram(): string {
       // Expanded mode remains usable when a client rejects fullscreen.
     }
   }
-  const initData = webApp?.initData?.trim() ?? "";
-  if (!initData) throw new Error("Open Memento Admin from its Telegram bot.");
   return initData;
 }

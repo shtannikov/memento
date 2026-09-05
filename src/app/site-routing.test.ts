@@ -2,6 +2,8 @@ import { describe, expect, it } from "vitest";
 
 import {
   isPomnenkaProductionRequest,
+  isPomnenkaSiteRequest,
+  pomnenkaPublicPath,
   titleForSite,
 } from "./site-routing";
 
@@ -35,5 +37,31 @@ describe("titleForSite", () => {
 
   it("keeps the default title for other sites", () => {
     expect(titleForSite("Memento", null)).toBe("Memento");
+  });
+});
+
+describe("isPomnenkaSiteRequest", () => {
+  it("allows the Pomnenka landing to be inspected in Preview", () => {
+    expect(
+      isPomnenkaSiteRequest("feature.vercel.app", "pomnenka", "preview"),
+    ).toBe(true);
+  });
+
+  it("ignores the Preview selector in Production", () => {
+    expect(
+      isPomnenkaSiteRequest("memento.example", "pomnenka", "production"),
+    ).toBe(false);
+  });
+});
+
+describe("pomnenkaPublicPath", () => {
+  it("keeps Production links clean", () => {
+    expect(pomnenkaPublicPath("/trial", "production")).toBe("/trial");
+  });
+
+  it("preserves the site selector in Preview links", () => {
+    expect(pomnenkaPublicPath("/trial", "preview")).toBe(
+      "/trial?site=pomnenka",
+    );
   });
 });

@@ -2,17 +2,26 @@
 
 import { useEffect, useState } from "react";
 
-import { loadAdminUsers, resetAdminLimits } from "@admin/client/api";
+import {
+  AdminClientError,
+  loadAdminUsers,
+  resetAdminLimits,
+} from "@admin/client/api";
 import { initializeAdminTelegram } from "@admin/client/telegram";
 import type { AdminUserAppRow } from "./admin.types";
 import styles from "./admin.module.css";
 import { ResetLimitsDialog } from "./reset-limits-dialog";
 import { UsersTable } from "./users-table";
 
-export function AdminPage() {
+type AdminPageProps = {
+  publicFallback: React.ReactNode;
+};
+
+export function AdminPage({ publicFallback }: AdminPageProps) {
   const [initData, setInitData] = useState<string | null>(null);
   const [rows, setRows] = useState<AdminUserAppRow[]>([]);
   const [loading, setLoading] = useState(true);
+  const [access, setAccess] = useState<"checking" | "admin" | "public">("checking");
   const [error, setError] = useState<string | null>(null);
   const [expandedKey, setExpandedKey] = useState<string | null>(null);
   const [resetRow, setResetRow] = useState<AdminUserAppRow | null>(null);
@@ -23,18 +32,35 @@ export function AdminPage() {
     queueMicrotask(async () => {
       try {
         const data = initializeAdminTelegram();
+        if (!data) {
+          if (active) setAccess("public");
+          return;
+        }
         const users = await loadAdminUsers(data);
         if (!active) return;
         setInitData(data);
         setRows(users);
+        setAccess("admin");
       } catch (caught) {
-        if (active) setError(caught instanceof Error ? caught.message : "Couldn’t open the admin app.");
+        if (!active) return;
+        if (
+          caught instanceof AdminClientError &&
+          (caught.status === 401 || caught.status === 403)
+        ) {
+          setAccess("public");
+        } else {
+          setAccess("admin");
+          setError(caught instanceof Error ? caught.message : "Couldn’t open the admin app.");
+        }
       } finally {
         if (active) setLoading(false);
       }
     });
     return () => { active = false; };
   }, []);
+
+  if (access === "checking") return null;
+  if (access === "public") return publicFallback;
 
   async function confirmReset() {
     if (!initData || !resetRow) return;

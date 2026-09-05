@@ -16,3 +16,23 @@ export function isPomnenkaProductionRequest(
     vercelEnvironment === "production" && hostname === POMNENKA_HOSTNAME
   );
 }
+
+export function isPomnenkaSiteRequest(
+  hostname: string,
+  requestedSite: string | null,
+  vercelEnvironment = process.env.VERCEL_ENV,
+) {
+  if (isPomnenkaProductionRequest(hostname, vercelEnvironment)) return true;
+  return (
+    vercelEnvironment !== "production" && requestedSite === POMNENKA_SITE
+  );
+}
+
+export function pomnenkaPublicPath(
+  path: string,
+  vercelEnvironment = process.env.VERCEL_ENV,
+) {
+  return vercelEnvironment === "production"
+    ? path
+    : `${path}?site=${POMNENKA_SITE}`;
+}

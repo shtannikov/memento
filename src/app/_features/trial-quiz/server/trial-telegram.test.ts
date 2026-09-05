@@ -1,6 +1,20 @@
 import { describe, expect, it } from "vitest";
 
-import { trialTelegramUrl } from "./trial-telegram";
+import { pomnenkaTelegramUrl, trialTelegramUrl } from "./trial-telegram";
+
+describe("pomnenkaTelegramUrl", () => {
+  it("opens the configured environment-specific bot", () => {
+    expect(
+      pomnenkaTelegramUrl({ TELEGRAM_CZ_BOT_USERNAME: "pomnenkastagebot" }),
+    ).toBe("https://t.me/pomnenkastagebot");
+  });
+
+  it("refuses a Preview that would fall back to Production", () => {
+    expect(() => pomnenkaTelegramUrl({ VERCEL_ENV: "preview" })).toThrow(
+      "required for Preview",
+    );
+  });
+});
 
 describe("trialTelegramUrl", () => {
   it("uses the configured environment-specific bot", () => {

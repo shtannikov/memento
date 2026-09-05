@@ -2,13 +2,18 @@ import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
 import {
-  isPomnenkaProductionRequest,
+  isPomnenkaSiteRequest,
   POMNENKA_SITE,
   POMNENKA_SITE_HEADER,
 } from "@/app/site-routing";
 
 export function proxy(request: NextRequest) {
-  if (!isPomnenkaProductionRequest(request.nextUrl.hostname)) {
+  if (
+    !isPomnenkaSiteRequest(
+      request.nextUrl.hostname,
+      request.nextUrl.searchParams.get("site"),
+    )
+  ) {
     return NextResponse.next();
   }
 

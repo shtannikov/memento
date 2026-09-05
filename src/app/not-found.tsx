@@ -2,15 +2,13 @@ import { headers } from "next/headers";
 
 import { PomnenkaLanding } from "@/app/_components/pomnenka-landing";
 import { pomnenkaTelegramUrl } from "@/app/_features/trial-quiz/server/trial-telegram";
-import { MementoApp } from "@/app/memento-app";
 import {
   POMNENKA_SITE,
   POMNENKA_SITE_HEADER,
   pomnenkaPublicPath,
 } from "@/app/site-routing";
-import { ENGLISH_LANGUAGE } from "@/app/_languages/en";
 
-export default async function Page() {
+export async function PublicNotFound() {
   const requestHeaders = await headers();
   if (requestHeaders.get(POMNENKA_SITE_HEADER) === POMNENKA_SITE) {
     return (
@@ -23,11 +21,11 @@ export default async function Page() {
   }
 
   return (
-    <MementoApp
-      appId={ENGLISH_LANGUAGE.id}
-      appName={ENGLISH_LANGUAGE.appName}
-      addPhrasePlaceholders={ENGLISH_LANGUAGE.addPhrasePlaceholders}
-      speakingEnabled={Boolean(ENGLISH_LANGUAGE.speaking)}
-    />
+    <main>
+      <h1>Page not found</h1>
+      <p>The page you requested does not exist.</p>
+    </main>
   );
 }
+
+export default PublicNotFound;
