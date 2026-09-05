@@ -29,7 +29,7 @@ describe("Pomnenka production routing", () => {
     const response = proxy(new NextRequest("https://pomnenka.me/favicon.ico"));
 
     expect(response.headers.get("x-middleware-rewrite")).toBe(
-      "https://pomnenka.me/pomnenka-icon.svg",
+      "https://pomnenka.me/pomnenka-icon.png",
     );
   });
 

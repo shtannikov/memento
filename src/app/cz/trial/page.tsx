@@ -22,7 +22,7 @@ export async function generateMetadata(): Promise<Metadata> {
     return {
       ...defaultMetadata,
       title: "Pomněnka",
-      icons: { icon: "/pomnenka-icon.svg" },
+      icons: { icon: "/pomnenka-icon.png" },
     };
   }
 

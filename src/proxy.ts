@@ -13,7 +13,7 @@ export function proxy(request: NextRequest) {
   }
 
   if (request.nextUrl.pathname === "/favicon.ico") {
-    return NextResponse.rewrite(new URL("/pomnenka-icon.svg", request.url));
+    return NextResponse.rewrite(new URL("/pomnenka-icon.png", request.url));
   }
 
   const requestHeaders = new Headers(request.headers);

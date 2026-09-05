@@ -30,7 +30,7 @@ describe("Czech quiz page", () => {
 
     await expect(generateMetadata()).resolves.toMatchObject({
       title: "Pomněnka",
-      icons: { icon: "/pomnenka-icon.svg" },
+      icons: { icon: "/pomnenka-icon.png" },
     });
   });
 });
