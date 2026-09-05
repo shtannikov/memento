@@ -1,0 +1,10 @@
+{
+  "id": "vegetables", "languageId": "cz", "topic": "Zelenina",
+  "items": [
+    {"term": "mrkev", "slug": "mrkev", "visualPrompt": "a single whole carrot with green leaves", "accent": "#F77F00", "pale": "#FFF3E5"},
+    {"term": "okurka", "slug": "okurka", "visualPrompt": "a single whole cucumber", "accent": "#43AA4B", "pale": "#EDFAED"},
+    {"term": "rajče", "slug": "rajce", "visualPrompt": "a single ripe tomato", "accent": "#E63946", "pale": "#FFF0F1"},
+    {"term": "paprika", "slug": "paprika", "visualPrompt": "a single yellow bell pepper", "accent": "#F4B400", "pale": "#FFF9E3"},
+    {"term": "brambora", "slug": "brambora", "visualPrompt": "a single whole potato", "accent": "#9C6644", "pale": "#F8F0EA"}
+  ]
+}

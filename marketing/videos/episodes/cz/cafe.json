@@ -1,0 +1,10 @@
+{
+  "id": "cafe", "languageId": "cz", "topic": "Kavárna",
+  "items": [
+    {"term": "káva", "slug": "kava", "visualPrompt": "a ceramic cup of freshly brewed coffee", "accent": "#EF476F", "pale": "#FFF0F3"},
+    {"term": "jídelní lístek", "slug": "jidelni-listek", "visualPrompt": "a closed restaurant menu booklet labeled exactly \"MENU\" in clear English lettering, with no other readable text", "accent": "#118AB2", "pale": "#E7F8FF"},
+    {"term": "objednávka", "slug": "objednavka", "visualPrompt": "a compact realistic café ordering scene based on the three user-supplied composition references: one seated customer holds an open restaurant menu and speaks to a standing server who attentively writes the order on a small pad; include only minimal table context, a seamless pure white background, and no readable text", "accent": "#7B2CBF", "pale": "#F5EAFF"},
+    {"term": "účet", "slug": "ucet", "visualPrompt": "a restaurant bill in a small receipt holder, with no readable writing", "accent": "#F59E0B", "pale": "#FFF8E6"},
+    {"term": "spropitné", "slug": "spropitne", "visualPrompt": "a small clear glass tip jar containing a few coins, labeled exactly \"TIPS\" in clear English lettering, with no other readable text", "accent": "#0F9D74", "pale": "#E9FFF7"}
+  ]
+}

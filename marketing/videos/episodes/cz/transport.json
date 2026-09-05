@@ -1,0 +1,10 @@
+{
+  "id": "transport", "languageId": "cz", "topic": "Doprava",
+  "items": [
+    {"term": "kolo", "slug": "kolo", "visualPrompt": "one complete everyday city bicycle, explicitly a bicycle rather than a single wheel", "accent": "#EF476F", "pale": "#FFF0F3"},
+    {"term": "tramvaj", "slug": "tramvaj", "visualPrompt": "one modern urban street tram with a visible pantograph, overhead wire, and a short section of rails embedded in pavement, with no readable route text", "accent": "#118AB2", "pale": "#E7F8FF"},
+    {"term": "auto", "slug": "auto", "visualPrompt": "one generic compact passenger car with no logo and no readable license plate", "accent": "#7B2CBF", "pale": "#F5EAFF"},
+    {"term": "vlak", "slug": "vlak", "visualPrompt": "one modern long-distance passenger train on a short section of ballasted railway track, clearly distinct from an urban tram", "accent": "#F59E0B", "pale": "#FFF8E6"},
+    {"term": "letadlo", "slug": "letadlo", "visualPrompt": "one modern commercial passenger airplane shown in a gentle three-quarter view", "accent": "#0F9D74", "pale": "#E9FFF7"}
+  ]
+}
