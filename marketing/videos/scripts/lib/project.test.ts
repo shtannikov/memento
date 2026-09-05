@@ -2,9 +2,9 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import {buildObjectPrompt, loadAllProjects, loadEpisode, parseSelector, requiredAssetPaths, resolveInside, VIDEOS_ROOT} from './project';
 
-test('loads all six Czech manifests against the application registry', async () => {
+test('loads all seven Czech manifests against the application registry', async () => {
   const projects = await loadAllProjects();
-  assert.equal(projects.length, 6);
+  assert.equal(projects.length, 7);
   assert.ok(projects.every(({language, episode}) => language.id === 'cz' && episode.languageId === 'cz'));
 });
 

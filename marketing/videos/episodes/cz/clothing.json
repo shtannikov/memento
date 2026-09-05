@@ -1,0 +1,10 @@
+{
+  "id": "clothing", "languageId": "cz", "topic": "Oblečení",
+  "items": [
+    {"term": "tričko", "slug": "tricko", "visualPrompt": "a plain short-sleeved cotton T-shirt, front view", "accent": "#EF476F", "pale": "#FFF0F3"},
+    {"term": "kalhoty", "slug": "kalhoty", "visualPrompt": "a pair of classic straight-leg trousers, front view", "accent": "#118AB2", "pale": "#E7F8FF"},
+    {"term": "bunda", "slug": "bunda", "visualPrompt": "a practical zip-front outdoor jacket, front view", "accent": "#7B2CBF", "pale": "#F5EAFF"},
+    {"term": "boty", "slug": "boty", "visualPrompt": "a matching pair of everyday lace-up shoes, three-quarter view", "accent": "#F59E0B", "pale": "#FFF8E6"},
+    {"term": "čepice", "slug": "cepice", "visualPrompt": "a knitted winter beanie hat with a folded cuff", "accent": "#0F9D74", "pale": "#E9FFF7"}
+  ]
+}

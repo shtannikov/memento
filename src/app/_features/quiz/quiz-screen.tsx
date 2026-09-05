@@ -2,10 +2,10 @@ import { useLayoutEffect, useRef } from "react";
 import { Check, Heart, X } from "lucide-react";
 
 import styles from "./quiz-screen.module.css";
-import type { QuizCard, QuizFeedback } from "./quiz.types";
+import type { QuizCard, QuizFeedback, QuizQuestion } from "./quiz.types";
 
 type QuizScreenProps = {
-  card: QuizCard;
+  card: QuizQuestion | QuizCard;
   completed: number;
   total: number;
   lives: number;

@@ -22,15 +22,19 @@ sets and verifies its `App` menu button at `/admin`.
 3. Use the same five Stage values for the corresponding Vercel **Preview**
    environment variables. Vercel and GitHub cannot copy Sensitive values from
    each other, so this duplication is manual.
-4. Make sure each webhook secret contains only `A-Z`, `a-z`, `0-9`, `_`, and
+4. Add `TELEGRAM_CZ_BOT_USERNAME` to the Vercel **Preview** environment using
+   the Stage Czech bot's username without the leading `@`. The public
+   `/cz/trial` result screen uses it for its Telegram link and refuses to fall
+   back to the Production bot in a Preview build.
+5. Make sure each webhook secret contains only `A-Z`, `a-z`, `0-9`, `_`, and
    `-`, and is at most 256 characters.
-5. In Vercel, open the `memento` project -> **Settings** -> **Git** and make
+6. In Vercel, open the `memento` project -> **Settings** -> **Git** and make
    sure **repository_dispatch Events** is enabled for the connected GitHub
    repo. The older **deployment_status Events** integration is not used by this
    workflow and may be disabled.
-6. Merge the workflow into `main`. GitHub only automatically handles later
+7. Merge the workflow into `main`. GitHub only automatically handles later
    `repository_dispatch` events with a workflow present on the default branch.
-7. For the first existing Preview, open **Actions** ->
+8. For the first existing Preview, open **Actions** ->
    **Configure Stage Telegram** -> **Run workflow** and paste its exact
    `https://...vercel.app/` Preview URL. Later successful Preview deployments
    run it automatically.
