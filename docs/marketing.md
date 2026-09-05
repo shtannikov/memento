@@ -83,10 +83,17 @@ python3 -m unittest marketing/images/test_generate.py
 The integration test confirms that the GitHub platform emits only the social
 preview and that both generated files have the expected dimensions.
 
-## Add Czech later
+## Generate the Czech campaign
 
-Duplicate `marketing/images/campaigns/en.json` as
-`marketing/images/campaigns/cs.json`, set `id` and `locale` to `cs`,
-translate the copy, and point at Czech screenshots. The same generator will
-write each platform campaign beneath
-`marketing/images/output/cs/<platform>/` without changing the layouts.
+The Czech campaign keeps the English campaign layouts and marketing phrasing,
+uses the Pomněnka app name, changes references from English to Czech, and uses
+the Czech vocabulary and quiz screenshots:
+
+```sh
+python3 marketing/images/generate.py marketing/images/campaigns/cz.json --platform telegram
+python3 marketing/images/generate.py marketing/images/campaigns/cz.json --platform instagram
+python3 marketing/images/generate.py marketing/images/campaigns/cz.json --platform linkedin
+python3 marketing/images/generate.py marketing/images/campaigns/cz.json --platform github
+```
+
+Outputs are written beneath `marketing/images/output/cz/<platform>/`.

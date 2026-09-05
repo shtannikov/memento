@@ -375,6 +375,34 @@ def phone_frame(
     return phone
 
 
+def rotated_phone_frame(
+    path: Path,
+    width: int,
+    crop_top: int,
+    angle: float = 0,
+    crop_height: int | None = None,
+    radius: int = 64,
+    bezel: int = 12,
+    supersample: int = 4,
+) -> Image.Image:
+    """Render rotated phone edges at high resolution to avoid stair-stepping."""
+    if not angle:
+        return phone_frame(path, width, crop_top, crop_height, radius, bezel)
+    card = phone_frame(
+        path,
+        width=width * supersample,
+        crop_top=crop_top,
+        crop_height=crop_height * supersample if crop_height is not None else None,
+        radius=radius * supersample,
+        bezel=bezel * supersample,
+    )
+    card = card.rotate(angle, expand=True, resample=Image.Resampling.BICUBIC)
+    return card.resize(
+        (round(card.width / supersample), round(card.height / supersample)),
+        Image.Resampling.LANCZOS,
+    )
+
+
 def paste_with_shadow(
     canvas: Image.Image,
     card: Image.Image,
@@ -446,16 +474,14 @@ def draw_finale_slide(
     draw_text(canvas, (82, copy["support_top"]), copy["support"], 42, (255, 255, 255, 190))
 
     for item in slide["fan"]:
-        card = phone_frame(
+        card = rotated_phone_frame(
             asset_root / item["screenshot"],
             width=item["width"],
             crop_top=item.get("crop_top", 0),
+            angle=item.get("angle", 0),
             radius=item.get("radius", 44),
             bezel=item.get("bezel", 8),
         )
-        angle = item.get("angle", 0)
-        if angle:
-            card = card.rotate(angle, expand=True, resample=Image.Resampling.BICUBIC)
         position = (item["x"], item["top"])
         paste_with_shadow(canvas, card, position, blur=30, offset_y=22)
 
@@ -471,17 +497,15 @@ def render_chat_image(
     canvas = make_chat_background(709, palette, width, height)
 
     for item in chat["fan"]:
-        card = phone_frame(
+        card = rotated_phone_frame(
             asset_root / item["screenshot"],
             width=item["width"],
             crop_top=item.get("crop_top", 0),
+            angle=item.get("angle", 0),
             crop_height=item.get("crop_height"),
             radius=item.get("radius", 38),
             bezel=item.get("bezel", 8),
         )
-        angle = item.get("angle", 0)
-        if angle:
-            card = card.rotate(angle, expand=True, resample=Image.Resampling.BICUBIC)
         paste_with_shadow(
             canvas,
             card,
@@ -716,17 +740,16 @@ def render_feature_image(
 
     rendered_features: list[tuple[dict[str, Any], Image.Image, float]] = []
     for item in feature["features"]:
-        card = phone_frame(
+        angle = item.get("angle", 0)
+        card = rotated_phone_frame(
             asset_root / item["screenshot"],
             width=item["width"],
             crop_top=item.get("crop_top", 0),
+            angle=angle,
             crop_height=item.get("crop_height"),
             radius=item.get("radius", 34),
             bezel=item.get("bezel", 7),
         )
-        angle = item.get("angle", 0)
-        if angle:
-            card = card.rotate(angle, expand=True, resample=Image.Resampling.BICUBIC)
         rendered_features.append((item, card, angle))
 
     for item, card, _angle in rendered_features:
