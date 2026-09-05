@@ -1,12 +1,25 @@
 import type { Metadata, Viewport } from "next";
+import { headers } from "next/headers";
 import Script from "next/script";
 import { ENGLISH_LANGUAGE } from "@/app/_languages/en";
+import {
+  POMNENKA_SITE_HEADER,
+  titleForSite,
+} from "@/app/site-routing";
 import "./globals.css";
 
-export const metadata: Metadata = {
-  title: ENGLISH_LANGUAGE.appName,
-  description: "Turn passive vocabulary into words you recognize with confidence.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const requestHeaders = await headers();
+
+  return {
+    title: titleForSite(
+      ENGLISH_LANGUAGE.appName,
+      requestHeaders.get(POMNENKA_SITE_HEADER),
+    ),
+    description:
+      "Turn passive vocabulary into words you recognize with confidence.",
+  };
+}
 
 export const viewport: Viewport = {
   width: "device-width",

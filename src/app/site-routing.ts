@@ -2,6 +2,12 @@ export const POMNENKA_HOSTNAME = "pomnenka.me";
 export const POMNENKA_SITE_HEADER = "x-memento-site";
 export const POMNENKA_SITE = "pomnenka";
 
+export function titleForSite(defaultTitle: string, site: string | null) {
+  return site === POMNENKA_SITE
+    ? defaultTitle.replace("Memento", "Pomněnka")
+    : defaultTitle;
+}
+
 export function isPomnenkaProductionRequest(
   hostname: string,
   vercelEnvironment = process.env.VERCEL_ENV,

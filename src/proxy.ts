@@ -12,10 +12,6 @@ export function proxy(request: NextRequest) {
     return NextResponse.next();
   }
 
-  if (request.nextUrl.pathname === "/favicon.ico") {
-    return NextResponse.rewrite(new URL("/pomnenka-icon.png", request.url));
-  }
-
   const requestHeaders = new Headers(request.headers);
   requestHeaders.set(POMNENKA_SITE_HEADER, POMNENKA_SITE);
 
@@ -29,5 +25,5 @@ export function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/trial", "/cz/trial", "/favicon.ico"],
+  matcher: ["/((?!api|_next/static|_next/image|favicon.ico|.*\\..*).*)"],
 };
