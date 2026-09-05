@@ -23,13 +23,13 @@ describe("Pomnenka production routing", () => {
     );
   });
 
-  it("serves the Pomnenka icon on its production domain", () => {
+  it("marks every page on the Pomnenka production domain", () => {
     process.env.VERCEL_ENV = "production";
 
-    const response = proxy(new NextRequest("https://pomnenka.me/favicon.ico"));
+    const response = proxy(new NextRequest("https://pomnenka.me/admin"));
 
-    expect(response.headers.get("x-middleware-rewrite")).toBe(
-      "https://pomnenka.me/pomnenka-icon.png",
+    expect(response.headers.get("x-middleware-request-x-memento-site")).toBe(
+      "pomnenka",
     );
   });
 

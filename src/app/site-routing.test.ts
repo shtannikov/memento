@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest";
 
-import { isPomnenkaProductionRequest } from "./site-routing";
+import {
+  isPomnenkaProductionRequest,
+  titleForSite,
+} from "./site-routing";
 
 describe("isPomnenkaProductionRequest", () => {
   it("matches the Pomnenka production domain", () => {
@@ -22,5 +25,15 @@ describe("isPomnenkaProductionRequest", () => {
     expect(isPomnenkaProductionRequest("memento.example", "production")).toBe(
       false,
     );
+  });
+});
+
+describe("titleForSite", () => {
+  it("uses Pomnenka branding for the Pomnenka site", () => {
+    expect(titleForSite("Memento Admin", "pomnenka")).toBe("Pomněnka Admin");
+  });
+
+  it("keeps the default title for other sites", () => {
+    expect(titleForSite("Memento", null)).toBe("Memento");
   });
 });
