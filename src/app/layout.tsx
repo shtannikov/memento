@@ -3,21 +3,22 @@ import { headers } from "next/headers";
 import Script from "next/script";
 import { ENGLISH_LANGUAGE } from "@/app/_languages/en";
 import {
-  POMNENKA_SITE_HEADER,
-  titleForSite,
+  getSiteLanguageFromHeader,
+  SITE_APP_HEADER,
 } from "@/app/site-routing";
 import "./globals.css";
 
 export async function generateMetadata(): Promise<Metadata> {
   const requestHeaders = await headers();
+  const siteLanguage = getSiteLanguageFromHeader(
+    requestHeaders.get(SITE_APP_HEADER),
+  );
 
   return {
-    title: titleForSite(
-      ENGLISH_LANGUAGE.appName,
-      requestHeaders.get(POMNENKA_SITE_HEADER),
-    ),
-    description:
-      "Turn passive vocabulary into words you recognize with confidence.",
+    title: siteLanguage?.appName ?? ENGLISH_LANGUAGE.appName,
+    description: siteLanguage
+      ? `Add ${siteLanguage.targetLanguage} words and phrases, practice them with quick quizzes, and track your progress.`
+      : "Turn passive vocabulary into words you recognize with confidence.",
   };
 }
 

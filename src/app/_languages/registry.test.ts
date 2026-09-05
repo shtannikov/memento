@@ -1,6 +1,12 @@
 import { describe, expect, it } from "vitest";
 
-import { APP_IDS, getLanguage, getLanguageFromRoute, isAppId } from "./registry";
+import {
+  APP_IDS,
+  getLanguage,
+  getLanguageFromRoute,
+  isAppId,
+  isSiteLanguage,
+} from "./registry";
 
 describe("language registry", () => {
   it("keeps every language registration in its language definition", () => {
@@ -23,6 +29,17 @@ describe("language registry", () => {
       appPath: "/cz",
       webhookPath: "/api/telegram/webhook/cz",
       botTokenEnv: "TELEGRAM_CZ_BOT_TOKEN",
+      site: {
+        hostname: "pomnenka.me",
+        productionBotUsername: "pomnenkaxbot",
+        previewBotUsernameEnv: "TELEGRAM_CZ_BOT_USERNAME",
+        coverImage: "/languages/cz/chat-cover.jpg",
+        trial: {
+          publicPath: "/trial",
+          routePath: "/cz/trial",
+          startPayload: "tiktok_trial",
+        },
+      },
       addPhrasePlaceholders: {
         term: "e.g. starat se o někoho",
         definition: "e.g. to take care of someone",
@@ -36,5 +53,15 @@ describe("language registry", () => {
     expect(isAppId("toString")).toBe(false);
     expect(getLanguageFromRoute("cz")?.id).toBe("cz");
     expect(getLanguageFromRoute("unknown")).toBeNull();
+    expect(isSiteLanguage(getLanguage("cz"))).toBe(true);
+    expect(isSiteLanguage(getLanguage("en"))).toBe(false);
+  });
+
+  it("keeps public hostnames unique across language manifests", () => {
+    const hostnames = APP_IDS.map(getLanguage)
+      .filter(isSiteLanguage)
+      .map((language) => language.site.hostname);
+
+    expect(new Set(hostnames).size).toBe(hostnames.length);
   });
 });

@@ -22,6 +22,18 @@ export type AddPhrasePlaceholders = {
   definition: string;
 };
 
+export type LanguageSiteDefinition = {
+  hostname: string;
+  productionBotUsername: string;
+  previewBotUsernameEnv: string;
+  coverImage: string;
+  trial?: {
+    publicPath: string;
+    routePath: string;
+    startPayload: string;
+  };
+};
+
 export type LanguageDefinition<Id extends string = string> = {
   id: Id;
   appName: string;
@@ -33,6 +45,7 @@ export type LanguageDefinition<Id extends string = string> = {
   webhookPath: string;
   botTokenEnv: string;
   webhookSecretEnv: string;
+  site?: LanguageSiteDefinition;
   addPhrasePlaceholders: AddPhrasePlaceholders;
   starterVocabulary: readonly { term: string; definition: string }[];
   quizSystemPrompt: string;

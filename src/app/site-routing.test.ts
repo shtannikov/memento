@@ -1,39 +1,56 @@
 import { describe, expect, it } from "vitest";
 
+import { CZECH_LANGUAGE } from "@/app/_languages/cz";
 import {
-  isPomnenkaProductionRequest,
-  titleForSite,
+  getSiteLanguageForRequest,
+  getSiteLanguageFromHeader,
+  sitePublicPath,
 } from "./site-routing";
 
-describe("isPomnenkaProductionRequest", () => {
-  it("matches the Pomnenka production domain", () => {
-    expect(isPomnenkaProductionRequest("pomnenka.me", "production")).toBe(
-      true,
-    );
+describe("getSiteLanguageForRequest", () => {
+  it("selects a Production site from the language registry hostname", () => {
+    expect(
+      getSiteLanguageForRequest("pomnenka.me", null, "production")?.id,
+    ).toBe("cz");
   });
 
-  it.each(["preview", "development"])(
-    "does not activate in the %s environment",
-    (environment) => {
-      expect(isPomnenkaProductionRequest("pomnenka.me", environment)).toBe(
-        false,
-      );
-    },
-  );
+  it("selects a configured language site explicitly in Preview", () => {
+    expect(
+      getSiteLanguageForRequest("feature.vercel.app", "cz", "preview")?.id,
+    ).toBe("cz");
+  });
 
-  it("does not activate for another production domain", () => {
-    expect(isPomnenkaProductionRequest("memento.example", "production")).toBe(
-      false,
-    );
+  it("does not select languages without a public site", () => {
+    expect(
+      getSiteLanguageForRequest("feature.vercel.app", "en", "preview"),
+    ).toBeNull();
+  });
+
+  it("ignores Preview selectors in Production", () => {
+    expect(
+      getSiteLanguageForRequest("memento.example", "cz", "production"),
+    ).toBeNull();
   });
 });
 
-describe("titleForSite", () => {
-  it("uses Pomnenka branding for the Pomnenka site", () => {
-    expect(titleForSite("Memento Admin", "pomnenka")).toBe("Pomněnka Admin");
+describe("getSiteLanguageFromHeader", () => {
+  it("resolves only configured public sites", () => {
+    expect(getSiteLanguageFromHeader("cz")?.appName).toBe("Pomněnka");
+    expect(getSiteLanguageFromHeader("en")).toBeNull();
+    expect(getSiteLanguageFromHeader("unknown")).toBeNull();
+  });
+});
+
+describe("sitePublicPath", () => {
+  it("keeps Production links clean", () => {
+    expect(sitePublicPath(CZECH_LANGUAGE, "/trial", "production")).toBe(
+      "/trial",
+    );
   });
 
-  it("keeps the default title for other sites", () => {
-    expect(titleForSite("Memento", null)).toBe("Memento");
+  it("preserves the app selector in Preview links", () => {
+    expect(sitePublicPath(CZECH_LANGUAGE, "/trial", "preview")).toBe(
+      "/trial?site=cz",
+    );
   });
 });

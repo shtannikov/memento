@@ -44,7 +44,7 @@ describe("admin Telegram client", () => {
     expect(requestFullscreen).not.toHaveBeenCalled();
   });
 
-  it("refuses to run outside the admin Telegram bot", () => {
-    expect(() => initializeAdminTelegram()).toThrow("Open Memento Admin");
+  it("returns no credentials outside the admin Telegram bot", () => {
+    expect(initializeAdminTelegram()).toBeNull();
   });
 });
