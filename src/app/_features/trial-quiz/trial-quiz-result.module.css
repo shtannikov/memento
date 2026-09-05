@@ -1,0 +1,15 @@
+.telegramLink {
+  text-decoration: none;
+}
+
+.retryButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+}
+
+.retryButton svg {
+  width: 18px;
+  height: 18px;
+}

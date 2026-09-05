@@ -1,9 +1,12 @@
-export type QuizCard = {
+export type QuizQuestion = {
   id: string;
-  vocabularyId: string;
   sentence: string;
   answer: string;
   options: string[];
+};
+
+export type QuizCard = QuizQuestion & {
+  vocabularyId: string;
 };
 
 export type QuizFeedback = "correct" | "incorrect" | null;

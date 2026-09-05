@@ -1,5 +1,3 @@
-import { randomInt } from "node:crypto";
-
 type QuizCardWithOptions = {
   answer: string;
   options: string[];
@@ -11,7 +9,7 @@ const OPTION_COUNT = 4;
 
 export function randomizeQuizCards<T extends QuizCardWithOptions>(
   cards: T[],
-  randomIndex: RandomIndex = randomInt,
+  randomIndex: RandomIndex = browserRandomIndex,
 ): T[] {
   const correctPositions = shuffle(
     cards.map((_, index) => index % OPTION_COUNT),
@@ -37,6 +35,10 @@ export function randomizeQuizCards<T extends QuizCardWithOptions>(
   });
 
   return shuffle(cardsWithRandomizedOptions, randomIndex);
+}
+
+function browserRandomIndex(maxExclusive: number): number {
+  return Math.floor(Math.random() * maxExclusive);
 }
 
 function shuffle<T>(values: T[], randomIndex: RandomIndex): T[] {
